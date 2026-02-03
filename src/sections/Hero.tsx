@@ -53,6 +53,8 @@ const Hero = () => {
   const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
+    // Defer animations until main thread is free
+    const startAnimations = () => {
     const ctx = gsap.context(() => {
       // Entrance animations
       const tl = gsap.timeline({ delay: 0.3 });
@@ -112,6 +114,16 @@ const Hero = () => {
       scrollTriggersRef.current = [];
       ctx.revert();
     };
+    };
+    
+    // Defer animation start to reduce TBT
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(startAnimations, { timeout: 100 });
+    } else {
+      setTimeout(startAnimations, 100);
+    }
+    
+    return () => {};
   }, []);
 
   const scrollToIndustries = () => {
