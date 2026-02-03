@@ -64,8 +64,8 @@ const Hero = () => {
       )
         .fromTo(
           subheadingRef.current,
-          { y: 50, opacity: 0, filter: 'blur(10px)' },
-          { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.8, ease: 'power2.out' },
+          { y: 50, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' },
           '-=0.5'
         )
         .fromTo(
