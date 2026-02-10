@@ -2,36 +2,39 @@ import { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
+function createParticleData(count: number) {
+  const positions = new Float32Array(count * 3);
+  const velocities = new Float32Array(count * 3);
+
+  for (let i = 0; i < count; i++) {
+    const i3 = i * 3;
+    positions[i3] = (Math.random() - 0.5) * 100;
+    positions[i3 + 1] = (Math.random() - 0.5) * 100;
+    positions[i3 + 2] = (Math.random() - 0.5) * 50;
+
+    velocities[i3] = (Math.random() - 0.5) * 0.02;
+    velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
+    velocities[i3 + 2] = (Math.random() - 0.5) * 0.01;
+  }
+
+  return { positions, velocities };
+}
+
+const PARTICLE_COUNT = 150;
+const initialData = createParticleData(PARTICLE_COUNT);
+
 const ParticleField = () => {
   const pointsRef = useRef<THREE.Points>(null);
-
-  const particleCount = 150;
-
-  const [positions, velocities] = useMemo(() => {
-    const positions = new Float32Array(particleCount * 3);
-    const velocities = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      const i3 = i * 3;
-      positions[i3] = (Math.random() - 0.5) * 100;
-      positions[i3 + 1] = (Math.random() - 0.5) * 100;
-      positions[i3 + 2] = (Math.random() - 0.5) * 50;
-
-      velocities[i3] = (Math.random() - 0.5) * 0.02;
-      velocities[i3 + 1] = (Math.random() - 0.5) * 0.02;
-      velocities[i3 + 2] = (Math.random() - 0.5) * 0.01;
-    }
-
-    return [positions, velocities];
-  }, []);
+  const velocitiesRef = useRef(initialData.velocities);
 
   useFrame((state) => {
     if (!pointsRef.current) return;
 
     const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    const velocities = velocitiesRef.current;
     const time = state.clock.elapsedTime;
 
-    for (let i = 0; i < particleCount; i++) {
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
       const i3 = i * 3;
 
       // Update positions with velocity
@@ -53,8 +56,8 @@ const ParticleField = () => {
   });
 
   const positionAttribute = useMemo(() => {
-    return new THREE.BufferAttribute(positions, 3);
-  }, [positions]);
+    return new THREE.BufferAttribute(initialData.positions, 3);
+  }, []);
 
   return (
     <points ref={pointsRef}>

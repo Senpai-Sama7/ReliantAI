@@ -82,7 +82,7 @@ const PrivacyPolicy = () => {
           </p>
           <p className="mb-4">
             <strong>NexGen Web Solutions</strong><br />
-            Email: ceo@douglasmitchell.info<br />
+            Email: Douglas-D-Mitchell@outlook.com<br />
             Phone: (832) 947-7028<br />
             Location: Houston, TX
           </p>

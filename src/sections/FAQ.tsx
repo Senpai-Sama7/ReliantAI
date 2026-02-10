@@ -34,65 +34,99 @@ const faqs = [
 
 const FAQ = () => {
   const sectionRef = useRef<HTMLElement>(null);
-  const headingRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const faqsRef = useRef<HTMLDivElement>(null);
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const triggersRef = useRef<ScrollTrigger[]>([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        headingRef.current,
-        { y: 60, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.8,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: headingRef.current,
-            start: 'top 95%',
-            toggleActions: 'play none none reverse',
+      // Header reveal
+      const headerElements = headerRef.current?.querySelectorAll('.reveal-item');
+      if (headerElements) {
+        gsap.set(headerElements, { y: 40, opacity: 0 });
+        
+        const headerTrigger = ScrollTrigger.create({
+          trigger: headerRef.current,
+          start: 'top 85%',
+          onEnter: () => {
+            gsap.to(headerElements, {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              stagger: 0.1,
+              ease: 'power3.out',
+            });
           },
-        }
-      );
+        });
+        triggersRef.current.push(headerTrigger);
+      }
+
+      // FAQ items staggered reveal
+      const items = faqsRef.current?.querySelectorAll('.faq-item');
+      if (items) {
+        items.forEach((item, i) => {
+          gsap.set(item, { y: 30, opacity: 0 });
+          
+          const itemTrigger = ScrollTrigger.create({
+            trigger: item,
+            start: 'top 90%',
+            onEnter: () => {
+              gsap.to(item, {
+                y: 0,
+                opacity: 1,
+                duration: 0.6,
+                delay: i * 0.08,
+                ease: 'power3.out',
+              });
+            },
+          });
+          triggersRef.current.push(itemTrigger);
+        });
+      }
     }, sectionRef);
 
-    return () => ctx.revert();
+    return () => {
+      ctx.revert();
+      triggersRef.current.forEach(t => t.kill());
+      triggersRef.current = [];
+    };
   }, []);
 
   return (
     <section
       id="faq"
       ref={sectionRef}
-      className="relative w-full py-24 bg-gray-50 dark:bg-dark-100/30 transition-colors duration-500"
+      className="relative w-full py-24 lg:py-32 bg-gray-50 dark:bg-dark-100/30 transition-colors duration-500"
       itemScope
       itemType="https://schema.org/FAQPage"
     >
       <div className="relative z-10 w-full px-6 lg:px-12 xl:px-24 max-w-4xl mx-auto">
-        <div ref={headingRef} className="text-center mb-12">
-          <span className="inline-block px-4 py-1.5 bg-orange/10 border border-orange/30 rounded-full text-orange font-opensans text-sm mb-6">
+        <div ref={headerRef} className="text-center mb-12">
+          <span className="reveal-item inline-block px-4 py-1.5 bg-orange/10 border border-orange/30 rounded-full text-orange font-opensans text-sm mb-6">
             Common Questions
           </span>
-          <h2 className="font-teko text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-4">
+          <h2 className="reveal-item font-teko text-5xl sm:text-6xl font-bold text-gray-900 dark:text-white mb-4">
             FREQUENTLY <span className="gradient-text">ASKED</span>
           </h2>
         </div>
 
-        <div className="space-y-4">
+        <div ref={faqsRef} className="space-y-4">
           {faqs.map((faq, index) => (
             <div
               key={index}
               itemScope
               itemProp="mainEntity"
               itemType="https://schema.org/Question"
-              className="border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden bg-white dark:bg-dark-100/50"
+              className="faq-item border border-gray-200 dark:border-white/10 rounded-xl overflow-hidden bg-white dark:bg-dark-100/50 transition-all duration-300 hover:border-orange/20 hover:shadow-lg hover:shadow-orange/5"
             >
               <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left"
+                className="w-full px-6 py-5 flex items-center justify-between text-left group"
               >
                 <span
                   itemProp="name"
-                  className="font-opensans font-semibold text-gray-900 dark:text-white pr-4"
+                  className="font-opensans font-semibold text-gray-900 dark:text-white pr-4 transition-colors duration-300 group-hover:text-orange"
                 >
                   {faq.question}
                 </span>
@@ -107,16 +141,21 @@ const FAQ = () => {
                 itemScope
                 itemProp="acceptedAnswer"
                 itemType="https://schema.org/Answer"
-                className={`overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? 'max-h-96' : 'max-h-0'
-                }`}
+                className="overflow-hidden transition-all duration-500 ease-in-out"
+                style={{
+                  display: 'grid',
+                  gridTemplateRows: openIndex === index ? '1fr' : '0fr',
+                  transition: 'grid-template-rows 0.5s ease-in-out',
+                }}
               >
-                <p
-                  itemProp="text"
-                  className="px-6 pb-5 text-gray-600 dark:text-white/70 font-opensans leading-relaxed"
-                >
-                  {faq.answer}
-                </p>
+                <div className="min-h-0">
+                  <p
+                    itemProp="text"
+                    className="px-6 pb-5 text-gray-600 dark:text-white/70 font-opensans leading-relaxed"
+                  >
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
             </div>
           ))}

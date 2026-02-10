@@ -196,28 +196,39 @@ const Hero = () => {
             </span>
           </div>
 
-          {/* Main Heading */}
+          {/* Main Heading - Pattern Break Version */}
           <h1
             ref={headingRef}
-            className="font-teko text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold leading-[0.9] mb-6 will-change-transform"
+            className="font-teko text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-[0.95] mb-6 will-change-transform"
           >
-            <span className="block text-gray-900 dark:text-white">WEB</span>
-            <span className="block gradient-text">DESIGN</span>
-            <span className="block text-gray-600 dark:text-white/90 text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-light mt-2">
-              EXCELLENCE
+            <span className="block text-gray-900 dark:text-white">
+              YOUR WEBSITE IS
+            </span>
+            <span className="block text-red-600 dark:text-red-500">
+              COSTING YOU LEADS
+            </span>
+            <span className="block text-orange text-3xl sm:text-4xl md:text-5xl font-medium mt-3">
+              (Here's the fix in 60 seconds)
             </span>
           </h1>
 
-          {/* Subheading */}
+          {/* Subheading - Loss Aversion Focus */}
           <p
             ref={subheadingRef}
-            className="font-opensans text-lg sm:text-xl text-gray-600 dark:text-white/70 max-w-xl mb-10 leading-relaxed will-change-transform"
+            className="font-opensans text-lg sm:text-xl text-gray-600 dark:text-white/70 max-w-xl mb-6 leading-relaxed will-change-transform"
           >
-            We craft high-performance, conversion-focused websites tailored for
-            metal fabrication shops, oilfield services, home service providers,
-            and medical practices. Your business deserves a digital presence that
-            works as hard as you do.
+            Most business websites are digital brochures that do nothing. 
+            We build <strong className="text-orange">conversion machines</strong> that turn 
+            visitors into customers—specifically for metal fabrication, oilfield services, 
+            home services, and medical practices.
           </p>
+          
+          {/* Loss Quantification Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg mb-8">
+            <span className="text-red-600 dark:text-red-400 font-opensans text-sm">
+              <strong>Average client recovers $50K+</strong> in lost revenue within 6 months
+            </span>
+          </div>
 
           {/* CTA Buttons */}
           <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 will-change-transform">

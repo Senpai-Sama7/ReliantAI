@@ -1,21 +1,21 @@
 # AGENTS.md - NexGen Web Solutions
 
-> This file contains essential information for AI coding agents working on this project.
-> Last updated: 2026-02-03
+> Essential context for AI coding agents working on this project.
+> Last updated: 2026-02-07
 
 ---
 
 ## Project Overview
 
-**NexGen Web Solutions** is a React + TypeScript + Vite landing page for a Houston-based web design agency. The site features 3D particle effects using Three.js and GSAP-powered scroll animations. It targets small businesses in specific industries: metal fabrication, oilfield services, home services, and medical practices.
+**NexGen Web Solutions** is a React + TypeScript + Vite marketing site for a Houston-based web design agency. It uses GSAP scroll animations and optional Three.js scenes (via `@react-three/fiber`) for premium/industrial motion design. The positioning targets small businesses in: metal fabrication, oilfield services, home services, and medical practices.
 
 - **Live URL**: https://nexgenweb.com (intended)
-- **Deployment**: Vercel (SPA configuration)
-- **Repository**: Private
+- **Deployment**: Vercel (SPA rewrites + security/cache headers via `vercel.json`)
+- **Package manager**: npm (`package-lock.json` is present)
 
 ---
 
-## Technology Stack
+## Technology Stack (from `package.json`)
 
 | Category | Technology | Version |
 |----------|------------|---------|
@@ -23,329 +23,260 @@
 | Language | TypeScript | 5.9.3 |
 | Build Tool | Vite | 7.2.4 |
 | Styling | Tailwind CSS | 3.4.19 |
-| UI Components | shadcn/ui | New York style |
-| 3D Graphics | Three.js + @react-three/fiber | 0.182.0 |
+| UI Components | shadcn/ui (New York) + Radix UI | (multiple) |
+| 3D Graphics | Three.js | 0.182.0 |
+| 3D React | `@react-three/fiber` + `@react-three/drei` | 9.5.0 + 10.7.7 |
 | Animations | GSAP + ScrollTrigger | 3.14.2 |
+| Smooth Scroll | Lenis | 1.3.17 |
 | Icons | Lucide React | 0.562.0 |
 | Forms | react-hook-form + Zod | 7.70.0 + 4.3.5 |
-| Theme | next-themes | 0.4.6 |
+
+Notes:
+- Theme is implemented via a custom hook (`src/hooks/useTheme.ts`) rather than a provider-based solution.
+- `next-themes` is installed (shadcn default) but is not wired up in the app layout.
 
 ---
 
-## Project Structure
+## Repo Structure
 
 ```
-my-app/
-├── public/                    # Static assets (images, SEO files)
-│   ├── *.jpg / *.webp        # Project images in dual format
-│   ├── robots.txt            # SEO crawler instructions
-│   ├── sitemap.xml           # SEO sitemap
-│   ├── 404.html              # Custom 404 page
-│   └── _redirects            # Vercel redirect rules
+./
+├── public/                      # Static assets (images + SEO files)
+│   ├── robots.txt
+│   ├── sitemap.xml
+│   ├── 404.html
+│   └── _redirects               # Netlify-style SPA redirects (kept for portability)
 ├── src/
-│   ├── components/           # React components
-│   │   ├── ui/              # shadcn/ui components (50+ components)
-│   │   ├── ExitIntentPopup.tsx
-│   │   ├── FloatingCTA.tsx
+│   ├── components/
+│   │   ├── ui/                  # shadcn/ui components (53 TSX files)
+│   │   ├── Navigation.tsx       # Sticky nav (GSAP ScrollToPlugin)
+│   │   ├── SmoothScrollProvider.tsx # Lenis + ScrollTrigger sync
 │   │   ├── IntroOverlay.tsx
-│   │   ├── Navigation.tsx
-│   │   ├── ParticleField.tsx     # 3D background particles
+│   │   ├── FloatingCTA.tsx
+│   │   ├── ExitIntentPopup.tsx
 │   │   ├── SocialProofToast.tsx
-│   │   └── ThemeToggle.tsx
-│   ├── sections/             # Page sections (lazy-loaded)
-│   │   ├── Hero.tsx         # Above-the-fold (eager loaded)
-│   │   ├── Industries.tsx   # Industry cards
-│   │   ├── Approach.tsx     # Value proposition
-│   │   ├── Services.tsx     # Service offerings
-│   │   ├── Process.tsx      # Workflow timeline
-│   │   ├── Testimonials.tsx # Client reviews
-│   │   ├── About.tsx        # Company info
-│   │   ├── FAQ.tsx          # Accordion FAQ
-│   │   └── Contact.tsx      # Contact form
-│   ├── hooks/                # Custom React hooks
-│   │   ├── useTheme.ts      # Dark/light theme management
-│   │   └── use-mobile.ts    # Mobile breakpoint detection
-│   ├── lib/                  # Utility functions
-│   │   └── utils.ts         # cn() helper for Tailwind classes
-│   ├── App.tsx              # Root component with 3D canvas
-│   ├── main.tsx             # React entry point
-│   └── index.css            # Global styles + CSS variables
-├── index.html               # SEO-optimized HTML template
-├── vite.config.ts           # Vite configuration with manual chunks
-├── tailwind.config.js       # Tailwind with custom colors/fonts
-├── components.json          # shadcn/ui configuration
-└── package.json             # Dependencies and scripts
+│   │   ├── ThemeToggle.tsx
+│   │   └── TorusKnot3D.tsx      # Hero 3D visual (Canvas)
+│   ├── sections/                # Scroll sections (some have V2 variants)
+│   ├── pages/                   # Standalone pages (simple path routing in App.tsx)
+│   ├── hooks/                   # Custom hooks (theme, scroll reveals, popup triggers)
+│   ├── data/                    # Content data (e.g. case study chapters)
+│   ├── lib/                     # Utilities (Tailwind class merge helpers)
+│   ├── App.tsx                  # Root app + basic path routing
+│   ├── main.tsx                 # React entry
+│   ├── index.css                # Global styles + CSS variables + utility classes
+│   └── App.css                  # App-specific CSS (Lenis + story utilities)
+├── index.html                   # SEO-heavy HTML template (schema + analytics placeholders)
+├── vite.config.ts               # Alias + manual vendor chunks
+├── tailwind.config.js           # Brand color + fonts + animations
+├── eslint.config.js             # Flat ESLint config
+├── vercel.json                  # SPA rewrites + caching + security headers
+└── package.json
 ```
+
+Important repo hygiene:
+- This working tree contains `dist/` and `node_modules/`. Treat both as generated artifacts and do not hand-edit them.
+- `.gitignore` currently only ignores `.vercel/`. If `dist/` or `node_modules/` are not meant to be committed, update `.gitignore` separately.
 
 ---
 
 ## Path Aliases
 
-All imports use the `@/` alias pointing to `./src`:
+`@/*` maps to `./src/*` via `tsconfig.json` and `vite.config.ts`.
 
-```typescript
-// Correct
+```ts
 import { Button } from '@/components/ui/button';
-import { useTheme } from '@/hooks/useTheme';
 import { cn } from '@/lib/utils';
-
-// Incorrect - avoid relative paths like:
-// import { Button } from '../components/ui/button';
 ```
+
+Guideline: prefer `@/` imports when you touch a file (some older files still use relative paths—avoid mass-refactors).
 
 ---
 
 ## Build Commands
 
 ```bash
-# Development server with HMR
 npm run dev
-
-# Production build (TypeScript check + Vite build)
-npm run build
-
-# Preview production build locally
+npm run build     # tsc -b && vite build
 npm run preview
-
-# Run ESLint
 npm run lint
 ```
 
----
+## Current Lint Status
 
-## Code Style Guidelines
+As of 2026-02-07, `npm run lint` reports existing errors/warnings (primarily React hook rules and a few TypeScript lint rules). Treat lint as informative until these are addressed.
 
-### Component Structure
-- Use functional components with explicit return types
-- Prefer `const ComponentName = () => { ... }` syntax
-- Export default at the bottom of the file
-- Use PascalCase for component files
-
-### Styling Conventions
-- **Primary brand color**: `#ff6e00` (orange) - use `text-orange`, `bg-orange`, `border-orange`
-- **Dark theme**: Default dark mode with `dark:` prefix for light overrides
-- **Headings**: Use `font-teko` (Teko font, uppercase, letter-spacing)
-- **Body text**: Use `font-opensans` (Open Sans)
-- **Glass effect**: Use `className="glass"` for frosted glass cards
-- **Glow effects**: Use `className="glow-orange"` for orange box-shadow
-
-### CSS Classes Order (Tailwind)
-1. Layout (position, display, flex/grid)
-2. Sizing (width, height)
-3. Spacing (padding, margin)
-4. Typography (font, text)
-5. Visuals (bg, border, shadow)
-6. Transitions & Animation
-7. Dark mode overrides (`dark:`)
-
-### Section Conventions
-- Each section is a full-page component with `min-h-screen`
-- Sections have an `id` attribute for anchor navigation
-- Hero is eagerly loaded; all other sections use `React.lazy()`
-- Sections use GSAP ScrollTrigger for scroll-based animations
-
-### 3D/Canvas Guidelines
-- Background particle field is fixed with `z-0`
-- Content overlays with `z-10` or higher
-- Hero has its own Canvas for the 3D metallic torus knot
-- Use `dpr={[1, 2]}` for device pixel ratio optimization
-- Always wrap 3D components in `<Suspense fallback={null}>`
+Hotspots flagged by ESLint:
+- `src/App.tsx` (conditional hook due to early returns for path-based routing)
+- `src/components/Navigation.tsx` (const used before declaration + deps warnings)
+- `src/components/ParticleField.tsx` (`Math.random()` during render; purity rule)
+- `src/hooks/useTheme.ts`, `src/components/CountUp.tsx` (setState-in-effect rule)
+- `src/components/LogoReveal.tsx` (`any`)
+- `src/sections/Testimonials.tsx` (function used before declaration)
 
 ---
 
-## Theme System
+## Conventions (UI + Copy)
 
-The project supports light/dark mode via CSS classes:
+### Styling & Tailwind
+- **Brand orange**: `#ff6e00`
+  - Prefer utility classes defined in `src/index.css`: `text-orange`, `bg-orange`, `border-orange`
+  - Tailwind also exposes an `orange` palette via `tailwind.config.js` (e.g. `bg-orange/10`, `border-orange/30`)
+- **Fonts**:
+  - Headings: `font-teko` (uppercase + tracking is applied globally to `h1..h6`)
+  - Body: `font-opensans`
+- **Effects**:
+  - Glass cards: `className="glass"`
+  - Orange glow: `className="glow-orange"`
 
-```css
-/* Root level class toggling */
-<html class="dark">  /* Dark mode */
-<html>               /* Light mode (default) */
-```
+### Theme
+- Light mode is default (`:root` CSS variables).
+- Dark mode is enabled by toggling `<html class="dark">`.
+- Use `useTheme()` from `src/hooks/useTheme.ts` and check `mounted` before rendering theme-dependent UI.
 
-### Theme Hook Usage
-```typescript
-import { useTheme } from '@/hooks/useTheme';
+### Sections & Navigation
+- Each section should have a stable `id` for anchor navigation.
+- Navigation is implemented in `src/components/Navigation.tsx` via GSAP ScrollToPlugin (offset `80px`).
+- `src/sections/*V2.tsx` are the currently used variants in `src/App.tsx` (Hero/Services/Testimonials).
 
-const { theme, toggleTheme, isDark, mounted } = useTheme();
+### Routing (no router)
+There is no React Router. `src/App.tsx` does simple path checks:
+- `/privacy-policy` → `src/pages/PrivacyPolicy.tsx`
+- `/terms-of-service` → `src/pages/TermsOfService.tsx`
 
-// Always check mounted before rendering theme-dependent content
-if (!mounted) return <LoadingSpinner />;
-```
-
-### CSS Variables
-All colors use HSL CSS variables that switch between light/dark:
-- `--background`, `--foreground`
-- `--primary` (orange), `--primary-foreground`
-- `--card`, `--popover`, `--muted`, `--accent`
+If you add a new route, mirror this pattern or introduce a router intentionally (larger change).
 
 ---
 
-## Animation Patterns
+## Animation Patterns (GSAP)
 
-### GSAP ScrollTrigger
-```typescript
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+### ScrollTrigger hygiene
+- Register plugins once per module (`gsap.registerPlugin(ScrollTrigger)`).
+- Prefer `gsap.context(() => { … }, scopeRef)` and cleanup with `ctx.revert()`.
+- If you create ScrollTriggers manually, track them and `kill()` on unmount.
 
-gsap.registerPlugin(ScrollTrigger);
+Reference cleanup pattern:
 
-// Always clean up ScrollTriggers
-const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
+```ts
+const triggersRef = useRef<ScrollTrigger[]>([]);
 
 useEffect(() => {
   const ctx = gsap.context(() => {
-    const st = ScrollTrigger.create({ ... });
-    scrollTriggersRef.current.push(st);
+    const st = ScrollTrigger.create({ /* ... */ });
+    triggersRef.current.push(st);
   }, sectionRef);
 
   return () => {
-    scrollTriggersRef.current.forEach(st => st.kill());
-    scrollTriggersRef.current = [];
+    triggersRef.current.forEach(t => t.kill());
+    triggersRef.current = [];
     ctx.revert();
   };
 }, []);
 ```
 
-### Common Animation Values
-- **Duration**: 0.6s - 1s for entrances
-- **Easing**: `'power3.out'` for entrances, `'power2.inOut'` for scroll
-- **Stagger**: 0.1s - 0.15s between items
-- **Blur entrance**: `filter: 'blur(10px)'` → `'blur(0px)'`
+### Smooth scroll (Lenis)
+`src/components/SmoothScrollProvider.tsx` wires Lenis to ScrollTrigger and skips smoothing if the user prefers reduced motion.
+
+When adding GSAP ticker callbacks, keep a stable function reference so cleanup removes the same handler.
 
 ---
 
-## shadcn/ui Components
+## 3D / Canvas Guidelines
 
-Components are pre-installed from shadcn/ui (New York style). Key locations:
+Current pattern: hero 3D visual is in `src/components/TorusKnot3D.tsx` and is lazy-loaded by `src/sections/HeroV2.tsx`.
 
-```typescript
-// Form components
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormField, FormItem } from '@/components/ui/form';
+Guidelines:
+- Wrap fiber scenes in `Suspense` with a lightweight fallback (often `null`).
+- Prefer conservative render settings: `dpr={[1, 1.5]}`, `powerPreference: 'low-power'`, disable antialias when acceptable.
+- Keep 3D visuals desktop-first (`hidden lg:block`) unless there’s a clear mobile value.
 
-// Feedback
-import { toast } from 'sonner';  // From @/components/ui/sonner
-
-// Overlays
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Sheet } from '@/components/ui/sheet';
-```
-
-To add a new shadcn component:
-```bash
-npx shadcn add <component-name>
-```
+If you add a global background canvas later, reuse `.canvas-container` in `src/index.css`.
 
 ---
 
-## SEO Considerations
+## SEO Notes
 
-The `index.html` contains extensive SEO markup:
+`index.html` contains extensive SEO markup:
 - Schema.org JSON-LD (Organization, WebSite, Service, FAQPage)
-- Open Graph and Twitter Card meta tags
-- Semantic anchors for AI/RAG systems (hidden)
-- Google Analytics 4, Meta Pixel, Microsoft Clarity (placeholder IDs)
+- Open Graph + Twitter meta tags
+- Hidden semantic anchors for AI/LLM retrieval
+- Analytics placeholders (GA4, Meta Pixel, Clarity)
 
-**Important**: Replace placeholder tracking IDs before deployment:
-- `G-XXXXXXXXXX` → Google Analytics ID
-- `XXXXXXXXXXXXXXX` → Meta Pixel ID  
-- `XXXXXXXXXX` → Microsoft Clarity ID
+Before deployment, replace placeholder tracking IDs in `index.html`:
+- `G-XXXXXXXXXX` (GA4)
+- `XXXXXXXXXXXXXXX` (Meta Pixel)
+- `XXXXXXXXXX` (Microsoft Clarity)
+
+Public SEO files:
+- `public/robots.txt`
+- `public/sitemap.xml` (currently does **not** list `/privacy-policy` or `/terms-of-service`; update when publishing those routes)
 
 ---
 
 ## Performance Optimizations
 
-1. **Code Splitting**: Vite manual chunks for vendor libraries
-   - `vendor-react`: React + ReactDOM
-   - `vendor-three`: Three.js ecosystem
-   - `vendor-gsap`: GSAP animations
-   - `vendor-ui`: Radix UI primitives
-
-2. **Lazy Loading**: All sections below Hero use `React.lazy()`
-
-3. **Images**: Dual format (WebP primary, JPG fallback) with `<picture>`
-
-4. **3D Optimization**: 
-   - `dpr={[1, 2]}` for pixel ratio limiting
-   - Particle count limited to 150
-   - Pointer-events disabled on background canvas
+1. **Manual chunks** in `vite.config.ts`:
+   - `vendor-react`, `vendor-three`, `vendor-gsap`, `vendor-ui`
+2. **Lazy loading**:
+   - Hero 3D scene is lazy-loaded (`HeroV2` → `TorusKnot3D`)
+3. **Images**:
+   - WebP + JPG variants live in `public/`
 
 ---
 
-## Deployment
+## Deployment (Vercel)
 
-### Vercel Configuration (`vercel.json`)
-```json
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
-}
-```
-This enables SPA routing (all paths serve index.html).
+`vercel.json` includes:
+- SPA rewrite: all paths → `index.html`
+- Cache headers for images/assets
+- Security headers (e.g. `X-Frame-Options: DENY`, `Referrer-Policy`, etc.)
 
-### Build Output
-- Static files in `dist/` directory
-- Base path set to `'./'` in `vite.config.ts` for relative asset paths
+Build output:
+- Static files in `dist/`
+- Vite base path is `'./'` for relative asset paths
 
 ---
 
 ## Common Tasks
 
-### Adding a New Section
-1. Create `src/sections/NewSection.tsx`
-2. Add lazy import in `App.tsx`: `const NewSection = lazy(() => import('./sections/NewSection'));`
-3. Include in Suspense wrapper: `<NewSection />`
-4. Add navigation link in `Navigation.tsx`
-5. Add Schema.org breadcrumb in `index.html`
+### Add a New Section
+1. Create `src/sections/NewSection.tsx` and give it an `id`.
+2. Import and render it in `src/App.tsx`.
+3. Add an entry in `src/components/Navigation.tsx` (`navItems`).
+4. If it’s indexable, update `public/sitemap.xml` and (optionally) breadcrumbs/schema in `index.html`.
 
-### Adding a Custom Color
-1. Add to `tailwind.config.js` `theme.extend.colors`
-2. Add CSS variable in `src/index.css` `:root` and `.dark`
+### Add a Standalone Page Route (no router)
+1. Create `src/pages/NewPage.tsx`.
+2. Add a `window.location.pathname` check in `src/App.tsx`.
+3. Update `public/sitemap.xml` if it should be indexed.
 
-### Adding Form Validation
-```typescript
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-
-const schema = z.object({
-  email: z.string().email(),
-  name: z.string().min(2),
-});
-
-const form = useForm({
-  resolver: zodResolver(schema),
-});
+### Add a shadcn/ui Component
+```bash
+npx shadcn add <component-name>
 ```
+
+Note: `components.json` is configured with `style: "new-york"` and `@/` aliases. If the shadcn CLI complains about Tailwind config paths, verify `components.json` points at the correct Tailwind config file for this repo.
 
 ---
 
 ## Security Considerations
 
-- No server-side code (static SPA)
-- Form submissions should use external service (Formspree, Netlify Forms, etc.)
-- Contact form in `Contact.tsx` needs backend integration
-- All external links should use `rel="noopener noreferrer"`
+- Static SPA only (no server-side code in this repo).
+- Contact form in `src/sections/Contact.tsx` is currently simulated; needs an external form backend (Formspree, Netlify Forms, etc.).
+- External links should include `rel="noopener noreferrer"` when using `target="_blank"`.
 
 ---
 
 ## Troubleshooting
 
 ### Theme flash on load
-The theme system checks `localStorage` and applies class before render. If flashing occurs, verify `useTheme` hook is used correctly with `mounted` check.
+`useTheme()` uses a `mounted` flag to avoid mismatches. If flashing persists, consider pre-applying the theme class before React mounts.
 
 ### GSAP animations not working
-Ensure `ScrollTrigger` is registered: `gsap.registerPlugin(ScrollTrigger)`
-
-### 3D canvas not visible
-Check z-index layering:
-- Background canvas: `z-0`
-- Noise overlay: `z-[1]`
-- Content: `z-10`
+Ensure plugins are registered and ScrollTriggers are cleaned up properly (`ctx.revert()` + `kill()`).
 
 ### TypeScript errors on build
-Run `tsc -b` separately to see detailed errors before `vite build`.
+Run `tsc -b` separately for detailed output before `vite build`.
 
 ---
 
@@ -353,18 +284,17 @@ Run `tsc -b` separately to see detailed errors before `vite build`.
 
 | Package | Purpose |
 |---------|---------|
-| `lenis` | Smooth scroll (configured but check if used) |
-| `embla-carousel-react` | Carousel component |
-| `recharts` | Charts (if needed for dashboards) |
-| `date-fns` | Date formatting |
-| `cmdk` | Command palette |
-| `vaul` | Mobile drawer |
+| `lenis` | Smooth scroll (used in `SmoothScrollProvider`) |
+| `gsap/ScrollToPlugin` | Navigation anchor scrolling |
+| `sonner` | Toast system (installed; not currently mounted) |
+| `next-themes` | Installed (shadcn default); not wired up in app layout |
+| `sharp` | Installed as a dev dependency (useful for image optimization scripts) |
 
 ---
 
-## Contact & Resources
+## Contact & Positioning
 
 - **Project Type**: Marketing landing page
 - **Target Industries**: Metal fabrication, oilfield services, home services, medical practices
 - **Geographic Focus**: Houston, Texas
-- **Design Style**: Industrial/premium with orange accent (#ff6e00)
+- **Design Style**: Industrial/premium with orange accent (`#ff6e00`)

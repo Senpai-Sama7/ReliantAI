@@ -81,6 +81,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Open Sans', sans-serif;
     overflow-x: hidden;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='7' stroke='%23ff6e00' stroke-width='2' fill='none'/%3E%3C/svg%3E") 16 16, auto;
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -88,6 +89,31 @@
     text-transform: uppercase;
     letter-spacing: 0.02em;
   }
+}
+
+.skip-link {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 110, 0, 0.95);
+  color: #fff;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  z-index: 9999;
+  transform: translateY(-150%);
+  transition: transform 0.3s ease;
+  text-decoration: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.skip-link:focus-visible,
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 
 @layer utilities {
@@ -109,6 +135,10 @@
   
   .border-orange {
     border-color: var(--orange);
+  }
+
+  .dark .text-gray-600 {
+    color: #aaaaaa;
   }
   
   .gradient-text {
@@ -330,5 +360,28 @@ input:focus, textarea:focus, select:focus {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .custom-cursor {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px), (pointer: coarse) {
+  .custom-cursor {
+    display: none !important;
+  }
+
+  body {
+    cursor: auto !important;
+  }
+
+  button,
+  .magnetic-btn,
+  .floating-cta button {
+    min-width: 44px;
+    min-height: 44px;
   }
 }

@@ -1,42 +1,34 @@
-import { useEffect, useRef, lazy, Suspense, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
+import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import Hero from './sections/Hero';
 import Navigation from './components/Navigation';
-import ParticleField from './components/ParticleField';
 import IntroOverlay from './components/IntroOverlay';
 import FloatingCTA from './components/FloatingCTA';
 import ExitIntentPopup from './components/ExitIntentPopup';
 import SocialProofToast from './components/SocialProofToast';
+import SmoothScrollProvider from './components/SmoothScrollProvider';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import NotFound from './pages/NotFound';
 import { useTheme } from './hooks/useTheme';
+import { Toaster } from 'sonner';
 import './App.css';
 
-// Lazy load below-fold sections
-const Industries = lazy(() => import('./sections/Industries'));
-const Approach = lazy(() => import('./sections/Approach'));
-const Services = lazy(() => import('./sections/Services'));
-const Process = lazy(() => import('./sections/Process'));
-const Testimonials = lazy(() => import('./sections/Testimonials'));
-const About = lazy(() => import('./sections/About'));
-const FAQ = lazy(() => import('./sections/FAQ'));
-const Contact = lazy(() => import('./sections/Contact'));
+// Import sections
+import HeroV2 from './sections/HeroV2';
+import PinnedStory from './sections/PinnedStory';
+import ServicesV2 from './sections/ServicesV2';
+import TestimonialsV2 from './sections/TestimonialsV2';
+import About from './sections/About';
+import FAQ from './sections/FAQ';
+import Contact from './sections/Contact';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+import { caseStudyChapters } from './data/chapters';
 
-const SectionFallback = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="w-8 h-8 border-2 border-orange border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+gsap.registerPlugin(ScrollTrigger);
 
 function App() {
-  const mainRef = useRef<HTMLDivElement>(null);
   const { mounted } = useTheme();
-  const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
   const [introComplete, setIntroComplete] = useState(false);
 
   // Check current path for routing
@@ -44,10 +36,27 @@ function App() {
   const isPrivacyPolicy = path === '/privacy-policy';
   const isTermsOfService = path === '/terms-of-service';
   const isSitemap = path === '/sitemap.xml';
+  const isKnownPath = path === '/' || isPrivacyPolicy || isTermsOfService || isSitemap;
+  const isStandalonePage = isPrivacyPolicy || isTermsOfService || isSitemap;
+
+  useEffect(() => {
+    if (isSitemap) {
+      window.location.href = '/sitemap.xml';
+    }
+  }, [isSitemap]);
+
+  useEffect(() => {
+    if (isStandalonePage) return;
+    // Refresh ScrollTrigger after content loads
+    const timer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isStandalonePage]);
 
   // Redirect sitemap.xml to the actual sitemap file
   if (isSitemap) {
-    window.location.href = '/sitemap.xml';
     return null;
   }
 
@@ -60,37 +69,13 @@ function App() {
     return <TermsOfService />;
   }
 
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const sections = gsap.utils.toArray<HTMLElement>('.snap-section');
-      
-      sections.forEach((section) => {
-        const st = ScrollTrigger.create({
-          trigger: section,
-          start: 'top center',
-          end: 'bottom center',
-          onEnter: () => {
-            gsap.to(window, {
-              duration: 1,
-              scrollTo: { y: section, offsetY: 0 },
-              ease: 'power2.inOut',
-            });
-          },
-        });
-        scrollTriggersRef.current.push(st);
-      });
-    }, mainRef);
-
-    return () => {
-      scrollTriggersRef.current.forEach(st => st.kill());
-      scrollTriggersRef.current = [];
-      ctx.revert();
-    };
-  }, []);
+  if (!isKnownPath) {
+    return <NotFound />;
+  }
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-[#f7f7f7] dark:bg-[#0a0a0a] flex items-center justify-center">
         <div className="w-10 h-10 bg-orange rounded-lg flex items-center justify-center">
           <span className="font-teko text-2xl font-bold text-white">N</span>
         </div>
@@ -99,45 +84,43 @@ function App() {
   }
 
   return (
-    <>
+    <SmoothScrollProvider>
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
       {!introComplete && <IntroOverlay onComplete={() => setIntroComplete(true)} />}
       <FloatingCTA />
       <ExitIntentPopup />
       <SocialProofToast />
-      <div ref={mainRef} className="relative min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white overflow-x-hidden transition-colors duration-500">
-        {/* Background Particle Field */}
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <Canvas
-            camera={{ position: [0, 0, 50], fov: 75 }}
-            dpr={[1, 2]}
-            gl={{ antialias: true, alpha: true }}
-          >
-            <ParticleField />
-          </Canvas>
-        </div>
-
-        {/* Noise Overlay */}
-        <div className="fixed inset-0 z-[1] pointer-events-none noise-overlay" />
-
+      <Toaster position="top-right" richColors />
+      
+      <div className="relative min-h-screen bg-[#f7f7f7] dark:bg-[#0a0a0a] text-gray-900 dark:text-white overflow-x-hidden">
         {/* Navigation */}
         <Navigation />
 
         {/* Main Content */}
-        <main className="relative z-10">
-          <Hero />
-          <Suspense fallback={<SectionFallback />}>
-            <Industries />
-            <Approach />
-            <Services />
-            <Process />
-            <Testimonials />
-            <About />
-            <FAQ />
-            <Contact />
-          </Suspense>
+        <main id="main" role="main" aria-label="Primary content">
+          {/* Hero Section */}
+          <HeroV2 />
+          
+          {/* Pinned Story / Case Studies */}
+          <section id="work" aria-label="Case studies overview">
+            <PinnedStory chapters={caseStudyChapters} />
+          </section>
+          
+          {/* Services Section */}
+          <ServicesV2 />
+          
+          {/* Testimonials Section */}
+          <TestimonialsV2 />
+          
+          {/* About, FAQ, Contact */}
+          <About />
+          <FAQ />
+          <Contact />
         </main>
       </div>
-    </>
+    </SmoothScrollProvider>
   );
 }
 
