@@ -41,7 +41,7 @@ const toastSequence: ToastData[] = [
   {
     id: 3,
     type: 'review',
-    message: "'NexGen delivered beyond our expectations' - Richardson Metal",
+    message: "'Reliant AI delivered beyond our expectations' - Richardson Metal",
     location: "Houston, TX",
     time: "3 hours ago",
     industry: "Metal Fabrication",

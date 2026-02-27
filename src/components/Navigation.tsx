@@ -84,7 +84,7 @@ const Navigation = () => {
                 <span className="font-teko text-2xl font-bold text-white">N</span>
               </div>
               <span className="font-teko text-2xl font-semibold tracking-wide hidden sm:block text-gray-900 dark:text-white transition-colors duration-300">
-                NEXGEN
+                RELIANT AI
               </span>
             </button>
 

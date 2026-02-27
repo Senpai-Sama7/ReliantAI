@@ -25,7 +25,7 @@ const testimonials: Testimonial[] = [
     industry: 'Metal Fabrication',
     image: '/testimonial-1.jpg',
     quote:
-      "NexGen transformed our online presence completely. Within three months of launching our new website, we saw a 40% increase in quote requests. Their understanding of the metal fabrication industry is unmatched.",
+      "Reliant AI transformed our online presence completely. Within three months of launching our new website, we saw a 40% increase in quote requests. Their understanding of the metal fabrication industry is unmatched.",
     rating: 5,
   },
   {
@@ -36,7 +36,7 @@ const testimonials: Testimonial[] = [
     industry: 'Healthcare',
     image: '/testimonial-2.jpg',
     quote:
-      "Working with NexGen was a breeze. They understood our HIPAA requirements and built a patient-friendly website that has significantly reduced our front-desk call volume. Online booking is now 60% of our appointments.",
+      "Working with Reliant AI was a breeze. They understood our HIPAA requirements and built a patient-friendly website that has significantly reduced our front-desk call volume. Online booking is now 60% of our appointments.",
     rating: 5,
   },
   {
@@ -47,7 +47,7 @@ const testimonials: Testimonial[] = [
     industry: 'Home Services',
     image: '/testimonial-3.jpg',
     quote:
-      "The team at NexGen delivered beyond our expectations. Our new website not only looks professional but actually brings in qualified leads. The monthly retainer keeps everything running smoothly.",
+      "The team at Reliant AI delivered beyond our expectations. Our new website not only looks professional but actually brings in qualified leads. The monthly retainer keeps everything running smoothly.",
     rating: 5,
   },
 ];
@@ -158,7 +158,7 @@ const Testimonials = () => {
           </h2>
           <p className="font-opensans text-lg text-gray-600 dark:text-white/60 max-w-2xl mx-auto">
             Don't just take our word for it. Here's what business owners across
-            industries have to say about working with NexGen.
+            industries have to say about working with Reliant AI.
           </p>
         </div>
 

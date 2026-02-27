@@ -30,7 +30,7 @@ const PrivacyPolicy = () => {
 
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">1. Introduction</h2>
           <p className="mb-4">
-            NexGen Web Solutions ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. 
+            Reliant AI ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. 
             This Privacy Policy explains how we collect, use, and safeguard your information when you visit our website or use our services.
           </p>
 
@@ -81,8 +81,8 @@ const PrivacyPolicy = () => {
             If you have questions about this Privacy Policy, please contact us:
           </p>
           <p className="mb-4">
-            <strong>NexGen Web Solutions</strong><br />
-            Email: Douglas-D-Mitchell@outlook.com<br />
+            <strong>Reliant AI</strong><br />
+            Email: DouglasMitchell@ReliantAI.org<br />
             Phone: (832) 947-7028<br />
             Location: Houston, TX
           </p>
@@ -93,7 +93,7 @@ const PrivacyPolicy = () => {
       <footer className="border-t border-gray-200 dark:border-white/10 py-8">
         <div className="w-full px-6 lg:px-12 text-center">
           <p className="font-opensans text-sm text-gray-500 dark:text-white/40">
-            © 2026 NexGen Web Solutions. All rights reserved.
+            © 2026 Reliant AI. All rights reserved.
           </p>
         </div>
       </footer>

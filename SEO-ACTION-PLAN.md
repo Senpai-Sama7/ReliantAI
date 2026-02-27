@@ -1,4 +1,4 @@
-# NexGen Web Solutions — SEO & AI Search Action Plan
+# Reliant AI — SEO & AI Search Action Plan
 
 > Tasks to complete after deploying the site. Work through these in order.
 
@@ -7,11 +7,11 @@
 ## 1. Google Business Profile (HIGH PRIORITY)
 
 - Go to https://business.google.com
-- Create a profile for "NexGen Web Solutions"
+- Create a profile for "Reliant AI"
 - Set category: **Web Designer**
 - Add address: Houston, TX 77002
 - Add phone: (832) 947-7028
-- Add website: https://nexgenweb.com
+- Add website: https://reliantai.org
 - Upload photos of your work (screenshots of client sites)
 - Once created, add the profile URL to the `sameAs` array in `index.html` JSON-LD schema
 
@@ -20,9 +20,9 @@
 ## 2. Google Search Console
 
 - Go to https://search.google.com/search-console
-- Add property: `https://nexgenweb.com`
+- Add property: `https://reliantai.org`
 - Verify via DNS or HTML file upload
-- Submit sitemap: `https://nexgenweb.com/sitemap.xml`
+- Submit sitemap: `https://reliantai.org/sitemap.xml`
 - Click "Request Indexing" on the main URL
 - Monitor for crawl errors weekly
 
@@ -78,7 +78,7 @@ Reach out for backlinks from:
 - **Houston Chamber of Commerce** — member directory link
 - **BBB** — accredited business listing
 - **Local news** — pitch a story about a Houston tech entrepreneur
-- **Client websites** — ask clients to add "Website by NexGen" in their footer
+- **Client websites** — ask clients to add "Website by Reliant AI" in their footer
 - **Industry blogs** — guest posts on metal fabrication, oilfield, or HVAC industry sites
 
 ---

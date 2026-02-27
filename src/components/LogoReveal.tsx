@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 
-// Different complete design styles for NEX GEN
+// Different complete design styles for RELIANT AI
 const designStyles = [
   {
     name: 'Bold Industrial',
@@ -56,7 +56,7 @@ const LogoReveal = () => {
   const cursorRef = useRef<HTMLSpanElement>(null);
   const [displayText, setDisplayText] = useState('');
   const [currentStyleIndex, setCurrentStyleIndex] = useState(0);
-  const fullText = 'NEX GEN';
+  const fullText = 'RELIANT AI';
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;

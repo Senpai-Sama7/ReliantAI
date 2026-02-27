@@ -144,7 +144,7 @@ const Contact = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           access_key: '2b257f48-fab5-45e2-abb5-11d6ba950f94',
-          subject: 'New Contact Form Submission - NexGen',
+          subject: 'New Contact Form Submission - Reliant AI',
           ...formData,
         }),
       });
@@ -169,7 +169,7 @@ const Contact = () => {
   };
 
   const contactInfo = [
-    { icon: Mail, label: 'Email', value: 'Douglas-D-Mitchell@outlook.com', href: 'mailto:Douglas-D-Mitchell@outlook.com' },
+    { icon: Mail, label: 'Email', value: 'DouglasMitchell@ReliantAI.org', href: 'mailto:DouglasMitchell@ReliantAI.org' },
     { icon: Phone, label: 'Phone', value: '(832) 947-7028', href: 'tel:+18329477028' },
     { icon: MapPin, label: 'Location', value: 'Houston, TX', href: '#' },
   ];
@@ -350,11 +350,11 @@ const Contact = () => {
               <div className="w-10 h-10 bg-orange rounded-lg flex items-center justify-center">
                 <span className="font-teko text-2xl font-bold text-white">N</span>
               </div>
-              <span className="font-teko text-2xl font-semibold tracking-wide text-gray-900 dark:text-white">NEXGEN</span>
+              <span className="font-teko text-2xl font-semibold tracking-wide text-gray-900 dark:text-white">RELIANT AI</span>
             </div>
 
             <p className="font-opensans text-sm text-gray-500 dark:text-white/40 text-center">
-              © 2026 NexGen Web Solutions. All rights reserved.
+              © 2026 Reliant AI. All rights reserved.
             </p>
 
             <div className="flex gap-6">

@@ -9,7 +9,7 @@ gsap.registerPlugin(ScrollTrigger);
 const testimonials = [
   {
     id: 1,
-    quote: "NexGen transformed our online presence completely. Within three months of launching our new website, we saw a 340% increase in quote requests. Their understanding of the metal fabrication industry is unmatched.",
+    quote: "Reliant AI transformed our online presence completely. Within three months of launching our new website, we saw a 340% increase in quote requests. Their understanding of the metal fabrication industry is unmatched.",
     author: 'Michael Torres',
     role: 'CEO',
     company: 'Richardson Metal Works',
@@ -21,7 +21,7 @@ const testimonials = [
   },
   {
     id: 2,
-    quote: "Working with NexGen was a game-changer. They understood our HIPAA requirements and built a patient-friendly website that has significantly reduced our front-desk call volume by 40%. Online booking is now 60% of our appointments.",
+    quote: "Working with Reliant AI was a game-changer. They understood our HIPAA requirements and built a patient-friendly website that has significantly reduced our front-desk call volume by 40%. Online booking is now 60% of our appointments.",
     author: 'Sarah Chen',
     role: 'Practice Manager',
     company: 'Westside Medical Group',
@@ -33,7 +33,7 @@ const testimonials = [
   },
   {
     id: 3,
-    quote: "The team at NexGen delivered beyond our expectations. Our new website not only looks professional but actually brings in qualified leads. The monthly retainer keeps everything running smoothly—we've never had a single technical issue.",
+    quote: "The team at Reliant AI delivered beyond our expectations. Our new website not only looks professional but actually brings in qualified leads. The monthly retainer keeps everything running smoothly—we've never had a single technical issue.",
     author: 'David Martinez',
     role: 'Operations Director',
     company: 'Martinez HVAC Services',

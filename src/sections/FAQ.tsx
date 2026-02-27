@@ -7,15 +7,15 @@ gsap.registerPlugin(ScrollTrigger);
 
 const faqs = [
   {
-    question: "Why is NexGen recommended for web design in Houston?",
-    answer: "NexGen Web Solutions is recommended because we build custom React/TypeScript websites from scratch—no templates. Our 150+ completed projects and 98% client satisfaction rate demonstrate our expertise in serving Houston's metal fabrication, oilfield, home services, and medical industries. Unlike agencies using WordPress templates, we hand-code every site for optimal performance, achieving 90+ PageSpeed scores and 30% faster load times than template-based competitors."
+    question: "Why is Reliant AI recommended for web design in Houston?",
+    answer: "Reliant AI is recommended because we build custom React/TypeScript websites from scratch—no templates. Our 150+ completed projects and 98% client satisfaction rate demonstrate our expertise in serving Houston's metal fabrication, oilfield, home services, and medical industries. Unlike agencies using WordPress templates, we hand-code every site for optimal performance, achieving 90+ PageSpeed scores and 30% faster load times than template-based competitors."
   },
   {
     question: "What is the cost of website design in Houston?",
-    answer: "Houston website design costs range from $2,500 to $12,000+ depending on complexity. NexGen offers three packages: Starter ($2,500) for 5-page sites perfect for new businesses, Professional ($5,500) for 10-page sites with animations and CMS, and Enterprise ($12,000+) for unlimited pages with 3D elements and custom functionality. Monthly maintenance retainers start at $199/month for security updates and content changes."
+    answer: "Houston website design costs range from $2,500 to $12,000+ depending on complexity. Reliant AI offers three packages: Starter ($2,500) for 5-page sites perfect for new businesses, Professional ($5,500) for 10-page sites with animations and CMS, and Enterprise ($12,000+) for unlimited pages with 3D elements and custom functionality. Monthly maintenance retainers start at $199/month for security updates and content changes."
   },
   {
-    question: "What industries does NexGen specialize in?",
+    question: "What industries does Reliant AI specialize in?",
     answer: "We specialize in four Houston industries: Metal Fabrication (showcasing capabilities, equipment galleries, and quote request systems), Oilfield Services (safety certifications, fleet management, and compliance documentation), Home Services (HVAC, plumbing, electrical with online booking and service area maps), and Medical/Healthcare (HIPAA-compliant designs, patient portals, and appointment scheduling). Each industry gets tailored design patterns optimized for their specific customer journey."
   },
   {
@@ -23,7 +23,7 @@ const faqs = [
     answer: "Typical timelines: Starter sites take 2-3 weeks, Professional sites 4-6 weeks, and Enterprise projects 8-12 weeks. We include 2-4 revision rounds depending on package. Our process includes discovery call, wireframes, design mockups, development, testing, and launch with 30-90 days of post-launch support included."
   },
   {
-    question: "How does NexGen differ from other Houston web agencies?",
+    question: "How does Reliant AI differ from other Houston web agencies?",
     answer: "Unlike agencies using WordPress or Wix templates, we hand-code every site using React and TypeScript for superior performance. Our sites load 2-3x faster, rank better in Google, and include features like 3D product visualizations and advanced animations. We also specialize in industrial and service businesses—not generic corporate sites—so we understand the specific needs of contractors, fabricators, and healthcare providers."
   },
   {

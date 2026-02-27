@@ -209,7 +209,7 @@ const About = () => {
                 {/* CTA Buttons - subtle hover effects */}
                 <div className="space-y-3">
                   <a
-                    href="mailto:Douglas-D-Mitchell@outlook.com"
+                    href="mailto:DouglasMitchell@ReliantAI.org"
                     className="group flex items-center justify-center gap-2 w-full px-6 py-3 bg-orange text-white font-opensans font-semibold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-orange/25 hover:scale-[1.02]"
                   >
                     Get in Touch

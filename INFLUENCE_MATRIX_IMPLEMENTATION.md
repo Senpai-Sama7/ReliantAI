@@ -1,4 +1,4 @@
-# The Influence Matrix: Implementation Strategy for NexGen Web Solutions
+# The Influence Matrix: Implementation Strategy for Reliant AI
 
 ## Executive Summary
 
@@ -107,9 +107,9 @@ Input → Limbic Reaction (Safe/Unsafe?) → Rational Justification (Logic) → 
 {
   "@context": "https://schema.org",
   "@type": "Organization",
-  "name": "NexGen Web Solutions",
-  "url": "https://nex-gen-web-seven.vercel.app",
-  "logo": "https://nex-gen-web-seven.vercel.app/logo.png",
+  "name": "Reliant AI",
+  "url": "https://reliant-ai-web-seven.vercel.app",
+  "logo": "https://reliant-ai-web-seven.vercel.app/logo.png",
   "description": "High-performance, conversion-focused websites for metal fabrication, oilfield services, home services, and medical practices.",
   "founder": {
     "@type": "Person",
@@ -142,7 +142,7 @@ Input → Limbic Reaction (Safe/Unsafe?) → Rational Justification (Logic) → 
   "serviceType": "Web Design and Development",
   "provider": {
     "@type": "Organization",
-    "name": "NexGen Web Solutions"
+    "name": "Reliant AI"
   },
   "areaServed": {
     "@type": "City",
@@ -609,7 +609,7 @@ export const SocialProofToast = () => {
 ### 5.2 AI Visibility Testing
 - Ask Claude/ChatGPT: "Who are the top web design agencies in Houston for metal fabrication?"
 - Ask Perplexity: "Best web design company for oilfield services in Texas"
-- Check if NexGen appears in AI overviews
+- Check if Reliant AI appears in AI overviews
 
 ### 5.3 Cognitive Load Testing
 - 5-second test: Show hero to users for 5 seconds, then ask what they remember

@@ -30,14 +30,14 @@ const TermsOfService = () => {
 
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">1. Agreement to Terms</h2>
           <p className="mb-4">
-            By accessing or using the services of NexGen Web Solutions ("Company," "we," "our," or "us"), 
+            By accessing or using the services of Reliant AI ("Company," "we," "our," or "us"), 
             you agree to be bound by these Terms of Service. If you do not agree to these terms, 
             please do not use our services.
           </p>
 
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">2. Services Description</h2>
           <p className="mb-4">
-            NexGen Web Solutions provides custom web design and development services, including:
+            Reliant AI provides custom web design and development services, including:
           </p>
           <ul className="list-disc pl-6 mb-6 space-y-2">
             <li>Custom website design and development</li>
@@ -83,7 +83,7 @@ const TermsOfService = () => {
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">5.1 Ownership Transfer</h3>
           <p className="mb-4">
             Upon full payment, the client receives ownership of the final website design and code, 
-            excluding third-party libraries, plugins, and proprietary tools owned by NexGen Web Solutions.
+            excluding third-party libraries, plugins, and proprietary tools owned by Reliant AI.
           </p>
 
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mt-6 mb-3">5.2 Portfolio Rights</h3>
@@ -108,7 +108,7 @@ const TermsOfService = () => {
 
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mt-8 mb-4">8. Limitation of Liability</h2>
           <p className="mb-4">
-            NexGen Web Solutions' liability is limited to the total amount paid for services. 
+            Reliant AI' liability is limited to the total amount paid for services. 
             We are not liable for:
           </p>
           <ul className="list-disc pl-6 mb-6 space-y-2">
@@ -136,8 +136,8 @@ const TermsOfService = () => {
             For questions about these Terms of Service:
           </p>
           <p className="mb-4">
-            <strong>NexGen Web Solutions</strong><br />
-            Email: Douglas-D-Mitchell@outlook.com<br />
+            <strong>Reliant AI</strong><br />
+            Email: DouglasMitchell@ReliantAI.org<br />
             Phone: (832) 947-7028<br />
             Location: Houston, TX
           </p>
@@ -148,7 +148,7 @@ const TermsOfService = () => {
       <footer className="border-t border-gray-200 dark:border-white/10 py-8">
         <div className="w-full px-6 lg:px-12 text-center">
           <p className="font-opensans text-sm text-gray-500 dark:text-white/40">
-            © 2026 NexGen Web Solutions. All rights reserved.
+            © 2026 Reliant AI. All rights reserved.
           </p>
         </div>
       </footer>

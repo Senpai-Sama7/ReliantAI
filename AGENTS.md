@@ -1,4 +1,4 @@
-# AGENTS.md - NexGen Web Solutions
+# AGENTS.md - Reliant AI
 
 > Essential context for AI coding agents working on this project.
 > Last updated: 2026-02-07
@@ -7,9 +7,9 @@
 
 ## Project Overview
 
-**NexGen Web Solutions** is a React + TypeScript + Vite marketing site for a Houston-based web design agency. It uses GSAP scroll animations and optional Three.js scenes (via `@react-three/fiber`) for premium/industrial motion design. The positioning targets small businesses in: metal fabrication, oilfield services, home services, and medical practices.
+**Reliant AI** is a React + TypeScript + Vite marketing site for a Houston-based web design agency. It uses GSAP scroll animations and optional Three.js scenes (via `@react-three/fiber`) for premium/industrial motion design. The positioning targets small businesses in: metal fabrication, oilfield services, home services, and medical practices.
 
-- **Live URL**: https://nexgenweb.com (intended)
+- **Live URL**: https://reliantai.org (intended)
 - **Deployment**: Vercel (SPA rewrites + security/cache headers via `vercel.json`)
 - **Package manager**: npm (`package-lock.json` is present)
 
