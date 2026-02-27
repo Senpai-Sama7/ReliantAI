@@ -1,0 +1,28 @@
+# Reliant AI
+
+> Houston's premier custom web design agency. We build hand-coded React and TypeScript websites for small businesses.
+
+## About
+
+Reliant AI is a Houston-based web design agency founded by Douglas Mitchell. We specialize in custom-coded websites for metal fabrication, oilfield services, home services, and medical/healthcare businesses. Every site is built from scratch using React, TypeScript, and Three.js — no WordPress or Wix templates. 150+ completed projects, 98% client satisfaction rate, 90+ PageSpeed scores.
+
+## Services
+
+- Starter Package ($2,500): 5-page custom website, mobile-responsive, basic SEO
+- Professional Package ($5,500): 10-page site with GSAP animations, CMS integration, advanced SEO
+- Enterprise Package ($12,000+): Unlimited pages, 3D elements via Three.js, custom functionality
+- Monthly Maintenance: Starting at $199/month for security updates, backups, and content changes
+
+## Industries Served
+
+- Metal Fabrication: Equipment galleries, quote request systems, capability showcases
+- Oilfield Services: Safety certification displays, fleet management, compliance documentation
+- Home Services: HVAC, plumbing, electrical with online booking and service area maps
+- Medical/Healthcare: HIPAA-compliant patient portals, appointment scheduling
+
+## Contact
+
+- Website: https://reliantai.org
+- Email: DouglasMitchell@ReliantAI.org
+- Phone: +1-832-947-7028
+- Location: Houston, TX 77002
