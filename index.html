@@ -257,36 +257,24 @@
     }
     </script>
 
-    <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-LKDVCJP9DG"></script>
+    <!-- Analytics (consent-gated) -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-LKDVCJP9DG');
-    </script>
-    
-    <!-- Meta Pixel - Replace XXXXXXXXXXXXXXX with your Pixel ID -->
-    <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', 'XXXXXXXXXXXXXXX');
-      fbq('track', 'PageView');
-    </script>
-    
-    <!-- Microsoft Clarity - Free heatmaps/recordings - Replace XXXXXXXXXX with your ID -->
-    <script>
-      (function(c,l,a,r,i,t,y){
-        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "XXXXXXXXXX");
+      function loadAnalytics(){
+        // GA4
+        var g=document.createElement('script');g.async=true;
+        g.src='https://www.googletagmanager.com/gtag/js?id=G-LKDVCJP9DG';
+        document.head.appendChild(g);
+        window.dataLayer=window.dataLayer||[];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js',new Date());gtag('config','G-LKDVCJP9DG');
+
+        // Meta Pixel — uncomment when you have your Pixel ID
+        // !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','XXXXXXXXXXXXXXX');fbq('track','PageView');
+
+        // Microsoft Clarity — uncomment when you have your Clarity ID
+        // (function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","XXXXXXXXXX");
+      }
+      if(document.cookie.indexOf('consent=1')!==-1){loadAnalytics();}
     </script>
 
     <!-- Critical CSS -->
@@ -355,5 +343,14 @@
       </div>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>
+  <!-- Cookie Consent Banner -->
+  <div id="cb" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#111;color:#fff;padding:14px 20px;font-size:14px;z-index:9999;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif">
+    <span>We use cookies for analytics. <a href="/privacy-policy" style="color:#60a5fa;text-decoration:underline">Privacy Policy</a></span>
+    <span style="display:flex;gap:8px;flex-shrink:0">
+      <button onclick="document.cookie='consent=1;path=/;max-age=31536000';loadAnalytics();document.getElementById('cb').remove()" style="background:#fff;color:#111;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600">Accept</button>
+      <button onclick="document.cookie='consent=0;path=/;max-age=31536000';document.getElementById('cb').remove()" style="background:transparent;color:#999;border:1px solid #444;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px">Decline</button>
+    </span>
+  </div>
+  <script>if(document.cookie.indexOf('consent=')===-1){document.getElementById('cb').style.display='flex';}</script>
   </body>
 </html>
