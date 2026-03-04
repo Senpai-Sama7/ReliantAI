@@ -9,8 +9,8 @@ const designStyles = [
     fontSize: 'text-7xl sm:text-8xl md:text-9xl lg:text-[10rem]',
     letterSpacing: '-0.03em',
     textTransform: 'uppercase',
-    colorNex: 'text-gray-900 dark:text-white',
-    colorGen: 'text-orange',
+    colorReliant: 'text-gray-900 dark:text-white',
+    colorAI: 'text-orange',
     weight: 'font-bold',
     extras: '',
   },
@@ -20,8 +20,8 @@ const designStyles = [
     fontSize: 'text-6xl sm:text-7xl md:text-8xl lg:text-[8rem]',
     letterSpacing: '0.15em',
     textTransform: 'uppercase',
-    colorNex: 'text-orange',
-    colorGen: 'text-gray-700 dark:text-gray-300',
+    colorReliant: 'text-orange',
+    colorAI: 'text-gray-700 dark:text-gray-300',
     weight: 'font-light',
     extras: 'tracking-[0.2em]',
   },
@@ -32,8 +32,8 @@ const designStyles = [
     fontSize: 'text-7xl sm:text-8xl md:text-9xl lg:text-[10rem]',
     letterSpacing: '0.05em',
     textTransform: 'uppercase',
-    colorNex: 'text-transparent dark:text-transparent',
-    colorGen: 'text-transparent dark:text-transparent',
+    colorReliant: 'text-transparent dark:text-transparent',
+    colorAI: 'text-transparent dark:text-transparent',
     weight: 'font-bold',
     extras: 'style-text-outline',
   },
@@ -43,8 +43,8 @@ const designStyles = [
     fontSize: 'text-7xl sm:text-8xl md:text-9xl lg:text-[10rem]',
     letterSpacing: '-0.02em',
     textTransform: 'uppercase',
-    colorNex: 'text-white',
-    colorGen: 'text-orange',
+    colorReliant: 'text-white',
+    colorAI: 'text-orange',
     weight: 'font-bold',
     extras: 'style-neon-glow',
   },
@@ -129,8 +129,8 @@ const LogoReveal = () => {
   }, []);
 
   const currentStyle = designStyles[currentStyleIndex];
-  const nexPart = displayText.slice(0, 7);
-  const genPart = displayText.slice(7);
+  const reliantPart = displayText.slice(0, 7);
+  const aiPart = displayText.slice(7);
 
   return (
     <div className="flex flex-col items-center gap-3">
@@ -149,13 +149,13 @@ const LogoReveal = () => {
               textTransform: currentStyle.textTransform as React.CSSProperties['textTransform'],
             }}
           >
-            {nexPart && (
-              <span className={currentStyle.colorNex}>
-                {nexPart}
+            {reliantPart && (
+              <span className={currentStyle.colorReliant}>
+                {reliantPart}
               </span>
             )}
-            {genPart && (
-              <span className={currentStyle.colorGen}>
+            {aiPart && (
+              <span className={currentStyle.colorAI}>
                 {genPart}
               </span>
             )}
