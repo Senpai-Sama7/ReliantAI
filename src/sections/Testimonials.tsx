@@ -59,6 +59,25 @@ const Testimonials = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
+  const animationTimeoutRef = useRef<number | null>(null);
+
+  const startTransition = useCallback((nextIndex: number) => {
+    if (isAnimating || nextIndex === activeIndex) {
+      return;
+    }
+
+    if (animationTimeoutRef.current !== null) {
+      window.clearTimeout(animationTimeoutRef.current);
+    }
+
+    setIsAnimating(true);
+    setActiveIndex(nextIndex);
+
+    animationTimeoutRef.current = window.setTimeout(() => {
+      setIsAnimating(false);
+      animationTimeoutRef.current = null;
+    }, 500);
+  }, [activeIndex, isAnimating]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -105,11 +124,9 @@ const Testimonials = () => {
   }, []);
 
   const goToNext = useCallback(() => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setActiveIndex((prev) => (prev + 1) % testimonials.length);
-    setTimeout(() => setIsAnimating(false), 500);
-  }, [isAnimating]);
+    const nextIndex = (activeIndex + 1) % testimonials.length;
+    startTransition(nextIndex);
+  }, [activeIndex, startTransition]);
 
   // Auto-rotate testimonials
   useEffect(() => {
@@ -122,18 +139,21 @@ const Testimonials = () => {
     return () => clearInterval(interval);
   }, [activeIndex, isAnimating, goToNext]);
 
+  useEffect(() => {
+    return () => {
+      if (animationTimeoutRef.current !== null) {
+        window.clearTimeout(animationTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const goToPrev = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setActiveIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length);
-    setTimeout(() => setIsAnimating(false), 500);
+    const prevIndex = (activeIndex - 1 + testimonials.length) % testimonials.length;
+    startTransition(prevIndex);
   };
 
   const goToSlide = (index: number) => {
-    if (isAnimating || index === activeIndex) return;
-    setIsAnimating(true);
-    setActiveIndex(index);
-    setTimeout(() => setIsAnimating(false), 500);
+    startTransition(index);
   };
 
   return (
@@ -235,6 +255,9 @@ const Testimonials = () => {
                   <button
                     key={index}
                     onClick={() => goToSlide(index)}
+                    type="button"
+                    aria-label={`Show testimonial ${index + 1}`}
+                    aria-current={index === activeIndex}
                     className={`w-3 h-3 rounded-full transition-all duration-300 ${
                       index === activeIndex
                         ? 'bg-orange w-8'
@@ -248,12 +271,16 @@ const Testimonials = () => {
               <div className="flex gap-3">
                 <button
                   onClick={goToPrev}
+                  type="button"
+                  aria-label="Show previous testimonial"
                   className="w-12 h-12 rounded-full border border-gray-300 dark:border-white/20 flex items-center justify-center text-gray-600 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:border-orange hover:bg-orange/10 transition-all duration-300"
                 >
                   <ChevronLeft size={24} />
                 </button>
                 <button
                   onClick={goToNext}
+                  type="button"
+                  aria-label="Show next testimonial"
                   className="w-12 h-12 rounded-full border border-gray-300 dark:border-white/20 flex items-center justify-center text-gray-600 dark:text-white/60 hover:text-gray-900 dark:hover:text-white hover:border-orange hover:bg-orange/10 transition-all duration-300"
                 >
                   <ChevronRight size={24} />
