@@ -1,0 +1,45 @@
+{
+  "dashboard": {
+    "title": "Service Health",
+    "tags": ["reliantai", "health"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Uptime",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "up{job=~\".*\"}",
+            "legendFormat": "{{job}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Health Check Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(health_check_total{status=\"success\"}[5m])) by (service) / sum(rate(health_check_total[5m])) by (service) * 100",
+            "legendFormat": "{{service}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 3,
+        "title": "CPU Usage (%)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total[5m]) * 100",
+            "legendFormat": "{{job}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "refresh": "30s"
+  }
+}

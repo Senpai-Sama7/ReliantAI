@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+import "common.proto"; // Import common types
+// Assuming ISNService is defined in isn_service.proto and will be accessible.
+// import "isn_service.proto"; 
+
+package reliantai.services.apex;
+
+// Service for orchestrating operations across the ReliantAI Enterprise Suite.
+service ApexOrchestrationService {
+  // Initiates a high-level business operation or workflow.
+  // This could trigger complex agentic workflows in Acropolis or specific tasks in spokes.
+  rpc InitiateOperation(InitiateOperationRequest) returns (common.OperationResponse);
+
+  // Queries the status of an ongoing operation or workflow.
+  rpc GetOperationStatus(GetOperationStatusRequest) returns (GetOperationStatusResponse);
+
+  // Requests aggregated business intelligence from B-A-P.
+  rpc GetBusinessIntelligence(GetBusinessIntelligenceRequest) returns (GetBusinessIntelligenceResponse);
+
+  // Triggers a website replication task via CyberArchitect.
+  rpc TriggerWebsiteReplication(TriggerWebsiteReplicationRequest) returns (common.OperationResponse);
+  
+  // Triggers an AI-driven website synthesis task via reGenesis.
+  rpc TriggerWebsiteSynthesis(TriggerWebsiteSynthesisRequest) returns (common.OperationResponse);
+
+  // Placeholder for triggering other specific service actions.
+}
+
+// --- Request and Response Messages ---
+
+message InitiateOperationRequest {
+  string operation_name = 1; // e.g., "LAUNCH_SALES_CAMPAIGN", "PROCESS_INVOICES"
+  repeated common.EntityId related_entities = 2; // Entities involved in the operation.
+  map<string, string> parameters = 3; // Additional parameters for the operation.
+}
+
+message GetOperationStatusRequest {
+  string operation_id = 1; // Unique identifier for the operation.
+}
+
+message GetOperationStatusResponse {
+  enum Status {
+    UNKNOWN = 0;
+    PENDING = 1;
+    IN_PROGRESS = 2;
+    COMPLETED = 3;
+    FAILED = 4;
+    CANCELLED = 5;
+  }
+  string operation_id = 1;
+  Status status = 2;
+  string current_step = 3;
+  string last_updated = 4; // Can use common.Timestamp
+  string error_details = 5;
+}
+
+message GetBusinessIntelligenceRequest {
+  string report_type = 1; // e.g., "SALES_FORECAST", "AR_AGING"
+  map<string, string> filters = 2; // Optional filters for the report.
+}
+
+message GetBusinessIntelligenceResponse {
+  // The structure would depend on the report type, could be a JSON string or a specific message.
+  string report_data = 1; 
+}
+
+message TriggerWebsiteReplicationRequest {
+  string url = 1;
+  string replication_id = 2; // Optional: A specific ID to track this replication.
+  map<string, string> options = 3; // e.g., "depth": "3", "output_format": "json"
+}
+
+message TriggerWebsiteSynthesisRequest {
+  string brief = 1; // Text brief describing the desired website.
+  string synthesis_id = 2; // Optional: A specific ID to track this synthesis.
+  map<string, string> options = 3; // e.g., "target_framework": "react"
+}

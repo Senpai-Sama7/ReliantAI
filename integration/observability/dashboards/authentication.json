@@ -1,0 +1,44 @@
+{
+  "dashboard": {
+    "title": "Authentication Metrics",
+    "tags": ["reliantai", "auth"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "Token Issuance Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_token_issued_total[5m])) by (token_type)",
+            "legendFormat": "{{token_type}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Login Failures",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_login_failures_total[5m])) by (reason)",
+            "legendFormat": "{{reason}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "Token Validation Success Rate",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(auth_token_validation_total{status=\"success\"}[5m])) / sum(rate(auth_token_validation_total[5m])) * 100"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      }
+    ],
+    "refresh": "10s"
+  }
+}

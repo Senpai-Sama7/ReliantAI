@@ -1,0 +1,141 @@
+---
+# Linkerd 2.14 Installation Configuration
+# Install with: linkerd install --config linkerd-install.yaml | kubectl apply -f -
+
+# Control Plane Configuration
+controlPlaneConfig:
+  identityTrustDomain: cluster.local
+  
+  # mTLS Configuration
+  proxy:
+    enableExternalProfiles: true
+    logLevel: info
+    
+  # High Availability
+  controllerReplicas: 3
+  
+# Proxy Configuration (injected into all meshed pods)
+proxyConfig:
+  # Resource limits
+  resources:
+    cpu:
+      request: 100m
+      limit: 1000m
+    memory:
+      request: 20Mi
+      limit: 250Mi
+  
+  # Timeouts
+  inboundConnectTimeout: 100ms
+  outboundConnectTimeout: 1000ms
+  
+# Service Profile for Circuit Breaker and Retry
+---
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: apex-core
+  namespace: reliantai
+spec:
+  routes:
+  - name: all
+    condition:
+      pathRegex: /.*
+    responseClasses:
+    - condition:
+        status:
+          min: 500
+          max: 599
+      isFailure: true
+    - condition:
+        status:
+          min: 200
+          max: 299
+      isFailure: false
+    retries:
+      limit: 3
+      backoff:
+        minBackoff: 1s
+        maxBackoff: 4s
+        jitterRatio: 0.5
+    timeout: 10s
+
+---
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: citadel
+  namespace: reliantai
+spec:
+  routes:
+  - name: all
+    condition:
+      pathRegex: /.*
+    responseClasses:
+    - condition:
+        status:
+          min: 500
+          max: 599
+      isFailure: true
+    retries:
+      limit: 3
+      backoff:
+        minBackoff: 1s
+        maxBackoff: 4s
+        jitterRatio: 0.5
+    timeout: 10s
+
+---
+apiVersion: linkerd.io/v1alpha2
+kind: ServiceProfile
+metadata:
+  name: b-a-p
+  namespace: reliantai
+spec:
+  routes:
+  - name: all
+    condition:
+      pathRegex: /.*
+    responseClasses:
+    - condition:
+        status:
+          min: 500
+          max: 599
+      isFailure: true
+    retries:
+      limit: 3
+      backoff:
+        minBackoff: 1s
+        maxBackoff: 4s
+        jitterRatio: 0.5
+    timeout: 10s
+
+---
+# Circuit Breaker Configuration (via TrafficSplit)
+apiVersion: split.smi-spec.io/v1alpha1
+kind: TrafficSplit
+metadata:
+  name: circuit-breaker-apex
+  namespace: reliantai
+spec:
+  service: apex-core
+  backends:
+  - service: apex-core-primary
+    weight: 100
+  # Circuit breaker logic:
+  # - Monitor error rate via Prometheus
+  # - If error rate > 50% over 10s window, open circuit
+  # - After 30s, enter half-open state (allow 1 request)
+  # - If success, close circuit; if failure, reopen
+
+---
+# Distributed Tracing Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkerd-config
+  namespace: linkerd
+data:
+  # Enable trace header propagation
+  trace-collector: "otel-collector.observability:4317"
+  trace-collector-svc-account: "otel-collector"

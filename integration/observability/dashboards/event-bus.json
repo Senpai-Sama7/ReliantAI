@@ -1,0 +1,56 @@
+{
+  "dashboard": {
+    "title": "Event Bus Metrics",
+    "tags": ["reliantai", "event-bus"],
+    "panels": [
+      {
+        "id": 1,
+        "title": "Events Published (rate)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(events_published_total[5m])) by (topic)",
+            "legendFormat": "{{topic}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "Events Consumed (rate)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(events_consumed_total[5m])) by (topic)",
+            "legendFormat": "{{topic}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "DLQ Size",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "dlq_size"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "Event Processing Duration (P95)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(event_processing_duration_seconds_bucket[5m])) by (topic, le)) * 1000",
+            "legendFormat": "{{topic}}"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      }
+    ],
+    "refresh": "10s"
+  }
+}

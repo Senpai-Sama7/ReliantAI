@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://company.com/schemas/backup-config.json",
+  "title": "Backup Configuration Schema",
+  "description": "Enterprise backup system configuration schema",
+  "type": "object",
+  "required": ["version", "backup", "monitoring", "security"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Configuration schema version"
+    },
+    "backup": {
+      "type": "object",
+      "required": ["source", "destinations", "resources"],
+      "properties": {
+        "source": {
+          "type": "object",
+          "required": ["path", "filters"],
+          "properties": {
+            "path": {
+              "type": "string",
+              "description": "Source directory path"
+            },
+            "filters": {
+              "type": "object",
+              "properties": {
+                "exclude_patterns": {
+                  "type": "array",
+                  "items": {"type": "string"}
+                },
+                "max_file_size_mb": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        },
+        "destinations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["type", "config"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["icloud", "gdrive", "s3", "azure"]
+              },
+              "config": {
+                "type": "object"
+              }
+            }
+          }
+        },
+        "resources": {
+          "type": "object",
+          "required": ["max_memory_gb", "max_cpu_percent", "concurrent_uploads"],
+          "properties": {
+            "max_memory_gb": {
+              "type": "number",
+              "minimum": 0.5,
+              "maximum": 32
+            },
+            "max_cpu_percent": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 95
+            },
+            "concurrent_uploads": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "required": ["enabled", "endpoints"],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "endpoints": {
+          "type": "object",
+          "properties": {
+            "health_port": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            },
+            "metrics_port": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 65535
+            }
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "string",
+              "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+            },
+            "format": {
+              "type": "string",
+              "enum": ["json", "text"]
+            }
+          }
+        }
+      }
+    },
+    "security": {
+      "type": "object",
+      "required": ["encryption", "authentication"],
+      "properties": {
+        "encryption": {
+          "type": "object",
+          "required": ["enabled", "algorithm"],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "algorithm": {
+              "type": "string",
+              "enum": ["AES-256-GCM", "ChaCha20-Poly1305"]
+            }
+          }
+        },
+        "authentication": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["oauth2", "api_key", "service_account"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

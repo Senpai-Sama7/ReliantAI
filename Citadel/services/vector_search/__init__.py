@@ -1,0 +1,1 @@
+"""Vector search service package."""

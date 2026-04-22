@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Expert Platform</title>
+    <style>
+        body { font-family: sans-serif; background-color: #282c34; color: #abb2bf; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        h1 { color: #61afef; }
+        #task-list { margin-bottom: 20px; }
+        select, button { padding: 10px; border-radius: 5px; border: 1px solid #3b4048; background-color: #323842; color: #abb2bf; }
+        button { cursor: pointer; background-color: #61afef; color: #282c34; font-weight: bold; }
+        #output-container { margin-top: 20px; }
+        pre { background-color: #21252b; padding: 15px; border-radius: 5px; white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Adaptive Expert Platform</h1>
+        <div id="task-list">
+            <label for="task-select">Select a Task:</label>
+            <select id="task-select"></select>
+            <button id="run-task-btn">Run Task</button>
+        </div>
+        <div id="output-container">
+            <h2>Output</h2>
+            <pre id="output-pre">Awaiting task execution...</pre>
+        </div>
+    </div>
+    <script src="answer.js"></script>
+</body>
+</html>

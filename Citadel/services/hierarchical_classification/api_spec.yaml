@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: Hierarchical Classification API
+  version: '1.0'
+paths:
+  /train:
+    post:
+      summary: Train a hierarchical classifier
+      description: >
+        Train a model given a dataset with numerical features and one or
+        more levels of categorical labels. Returns a token representing
+        the trained model to be used for subsequent predictions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainRequest'
+      responses:
+        '200':
+          description: Model trained
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  model_id:
+                    type: string
+  /predict:
+    post:
+      summary: Predict labels for a new instance
+      description: >
+        Use a previously trained model to predict the hierarchical
+        labels for a new feature vector. The full path of labels is
+        returned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictRequest'
+      responses:
+        '200':
+          description: Prediction result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: array
+                    items:
+                      type: string
+components:
+  schemas:
+    TrainRequest:
+      type: object
+      properties:
+        features:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: number
+        labels:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: string
+      required: [features, labels]
+    PredictRequest:
+      type: object
+      properties:
+        model_id:
+          type: string
+        features:
+          type: object
+          additionalProperties:
+            type: number
+      required: [model_id, features]

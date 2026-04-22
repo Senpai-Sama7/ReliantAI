@@ -1,0 +1,361 @@
+{
+  "template_1": {
+    "name": "Technical Elegance",
+    "id": "template-1-technical-elegance",
+    "framework": "technical-elegance",
+    "description": "Split layout design for high-end HVAC with 3D viewer and technical specifications",
+    "colors": {
+      "primary": "#0f172a",
+      "secondary": "#b87333",
+      "accent": "#ff6b00",
+      "neutral_light": "#f5f5f5",
+      "neutral_dark": "#1a1a1a"
+    },
+    "typography": {
+      "headline": "Playfair Display",
+      "body": "Inter",
+      "sizes": {
+        "h1": "72px",
+        "h2": "48px",
+        "h3": "32px",
+        "body": "16px",
+        "small": "14px"
+      }
+    },
+    "features": {
+      "3d_viewer": true,
+      "before_after_slider": true,
+      "interactive_calculator": true,
+      "service_map": true,
+      "testimonials": true,
+      "case_studies": true
+    },
+    "sections": [
+      {
+        "name": "Hero",
+        "component": "Hero3DViewer",
+        "customizable": [
+          "headline",
+          "subheading",
+          "image"
+        ]
+      },
+      {
+        "name": "Features",
+        "component": "AsymmetricalGrid",
+        "customizable": [
+          "cards",
+          "icons",
+          "colors"
+        ]
+      },
+      {
+        "name": "Services",
+        "component": "SplitLayout",
+        "customizable": [
+          "content",
+          "images"
+        ]
+      },
+      {
+        "name": "Calculator",
+        "component": "InteractiveCalculator",
+        "customizable": [
+          "terms",
+          "colors"
+        ]
+      },
+      {
+        "name": "CaseStudies",
+        "component": "Portfolio",
+        "customizable": [
+          "items",
+          "images"
+        ]
+      },
+      {
+        "name": "Testimonials",
+        "component": "Carousel",
+        "customizable": [
+          "testimonials",
+          "layout"
+        ]
+      },
+      {
+        "name": "CTA",
+        "component": "CallToAction",
+        "customizable": [
+          "headline",
+          "button_text",
+          "link"
+        ]
+      }
+    ],
+    "deployment_checklist": [
+      "Setup domain DNS",
+      "Configure custom colors",
+      "Upload company logo",
+      "Add team photos",
+      "Configure service areas",
+      "Set up analytics",
+      "Test mobile responsiveness",
+      "Deploy to Vercel/Netlify"
+    ]
+  },
+  "template_2": {
+    "name": "Trust & Reliability",
+    "id": "template-2-trust-reliability",
+    "framework": "trust-reliability",
+    "description": "Company story-focused design with real team photos and service guarantees",
+    "colors": {
+      "primary": "#1a1a2e",
+      "secondary": "#00a8a8",
+      "accent": "#22c55e",
+      "neutral_light": "#faf6f1",
+      "neutral_dark": "#1a1a1a"
+    },
+    "typography": {
+      "headline": "Sora",
+      "body": "Inter",
+      "sizes": {
+        "h1": "64px",
+        "h2": "42px",
+        "h3": "28px",
+        "body": "16px",
+        "small": "13px"
+      }
+    },
+    "features": {
+      "3d_viewer": false,
+      "before_after_slider": true,
+      "interactive_calculator": false,
+      "service_map": true,
+      "testimonials": true,
+      "case_studies": false
+    },
+    "sections": [
+      {
+        "name": "Hero",
+        "component": "ImageOverlay",
+        "customizable": [
+          "image",
+          "headline",
+          "cta"
+        ]
+      },
+      {
+        "name": "About",
+        "component": "TextImage",
+        "customizable": [
+          "headline",
+          "body",
+          "image"
+        ]
+      },
+      {
+        "name": "Services",
+        "component": "IconGrid",
+        "customizable": [
+          "services",
+          "icons"
+        ]
+      },
+      {
+        "name": "Process",
+        "component": "Timeline",
+        "customizable": [
+          "steps",
+          "descriptions"
+        ]
+      },
+      {
+        "name": "BeforeAfter",
+        "component": "BeforeAfterGallery",
+        "customizable": [
+          "images"
+        ]
+      },
+      {
+        "name": "Testimonials",
+        "component": "VideoCarousel",
+        "customizable": [
+          "testimonials"
+        ]
+      },
+      {
+        "name": "Trust",
+        "component": "BadgesSection",
+        "customizable": [
+          "badges",
+          "certifications"
+        ]
+      },
+      {
+        "name": "CTA",
+        "component": "EmergencyButton",
+        "customizable": [
+          "phone",
+          "text"
+        ]
+      }
+    ]
+  },
+  "template_3": {
+    "name": "Performance Showcase",
+    "id": "template-3-performance-showcase",
+    "framework": "performance-showcase",
+    "description": "Data-driven design with 3D product models, performance metrics, and ROI visualization",
+    "colors": {
+      "primary": "#0f172a",
+      "secondary": "#b87333",
+      "accent": "#ff6b00",
+      "neutral_light": "#f5f5f5",
+      "neutral_dark": "#1a1a1a"
+    },
+    "typography": {
+      "headline": "Sofia Pro",
+      "body": "Inter",
+      "sizes": {
+        "h1": "68px",
+        "h2": "44px",
+        "h3": "30px",
+        "body": "16px",
+        "small": "14px"
+      }
+    },
+    "features": {
+      "3d_viewer": true,
+      "before_after_slider": false,
+      "interactive_calculator": true,
+      "service_map": false,
+      "testimonials": false,
+      "case_studies": true
+    },
+    "sections": [
+      {
+        "name": "Hero",
+        "component": "3DProductHero",
+        "customizable": [
+          "model",
+          "specs"
+        ]
+      },
+      {
+        "name": "Specs",
+        "component": "ComparisonMatrix",
+        "customizable": [
+          "products",
+          "specs"
+        ]
+      },
+      {
+        "name": "Performance",
+        "component": "DataVisualization",
+        "customizable": [
+          "charts",
+          "data"
+        ]
+      },
+      {
+        "name": "ROI",
+        "component": "InteractiveCalculator",
+        "customizable": [
+          "formula",
+          "defaults"
+        ]
+      },
+      {
+        "name": "CaseStudies",
+        "component": "DataDrivenCards",
+        "customizable": [
+          "projects",
+          "metrics"
+        ]
+      },
+      {
+        "name": "CTA",
+        "component": "RequestQuote",
+        "customizable": [
+          "form_fields"
+        ]
+      }
+    ]
+  },
+  "template_4": {
+    "name": "Modern Minimalist",
+    "id": "template-4-modern-minimalist",
+    "framework": "modern-minimalist",
+    "description": "Clean, typography-forward design with generous whitespace and smooth interactions",
+    "colors": {
+      "primary": "#ffffff",
+      "secondary": "#000000",
+      "accent": "#0066cc",
+      "neutral_light": "#f0f0f0",
+      "neutral_dark": "#333333"
+    },
+    "typography": {
+      "headline": "Canela",
+      "body": "Inter",
+      "sizes": {
+        "h1": "76px",
+        "h2": "52px",
+        "h3": "32px",
+        "body": "16px",
+        "small": "14px"
+      }
+    },
+    "features": {
+      "3d_viewer": false,
+      "before_after_slider": true,
+      "interactive_calculator": false,
+      "service_map": true,
+      "testimonials": true,
+      "case_studies": false
+    },
+    "sections": [
+      {
+        "name": "Hero",
+        "component": "MinimalHero",
+        "customizable": [
+          "headline",
+          "cta"
+        ]
+      },
+      {
+        "name": "Services",
+        "component": "StrictGrid",
+        "customizable": [
+          "services"
+        ]
+      },
+      {
+        "name": "Process",
+        "component": "NumberedSteps",
+        "customizable": [
+          "steps"
+        ]
+      },
+      {
+        "name": "Gallery",
+        "component": "MasonryGrid",
+        "customizable": [
+          "images"
+        ]
+      },
+      {
+        "name": "Testimonials",
+        "component": "SimpleCarousel",
+        "customizable": [
+          "testimonials"
+        ]
+      },
+      {
+        "name": "Contact",
+        "component": "ContactForm",
+        "customizable": [
+          "form_fields"
+        ]
+      }
+    ]
+  }
+}

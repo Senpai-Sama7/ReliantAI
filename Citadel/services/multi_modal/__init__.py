@@ -1,0 +1,1 @@
+"""Multi‑modal service package."""

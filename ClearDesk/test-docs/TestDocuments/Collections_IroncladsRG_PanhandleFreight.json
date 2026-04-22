@@ -1,0 +1,120 @@
+{
+  "documentType": "Collections Notice - Final Demand",
+  "priority": 5,
+  "collectionAgency": {
+    "company": "Ironclad Receivables Group",
+    "license": "TX-COL-3341-2025",
+    "address": "1600 Main Street, Suite 900, Houston, TX 77002",
+    "tollFree": "1-888-555-0741",
+    "direct": "(713) 555-0741",
+    "fax": "(713) 555-0742"
+  },
+  "originalCreditor": {
+    "company": "Swift Haul Transport",
+    "originalAccountNumber": "SHT-AR-2025-0093",
+    "chargeOffDate": "2026-02-01"
+  },
+  "debtor": {
+    "company": "Panhandle Freight Brokers Inc.",
+    "contact": "Robert Vega, CFO",
+    "address": "510 Commerce Street, Amarillo, TX 79101",
+    "phone": "(806) 555-0214",
+    "email": "rvega@panhandlefreight.com"
+  },
+  "referenceNumber": "IRG-2026-TX-7731",
+  "noticeDate": "2026-03-02",
+  "paymentDeadline": "2026-03-09T17:00:00-06:00",
+  "amountDemanded": {
+    "principalBalance": "$52,300.00",
+    "accruedInterest_16pct_APR": "$4,612.44",
+    "lateFees": "$1,569.00",
+    "collectionCosts": "$1,200.00",
+    "totalDue": "$59,681.44"
+  },
+  "settlementOptions": [
+    {
+      "option": "A",
+      "description": "Pay in full",
+      "amount": "$59,681.44",
+      "deadline": "2026-03-09"
+    },
+    {
+      "option": "B",
+      "description": "Lump sum settlement",
+      "amount": "$44,000.00",
+      "deadline": "2026-03-06",
+      "notes": "Written agreement required"
+    },
+    {
+      "option": "C",
+      "description": "Payment plan",
+      "downPayment": "$15,000.00",
+      "monthlyPayment": "$5,500.00",
+      "months": 9,
+      "totalPayable": "$64,500.00",
+      "deadline": "2026-03-09",
+      "notes": "Secured payment method required"
+    }
+  ],
+  "disputesLog": [
+    {
+      "date": "2026-02-10",
+      "party": "Robert Vega (Debtor)",
+      "note": "Claims $28,000 of principal relates to loads never delivered. Providing BOL discrepancy evidence."
+    },
+    {
+      "date": "2026-02-17",
+      "party": "Collections Agent Ana Torres",
+      "note": "Two disputed loads confirmed delivered per debtor-signed PODs. Third load ($8,400) has no POD from creditor. Escalated to Swift Haul."
+    },
+    {
+      "date": "2026-02-24",
+      "party": "Swift Haul (Creditor)",
+      "note": "POD provided for two loads. Third load POD still missing. GPS records support delivery to debtor's warehouse."
+    }
+  ],
+  "legalTimeline": [
+    {
+      "date": "2026-03-09",
+      "event": "Payment deadline 5:00 PM CST"
+    },
+    {
+      "date": "2026-03-10",
+      "event": "Legal filing recommendation submitted if no payment"
+    },
+    {
+      "date": "2026-03-17",
+      "event": "Estimated civil lawsuit filing, Harris County District Court"
+    },
+    {
+      "date": "post-filing",
+      "event": "Additional court costs, attorney fees up to 35% of balance, judgment interest applies"
+    }
+  ],
+  "entities": {
+    "amount": "$59,681.44",
+    "dueDate": "2026-03-09 17:00 CST",
+    "accountName": "Panhandle Freight Brokers Inc.",
+    "actionRequired": "Debtor must pay or confirm settlement by deadline. One load ($8,400) has missing POD \u2014 resolve before filing."
+  },
+  "summary": "Final collections demand for $59,681.44 against Panhandle Freight Brokers with a March 9 deadline before lawsuit. Debtor disputes $28,000 in charges claiming non-delivery. Two of three disputed loads are confirmed delivered via signed PODs. The third load ($8,400) has no proof of delivery on file \u2014 this is the critical unresolved item that must be addressed before legal action can be confidently pursued.",
+  "recommendedAction": "Obtain GPS records and attempt to retrieve POD for third disputed load ($8,400) before March 9. If POD cannot be found, assess risk of litigating disputed portion. Confirm debtor's willingness to pay undisputed balance ($51,281.44) as partial settlement.",
+  "requiresHumanReview": true,
+  "escalationReasons": [
+    {
+      "type": "Missing Proof of Delivery",
+      "description": "One load ($8,400) has no POD \u2014 weak legal position if debtor contests delivery in court",
+      "triggeringField": "disputesLog[1]"
+    },
+    {
+      "type": "Imminent Legal Deadline",
+      "description": "Payment deadline March 9 at 5PM CST with lawsuit filing scheduled March 17",
+      "triggeringField": "paymentDeadline"
+    },
+    {
+      "type": "Partial Dispute Validity",
+      "description": "Debtor's dispute partially valid \u2014 weakens full claim amount in court proceedings",
+      "triggeringField": "amountDemanded.principalBalance"
+    }
+  ]
+}

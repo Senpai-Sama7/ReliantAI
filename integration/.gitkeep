@@ -1,0 +1,8 @@
+# Integration Platform Directories
+
+auth/
+event-bus/
+saga/
+gateway/
+observability/
+shared/

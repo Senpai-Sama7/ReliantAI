@@ -1,0 +1,119 @@
+# ReliantAI Architecture Audit Implementation Status
+
+This document is the current implementation status snapshot for the audit work. It replaces the earlier forward-looking plan language with verified status as of 2026-03-10.
+
+## Verified Implemented Work
+
+### Phase 1: Critical Security & Stability
+
+- `integration/auth/auth_server.py`
+  - `/register` blocks self-registration into privileged roles and emits audit events for role-escalation attempts.
+- `integration/requirements.txt` and `integration/auth/requirements.txt`
+  - The auth stack boots with the current dependency set.
+- `integration/gateway/kong.yml`
+  - COOP / COEP / CORP headers are present for the Nexus runtime path.
+
+### Phase 2: Resilience, Shared Schemas, and Audit Wiring
+
+- `Money/main.py`
+  - Bearer-token verification uses the hardened auth-service integration path.
+  - Event publishing uses shared event types.
+- `integration/shared/event_types.py`
+  - Shared cross-service event definitions exist and are imported by integration components.
+- `integration/shared/audit.py`
+  - `emit_audit()` exists and is wired into `integration/auth/auth_server.py` register/login flows.
+
+### Phase 3: B-A-P Test Recovery
+
+- `B-A-P/tests/conftest.py`
+  - Authenticated test fixtures exist for the post-auth-integration API tests.
+- `B-A-P/src/ai/llm_client.py`
+  - Gemini SDK wiring now uses `google-genai` async `generate_content(...)` calls for analytics text generation.
+- `B-A-P/src/config/settings.py`
+  - `GEMINI_API_KEY` and `GEMINI_MODEL` are the primary runtime fields, while legacy `OPENAI_*` names remain accepted as compatibility aliases for existing deployments.
+- `B-A-P/tests/test_llm_client.py`
+  - Direct Gemini client tests now cover default config usage, empty-response handling, and legacy env alias hydration.
+- `B-A-P/tests/`
+  - The full B-A-P test suite passes.
+
+### Phase 4: Observability
+
+- `Money/metrics.py`
+  - Prometheus metrics exist for Gemini execution and dispatch job duration.
+- `Money/main.py`
+  - Metrics endpoint wiring is present.
+
+### Phase 6: Gemini Migration Already Completed
+
+- `B-A-P/`
+  - Runtime configuration, docs, Helm values, and deployment guides now default to Gemini naming.
+  - The Gemini SDK is installed through Poetry, and the old OpenAI SDK is no longer declared in `pyproject.toml`.
+- `Money/`
+  - Runtime configuration expects `GEMINI_API_KEY`.
+  - Operational docs and helper scripts now use the project-local interpreter path and Gemini naming consistently.
+- `intelligent-storage/`
+  - `gemini_client.py` exists.
+  - `text-embedding-004` and 768-dim embedding usage are present across the migrated modules.
+- `apex/apex-agents/memory/embeddings.py`
+  - Gemini embeddings now use `gemini-embedding-001` through `google-genai`.
+  - The implementation explicitly requests 1536 output dimensions so the existing pgvector schema remains valid.
+- `Citadel/services/nl_agent/main.py`
+  - The service now uses Gemini instead of `llama_cpp` while preserving the OpenAI-style `/v1/chat/completions` contract.
+  - Both streaming and non-streaming responses are covered by targeted endpoint tests.
+
+## Verified Compatibility Notes
+
+### B-A-P
+
+- `B-A-P/src/config/settings.py` still accepts legacy `OPENAI_*` env names so existing deployments do not fail during cutover.
+- `B-A-P/src/ai/gpt_client.py` remains as a thin compatibility wrapper around the Gemini client module.
+
+### Money
+
+- The targeted auth/event/state regression suite passes under `Money/.venv/bin/python`.
+- The earlier `twilio` failure was caused by invoking `python3` outside the project environment, not by a product-code import-path defect.
+
+### Integration `/verify`
+
+- `integration/auth/test_verify_endpoint.py` now uses an allowed self-registration role (`operator`) so the `/verify` contract tests reflect the hardened RBAC behavior.
+
+## Pending Work
+
+### CI / Consolidation
+
+- `.github/workflows/ci.yml` and project-specific workflows for B-A-P / Money / integration are still missing.
+- `scripts/bootstrap_env.sh` creates project `.env` files and an integration `AUTH_SECRET_KEY`, but it does not yet propagate shared JWT verification secrets across all dependent projects.
+
+### Remaining Gemini Migration
+
+- Workspace-wide Gemini cleanup is still incomplete even though the named operational targets are now migrated.
+- `Citadel/local_agent/main.py` and `Citadel/local_agent/agent.py` still use the local `llama_cpp` / `MODEL_PATH` runtime.
+- Additional workspace doc and deployment cleanup may still be required outside the verified B-A-P, Money, `intelligent-storage`, `apex/apex-agents`, and `Citadel/services/nl_agent` paths.
+
+## Current Verification Commands
+
+- `cd B-A-P && poetry run pytest tests -q`
+- `cd B-A-P && poetry run ruff check src tests`
+- `cd Money && ENV=test .venv/bin/python -m pytest tests/test_auth_integration.py tests/test_event_bus_integration.py tests/test_state_machine.py -q`
+- `cd Money && python3 -m compileall openclaw_integration.py tools/smoke_test_neural.py`
+- `cd integration && .venv/bin/pytest auth/test_verify_endpoint.py tests/test_rate_limiter_edges.py tests/test_jwt_validator_edges.py tests/test_event_bus_dlq.py -q`
+- `cd apex/apex-agents && /tmp/reliantai-apex-venv2/bin/python -m pytest test_embeddings.py -q`
+- `cd Citadel && PYTHONPATH=/home/donovan/Projects/ReliantAI/Citadel /tmp/reliantai-citadel-venv/bin/python -m pytest tests/test_nl_agent.py -q`
+- `python3 -m compileall apex/apex-agents/memory/embeddings.py apex/apex-agents/test_embeddings.py Citadel/services/nl_agent/main.py Citadel/tests/test_nl_agent.py`
+
+## Verification Results
+
+- `B-A-P` full suite: `68 passed, 2 skipped`
+- `B-A-P` full lint: passed
+- `Money` targeted auth/event/state suite: `12 passed, 1 skipped`
+- `Money` helper script compile check: passed
+- `integration` targeted `/verify` + JWT/rate-limit/DLQ suite: `8 passed`
+- `apex` targeted embedding suite: `3 passed`
+- `Citadel` targeted NL-agent suite: `3 passed`
+- `apex` / `Citadel` compile checks: passed
+
+## Explicit Non-Claims
+
+- This document does not claim that the full workspace Gemini migration is complete.
+- This document does not claim that full multi-stack CI is implemented.
+- This document does not claim that live Render/OpenClaw deployment validation was exercised in this session.

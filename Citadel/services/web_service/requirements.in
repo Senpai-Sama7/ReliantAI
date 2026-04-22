@@ -1,0 +1,5 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+httpx==0.28.1
+beautifulsoup4==4.13.4
+duckduckgo-search==8.1.1

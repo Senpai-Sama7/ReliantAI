@@ -1,0 +1,144 @@
+# APEX CI — Option A: Build Checks
+# Runs on every push and every PR targeting main.
+# Strategy: prove the system compiles and types-check before any merge.
+# Tests will be added in Phase 4; this pipeline will be extended then.
+
+name: CI
+
+on:
+  push:
+    branches: [main, "ci/**", "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  # ── Rust: apex-core ──────────────────────────────────────────────────────────
+  apex-core-check:
+    name: apex-core (Rust)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apex-core
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apex-core/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('apex-core/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Check compilation
+        run: cargo check --all-targets
+
+      - name: Clippy (warnings = errors)
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Format check
+        run: cargo fmt --check
+
+
+  # ── Python: apex-agents ───────────────────────────────────────────────────────
+  apex-agents-check:
+    name: apex-agents (Python)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apex-agents
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: apex-agents/requirements.txt
+
+      - name: Verify all dependencies resolve (no install, just check)
+        run: pip install --dry-run -r requirements.txt
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Fail if any Python file contains a raw API key pattern
+          if grep -rn --include="*.py" \
+            -e 'sk-[a-zA-Z0-9]\{20,\}' \
+            -e 'sk-ant-[a-zA-Z0-9]\{20,\}' \
+            .; then
+            echo "ERROR: Hardcoded API key detected"
+            exit 1
+          fi
+          echo "No hardcoded secrets found."
+
+
+  # ── TypeScript: apex-ui + apex-mcp ───────────────────────────────────────────
+  # Skipped until apex-ui and apex-mcp directories contain package.json
+  apex-ts-check:
+    name: apex-ui + apex-mcp (TypeScript)
+    runs-on: ubuntu-latest
+    # Only run this job when the relevant directories exist
+    if: |
+      contains(github.event.head_commit.message, 'apex-ui') ||
+      contains(github.event.head_commit.message, 'apex-mcp') ||
+      github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install and type-check apex-ui
+        if: hashFiles('apex-ui/package.json') != ''
+        working-directory: apex-ui
+        run: |
+          npm ci
+          npx tsc --noEmit
+
+      - name: Install and type-check apex-mcp
+        if: hashFiles('apex-mcp/package.json') != ''
+        working-directory: apex-mcp
+        run: |
+          npm ci
+          npx tsc --noEmit
+
+
+  # ── Secret scan: all files ────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check .env is not committed
+        run: |
+          if git ls-files | grep -E '^\.env$'; then
+            echo "ERROR: .env file is tracked by git — remove it immediately"
+            exit 1
+          fi
+          echo ".env not tracked. Safe."
+
+      - name: Verify .env.example exists
+        run: |
+          if [ ! -f infra/.env.example ]; then
+            echo "ERROR: infra/.env.example is missing"
+            exit 1
+          fi
+          echo "infra/.env.example present."

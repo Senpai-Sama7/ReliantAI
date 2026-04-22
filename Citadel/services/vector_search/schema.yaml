@@ -1,0 +1,15 @@
+index:
+  name: ${VECTOR_INDEX_NAME:-citadel-vector-index}
+  prefix: doc
+  storage_type: hash
+
+fields:
+  - name: text
+    type: text
+  - name: vector
+    type: vector
+    attrs:
+      algorithm: flat
+      dims: 768 # Corresponds to all-mpnet-base-v2
+      distance_metric: cosine
+      datatype: float32

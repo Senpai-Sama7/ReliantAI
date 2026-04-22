@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+dispatch.db
+hvac_dispatch.log
+.git/
+.gitignore
+.pytest_cache/
+.serena/
+.kilocode/
+.kiro/
+archive/
+tests/
+docs/
+*.md

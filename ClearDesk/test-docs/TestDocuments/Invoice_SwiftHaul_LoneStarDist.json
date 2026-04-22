@@ -1,0 +1,145 @@
+{
+  "documentType": "Freight Invoice",
+  "priority": 3,
+  "invoiceNumber": "SHT-2026-0388",
+  "invoiceDate": "2026-02-20",
+  "dueDate": "2026-03-22",
+  "poNumber": "LST-PO-20260210",
+  "bolNumber": "BOL-2026-0388-A",
+  "issuer": {
+    "company": "Swift Haul Transport",
+    "address": "7800 Freight Corridor Drive, Fort Worth, TX 76104",
+    "phone": "(817) 555-0300",
+    "email": "billing@swifthaul.com",
+    "dotNumber": "DOT-1847293",
+    "mcNumber": "MC-774821"
+  },
+  "billTo": {
+    "company": "Lone Star Distribution LLC",
+    "contact": "David Garza, AP Manager",
+    "address": "3300 Miller Road, Dallas, TX 75217",
+    "phone": "(214) 555-0411",
+    "email": "dgarza@lonestardist.com"
+  },
+  "shipment": {
+    "origin": "Fort Worth Distribution Hub, 7800 Freight Corridor Dr, Fort Worth TX 76104",
+    "destination": "Lone Star Distribution Center, 3300 Miller Road, Dallas TX 75217",
+    "pickupDate": "2026-02-10",
+    "deliveryDate": "2026-02-12",
+    "pallets": 22,
+    "driver": "James Ortega",
+    "truckNumber": "SHT-TRK-047",
+    "deliverySignedBy": "Maria Castillo, Receiving Supervisor"
+  },
+  "lineItems": [
+    {
+      "line": 1,
+      "description": "LTL Freight \u2013 Fort Worth to Dallas (22 pallets)",
+      "qty": 22,
+      "unit": "pallets",
+      "unitPrice": "$138.00",
+      "extended": "$3,036.00"
+    },
+    {
+      "line": 2,
+      "description": "Fuel Surcharge (11.5%)",
+      "qty": null,
+      "unit": null,
+      "unitPrice": null,
+      "extended": "$349.14",
+      "notes": "Rate effective 2/1/2026"
+    },
+    {
+      "line": 3,
+      "description": "Residential/Limited Access Delivery Fee",
+      "qty": 1,
+      "unit": "stop",
+      "unitPrice": "$175.00",
+      "extended": "$175.00",
+      "notes": "Customer warehouse height restriction"
+    },
+    {
+      "line": 4,
+      "description": "Pallet Exchange",
+      "qty": 22,
+      "unit": "pallets",
+      "unitPrice": "$12.00",
+      "extended": "$264.00",
+      "notes": "Per tariff section 3.4"
+    },
+    {
+      "line": 5,
+      "description": "Liftgate Service",
+      "qty": 1,
+      "unit": "stop",
+      "unitPrice": "$95.00",
+      "extended": "$95.00",
+      "notes": "Requested day-of by receiver \u2014 DISPUTED"
+    },
+    {
+      "line": 6,
+      "description": "Detention \u2013 Driver Wait Time",
+      "qty": 1.5,
+      "unit": "hours",
+      "unitPrice": "$75.00/hr",
+      "extended": "$112.50",
+      "notes": "Gate closed at scheduled arrival \u2014 DISPUTED"
+    },
+    {
+      "line": 7,
+      "description": "Insurance \u2013 Declared Value $85,000",
+      "qty": null,
+      "unit": null,
+      "unitPrice": null,
+      "extended": "$68.00"
+    }
+  ],
+  "calculations": {
+    "subtotal": "$4,099.64",
+    "earlyPaymentDiscount_2pct": "-$82.00",
+    "discountExpiry": "2026-03-02",
+    "discountStatus": "EXPIRED",
+    "subtotalAfterDiscount": "$4,017.64",
+    "salesTax_8_25pct": "$331.46",
+    "totalAmountDue": "$4,349.10"
+  },
+  "paymentTerms": {
+    "terms": "Net 30",
+    "dueDate": "2026-03-22",
+    "latePenalty": "1.5% per month",
+    "acceptedMethods": [
+      "ACH",
+      "Wire Transfer",
+      "Check",
+      "Credit Card (3.5% fee)"
+    ]
+  },
+  "disputes": [
+    {
+      "charge": "Liftgate Service",
+      "amount": "$95.00",
+      "customerClaim": "Liftgate was not requested \u2014 receiver says standard dock was available"
+    },
+    {
+      "charge": "Detention Time",
+      "amount": "$112.50",
+      "customerClaim": "Gate was open at arrival time \u2014 driver may have arrived early"
+    }
+  ],
+  "entities": {
+    "amount": "$4,349.10",
+    "dueDate": "2026-03-22",
+    "accountName": "Lone Star Distribution LLC",
+    "actionRequired": "Verify liftgate and detention charges with driver logs before customer dispute escalates"
+  },
+  "summary": "Freight invoice for a Fort Worth to Dallas LTL shipment of 22 pallets delivered February 12. Total due $4,349.10 by March 22. Customer disputes two charges: liftgate service ($95) and driver detention ($112.50), totaling $207.50. Early payment discount has expired. Delivery confirmed by signed BOL.",
+  "recommendedAction": "Pull driver's electronic log and gate timestamp records to verify detention start time. Confirm liftgate request via dispatch records or driver notes. If both charges verified, provide documentation to customer. If detention arrival was early, adjust charge accordingly.",
+  "requiresHumanReview": false,
+  "escalationReasons": [
+    {
+      "type": "Minor Charge Disputes",
+      "description": "Customer disputes liftgate ($95) and detention ($112.50) \u2014 verifiable via driver logs",
+      "triggeringField": "disputes"
+    }
+  ]
+}

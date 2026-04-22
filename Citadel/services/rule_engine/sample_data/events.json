@@ -1,0 +1,5 @@
+[
+  {"temperature": 35, "humidity": 75},
+  {"temperature": -5, "humidity": 50},
+  {"temperature": 22, "humidity": 40}
+]

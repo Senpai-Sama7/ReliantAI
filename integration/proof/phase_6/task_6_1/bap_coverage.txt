@@ -1,0 +1,62 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.7, pytest-7.4.4, pluggy-1.6.0
+benchmark: 4.0.0 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
+rootdir: /home/donovan/Projects/ReliantAI/B-A-P
+plugins: anyio-4.11.0, cov-5.0.0, Faker-25.9.2, asyncio-0.21.2, benchmark-4.0.0
+asyncio: mode=Mode.STRICT
+collected 67 items
+
+tests/test_api.py ...........................                            [ 40%]
+tests/test_auth_integration.py ........s                                 [ 53%]
+tests/test_concurrency.py .....                                          [ 61%]
+tests/test_core.py ........                                              [ 73%]
+tests/test_coverage_extensions.py .......                                [ 83%]
+tests/test_etl.py ....                                                   [ 89%]
+tests/test_event_bus_integration.py ..s                                  [ 94%]
+tests/test_performance.py ....                                           [100%]
+
+---------- coverage: platform linux, python 3.13.7-final-0 -----------
+Name                               Stmts   Miss  Cover   Missing
+----------------------------------------------------------------
+src/__init__.py                        2      0   100%
+src/ai/__init__.py                     0      0   100%
+src/ai/forecast_engine.py             14      3    79%   25-27
+src/ai/gpt_client.py                  11      0   100%
+src/ai/insights_generator.py          15      8    47%   22-29
+src/api/__init__.py                    2      0   100%
+src/api/auth_integration.py           39      5    87%   19-21, 34, 41
+src/api/exception_handlers.py         16      7    56%   11-13, 16-17, 23-24
+src/api/middleware/__init__.py         2      0   100%
+src/api/middleware/auth.py            33      2    94%   58, 73
+src/api/middleware/rate_limit.py      43      3    93%   28, 63-64
+src/api/middleware/security.py        12      0   100%
+src/api/routes/__init__.py             4      0   100%
+src/api/routes/analytics.py          102      6    94%   82, 118, 134, 150-151, 167
+src/api/routes/data.py               133     55    59%   49, 88-90, 114-148, 153-158, 177-184, 197-208, 222-231, 235-241, 266-271, 278-279
+src/api/routes/pipeline.py            73     28    62%   54-63, 85-92, 106-127, 146-162, 172-177
+src/config/__init__.py                 2      0   100%
+src/config/settings.py                90     17    81%   67, 71, 74, 81-85, 91, 98, 106-111, 123
+src/core/__init__.py                   0      0   100%
+src/core/cache.py                     55     20    64%   28-30, 35-37, 42, 49, 54, 63-65, 69-71, 75-77, 84-86
+src/core/database.py                  42     21    50%   44-45, 49-50, 54, 59-67, 71-79
+src/core/datasets.py                  88      5    94%   43-44, 85, 106, 131
+src/core/event_bus.py                 21      0   100%
+src/core/security.py                  35      2    94%   23-24
+src/etl/__init__.py                    0      0   100%
+src/etl/pipeline.py                  227     23    90%   48-50, 64, 264, 318-342, 402-403, 412, 474, 476, 478, 484, 491-492
+src/main.py                           79      6    92%   48-50, 64-65, 140
+src/models/__init__.py                 0      0   100%
+src/models/analytics_models.py        65      2    97%   25, 46
+src/models/data_models.py             68      0   100%
+src/tasks/__init__.py                  0      0   100%
+src/tasks/celery_app.py                5      0   100%
+src/tasks/pipeline_tasks.py           27     17    37%   25-26, 38-58
+src/utils/__init__.py                  0      0   100%
+src/utils/logger.py                   10      0   100%
+src/utils/metrics.py                  19      2    89%   69, 72
+src/utils/performance.py              46      7    85%   38-39, 42-43, 46-48
+----------------------------------------------------------------
+TOTAL                               1380    239    83%
+
+
+======================== 65 passed, 2 skipped in 6.11s =========================

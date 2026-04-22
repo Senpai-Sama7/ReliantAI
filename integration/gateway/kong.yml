@@ -1,0 +1,333 @@
+_format_version: "3.0"
+
+# Services - All 13 ReliantAI projects
+services:
+  - name: auth-service
+    url: http://auth-service:8080
+    routes:
+      - name: auth-route
+        paths:
+          - /auth
+        strip_path: true
+    plugins:
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-auth.log
+
+  - name: apex-core
+    url: http://apex-core:8000
+    routes:
+      - name: apex-core-route
+        paths:
+          - /apex
+        strip_path: true
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+      - name: rate-limiting
+        config:
+          minute: 1000
+          policy: local
+      - name: correlation-id
+        config:
+          header_name: X-Correlation-ID
+          generator: uuid
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-apex.log
+
+  - name: citadel
+    url: http://citadel:8000
+    routes:
+      - name: citadel-route
+        paths:
+          - /citadel
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-citadel.log
+
+  - name: acropolis
+    url: http://acropolis:8000
+    routes:
+      - name: acropolis-route
+        paths:
+          - /acropolis
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: b-a-p
+    url: http://b-a-p:8000
+    routes:
+      - name: b-a-p-route
+        paths:
+          - /bap
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: money
+    url: http://money:8000
+    routes:
+      - name: money-route
+        paths:
+          - /money
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: gen-h
+    url: http://gen-h:3000
+    routes:
+      - name: gen-h-route
+        paths:
+          - /gen-h
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: cleardesk
+    url: http://cleardesk:5173
+    routes:
+      - name: cleardesk-route
+        paths:
+          - /cleardesk
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: backupiq
+    url: http://backupiq:8000
+    routes:
+      - name: backupiq-route
+        paths:
+          - /backupiq
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: intelligent-storage
+    url: http://intelligent-storage:8000
+    routes:
+      - name: intelligent-storage-route
+        paths:
+          - /storage
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: citadel-ultimate
+    url: http://citadel-ultimate:8000
+    routes:
+      - name: citadel-ultimate-route
+        paths:
+          - /citadel-ultimate
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: documancer
+    url: http://documancer:8000
+    routes:
+      - name: documancer-route
+        paths:
+          - /documancer
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: regenesis
+    url: http://regenesis:3000
+    routes:
+      - name: regenesis-route
+        paths:
+          - /regenesis
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: cyberarchitect
+    url: http://cyberarchitect:3000
+    routes:
+      - name: cyberarchitect-route
+        paths:
+          - /cyberarchitect
+        strip_path: true
+    plugins:
+      - name: jwt
+      - name: rate-limiting
+        config:
+          minute: 1000
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+
+  - name: nexus-runtime
+    url: http://nexus:3000
+    routes:
+      - name: nexus-route
+        paths:
+          - /nexus
+        strip_path: true
+    plugins:
+      - name: response-transformer
+        config:
+          add:
+            headers:
+              - "Cross-Origin-Opener-Policy: same-origin"
+              - "Cross-Origin-Embedder-Policy: require-corp"
+              - "Cross-Origin-Resource-Policy: same-origin"
+      - name: jwt
+
+# Global plugins
+plugins:
+  - name: prometheus
+    config:
+      per_consumer: true
+  - name: correlation-id
+    config:
+      header_name: X-Correlation-ID
+      generator: uuid
+      echo_downstream: true
+
+# JWT configuration (shared secret with Auth Service)
+# Note: In production, configure via environment variable
+# KONG_JWT_SECRET=your-secret-key-min-32-chars-change-in-production

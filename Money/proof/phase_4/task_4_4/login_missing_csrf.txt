@@ -1,0 +1,69 @@
+HTTP/1.1 403 Forbidden
+date: Fri, 06 Mar 2026 07:36:48 GMT
+server: uvicorn
+content-length: 3919
+content-type: text/html; charset=utf-8
+set-cookie: dispatch_login_csrf=eyJ0IjoiZmU2M2MzNTg3ZTc3NDZiMGE1ODhkNjJiNDQ4MGZiYWEifQ.aaqEEQ.3bJvEN2XWb--9URO42wEB5QAw2g; HttpOnly; Max-Age=3600; Path=/; SameSite=lax
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: DENY
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOUSTON Dispatch — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;1,14..32,400&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg: #111113; --surface: #19191b; --surface-raised: #222225;
+            --border: #2a2a2d; --border-subtle: #222225;
+            --text-primary: #ececee; --text-secondary: #8b8b8e; --text-tertiary: #5a5a5d;
+            --accent: #3e8eff; --accent-dim: rgba(62,142,255,0.08);
+            --red: #ef4444; --green: #22c55e;
+            --radius: 6px;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+            --sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+        }
+        html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+        body { font-family: var(--sans); background: var(--bg); color: var(--text-primary); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        *:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+        .login-card { background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 2.5rem 2rem; width: 100%; max-width: 360px; }
+        .login-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .login-sub { font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 2rem; }
+        .field { margin-bottom: 1.25rem; }
+        .field label { display: block; font-size: 0.65rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 0.4rem; }
+        .field input { width: 100%; font-family: var(--mono); font-size: 0.8rem; padding: 0.6rem 0.75rem; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text-primary); transition: border-color 0.15s; }
+        .field input:focus { border-color: var(--accent); outline: none; }
+        .field input::placeholder { color: var(--text-tertiary); }
+        .btn-login { width: 100%; font-family: var(--sans); font-size: 0.8rem; font-weight: 500; padding: 0.65rem; border: none; border-radius: var(--radius); background: var(--accent); color: #fff; cursor: pointer; transition: opacity 0.15s; }
+        .btn-login:hover { opacity: 0.9; }
+        .error { font-size: 0.75rem; color: var(--red); margin-bottom: 1rem; padding: 0.5rem 0.75rem; background: rgba(239,68,68,0.08); border-radius: var(--radius); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-title">Houston Dispatch</div>
+        <div class="login-sub">Sign in to operations dashboard</div>
+        
+        <div class="error">Invalid or expired CSRF token</div>
+        
+        <form method="POST" action="/login">
+            <input type="hidden" name="csrf_token" value="eyJ0IjoiZmU2M2MzNTg3ZTc3NDZiMGE1ODhkNjJiNDQ4MGZiYWEifQ.aaqEEQ.3bJvEN2XWb--9URO42wEB5QAw2g">
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="admin" required autocomplete="username" autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+    </div>
+</body>
+</html>

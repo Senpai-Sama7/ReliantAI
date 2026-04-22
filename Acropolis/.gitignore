@@ -1,0 +1,15 @@
+# Rust build artifacts
+/target/
+/Cargo.lock
+
+# OS/editor/etc
+*.swp
+*.swx
+*~
+.idea/
+.vscode/
+
+# Personal files
+GEMINI.md
+home donovan zshrc 497.txt
+node_modules

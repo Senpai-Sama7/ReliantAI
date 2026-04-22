@@ -1,0 +1,68 @@
+# ════════════════════════════════════════════════════════════
+# RENDER.YAML: Infrastructure-as-Code (IAC) Blueprint
+# Unified HVAC AI Dispatch + Premium Website — Render Production Template
+# ════════════════════════════════════════════════════════════
+
+services:
+  # 1. Main FastAPI Web Service (Handles API + Serves Frontend)
+  - type: web
+    name: Houston-HVAC-AI-Dispatch
+    runtime: python
+    
+    # Build commands: Install Python deps + Build frontend
+    buildCommand: |
+      pip install -r requirements.txt
+      cd frontend && npm install && npm run build
+    
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT --workers 1"
+    plan: starter # Requires at least Starter for CrewAI (512MB RAM minimum)
+    region: ohio # Good US Central proximity for Houston shops
+    healthCheckPath: /health
+
+    # Persistent Disk for SQLite Database (Important: No data loss)
+    disk:
+      name: dispatch-data
+      mountPath: /data
+      sizeGB: 1
+
+    envVars:
+      - key: DATABASE_PATH
+        value: "/data/dispatch.db"
+      - key: PYTHON_VERSION
+        value: "3.11.0"
+      - key: NODE_VERSION
+        value: "20"
+
+      # Secrets (Set these in Render UI manually for security)
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LANGSMITH_API_KEY
+        sync: false
+      - key: TWILIO_SID
+        sync: false
+      - key: TWILIO_TOKEN
+        sync: false
+      - key: COMPOSIO_API_KEY
+        sync: false
+      - key: OWNER_PHONE
+        sync: false
+      - key: DISPATCH_API_KEY
+        sync: false
+      - key: TWILIO_FROM_PHONE
+        sync: false
+      - key: TECH_PHONE_NUMBER
+        sync: false
+
+      # Runtime configuration
+      - key: ENV
+        value: "production"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SKIP_TWILIO_VALIDATION
+        value: "false"
+      
+      # Frontend API URL (empty = same origin for unified system)
+      - key: VITE_API_BASE_URL
+        value: ""

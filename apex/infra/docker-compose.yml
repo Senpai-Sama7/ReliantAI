@@ -1,0 +1,133 @@
+# infra/docker-compose.yml
+# Complete APEX stack — 6 services.
+#
+# Start everything:    docker compose up -d
+# View logs:           docker compose logs -f [service-name]
+# Stop everything:     docker compose down
+# Rebuild one service: docker compose up [service-name] --build -d
+
+version: "3.9"
+
+services:
+
+  # ── Databases ──────────────────────────────────────────────────────────────
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: apex_postgres
+    environment:
+      POSTGRES_USER:     apex
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB:       apex_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d  # runs SQL/sh files on first start only
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:     ["CMD-SHELL", "pg_isready -U apex -d apex_db"]
+      interval: 5s
+      timeout:  5s
+      retries:  10
+    restart: unless-stopped
+
+  # Separate postgres for Langfuse — Langfuse manages its own schema.
+  # Using two postgres instances avoids multi-DB init complexity.
+  postgres-langfuse:
+    image: postgres:16-alpine
+    container_name: apex_postgres_langfuse
+    environment:
+      POSTGRES_USER:     langfuse
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:-changeme-langfuse}
+      POSTGRES_DB:       langfuse_db
+    volumes:
+      - postgres_langfuse_data:/var/lib/postgresql/data
+    healthcheck:
+      test:     ["CMD-SHELL", "pg_isready -U langfuse -d langfuse_db"]
+      interval: 5s
+      timeout:  5s
+      retries:  10
+    restart: unless-stopped
+
+  # ── APEX Backend ──────────────────────────────────────────────────────────
+
+  apex-agents:
+    build:
+      context:    ../apex-agents
+      dockerfile: Dockerfile
+    container_name: apex_agents
+    ports:
+      - "8001:8001"
+    env_file: ../.env
+    environment:
+      DATABASE_URL: postgresql://apex:${POSTGRES_PASSWORD:-changeme}@postgres:5432/apex_db
+      APEX_MCP_URL: http://apex-mcp:4000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── APEX Tool Bus ─────────────────────────────────────────────────────────
+
+  apex-mcp:
+    build:
+      context:    ../apex-mcp
+      dockerfile: Dockerfile
+    container_name: apex_mcp
+    ports:
+      - "4000:4000"
+    env_file: ../.env
+    environment:
+      APEX_AGENTS_URL: http://apex-agents:8001
+    depends_on:
+      - apex-agents
+    restart: unless-stopped
+
+  # ── APEX Frontend ────────────────────────────────────────────────────────
+
+  apex-ui:
+    build:
+      context:    ../apex-ui
+      dockerfile: Dockerfile
+    container_name: apex_ui
+    ports:
+      - "3000:3000"
+    env_file: ../.env
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8001
+      APEX_AGENTS_URL:     http://apex-agents:8001
+    depends_on:
+      - apex-agents
+    restart: unless-stopped
+
+  # ── Observability ─────────────────────────────────────────────────────────
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    container_name: apex_langfuse
+    ports:
+      - "3001:3000"   # Langfuse runs internally on 3000; map to 3001 to avoid UI conflict
+    environment:
+      DATABASE_URL:    postgresql://langfuse:${LANGFUSE_DB_PASSWORD:-changeme-langfuse}@postgres-langfuse:5432/langfuse_db
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
+      NEXTAUTH_URL:    http://localhost:3001
+      SALT:            ${LANGFUSE_SALT}
+      TELEMETRY_ENABLED: "false"
+      # Auto-create org, project, and admin user on first boot:
+      LANGFUSE_INIT_ORG_ID:                 apex-org
+      LANGFUSE_INIT_ORG_NAME:               APEX
+      LANGFUSE_INIT_PROJECT_ID:             apex-project
+      LANGFUSE_INIT_PROJECT_NAME:           apex
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY:     ${LANGFUSE_PUBLIC_KEY}
+      LANGFUSE_INIT_PROJECT_SECRET_KEY:     ${LANGFUSE_SECRET_KEY}
+      LANGFUSE_INIT_USER_EMAIL:             ${LANGFUSE_ADMIN_EMAIL:-admin@apex.local}
+      LANGFUSE_INIT_USER_NAME:              admin
+      LANGFUSE_INIT_USER_PASSWORD:          ${LANGFUSE_ADMIN_PASSWORD}
+    depends_on:
+      postgres-langfuse:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  postgres_langfuse_data:

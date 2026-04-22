@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearDesk — AR Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080E;
+    --surface: #0F0F1A;
+    --border: #1A1A2E;
+    --accent: #00FF94;
+    --accent-dim: rgba(0,255,148,0.08);
+    --accent-mid: rgba(0,255,148,0.15);
+    --text: #E8E8F0;
+    --muted: #6B6B80;
+    --critical: #FF4444;
+    --high: #FF8800;
+    --medium: #FFCC00;
+    --low: #00FF94;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes countUp {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 200px;
+    background: linear-gradient(transparent, rgba(0,255,148,0.015), transparent);
+    pointer-events: none;
+    z-index: 100;
+    animation: scanline 8s linear infinite;
+  }
+
+  /* Grid texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,148,0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,148,0.02) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ─────────────────────────── */
+  header {
+    padding: 56px 0 0;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 72px;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--accent);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    padding: 5px;
+  }
+
+  .logo-mark span {
+    background: var(--accent);
+    display: block;
+  }
+
+  .logo-mark span:nth-child(2),
+  .logo-mark span:nth-child(3) {
+    opacity: 0.3;
+  }
+
+  .logo-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+
+  .logo-sep {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── HERO ───────────────────────────── */
+  .hero {
+    padding-bottom: 80px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(42px, 7vw, 72px);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    margin-bottom: 28px;
+  }
+
+  h1 em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  .hero-sub strong {
+    color: var(--text);
+    font-weight: 400;
+  }
+
+  .cta-row {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 14px 28px;
+    transition: all 0.2s;
+  }
+
+  .cta-primary:hover {
+    background: #fff;
+    transform: translateY(-1px);
+  }
+
+  .cta-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .cta-url span {
+    color: var(--accent);
+  }
+
+  /* ── PROBLEM ────────────────────────── */
+  .problem {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.1s ease both;
+  }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  .problem-statement {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(22px, 3.5vw, 30px);
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text);
+    max-width: 680px;
+    margin-bottom: 40px;
+  }
+
+  .problem-statement em {
+    font-style: normal;
+    color: var(--critical);
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 40px;
+  }
+
+  .pain-item {
+    background: var(--bg);
+    padding: 28px 24px;
+  }
+
+  .pain-item .pain-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--critical);
+    margin-bottom: 8px;
+    opacity: 0.8;
+  }
+
+  .pain-item p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ── LIVE DEMO MOCKUP ───────────────── */
+  .demo-section {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.2s ease both;
+  }
+
+  .demo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+  }
+
+  .demo-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .demo-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 4px 10px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Dashboard mockup */
+  .dashboard-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .mock-topbar {
+    background: #0A0A14;
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mock-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .mock-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    margin-left: 8px;
+  }
+
+  .mock-url span { color: var(--accent); }
+
+  .mock-body {
+    padding: 24px;
+  }
+
+  .mock-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .mock-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .mock-stat .s-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .mock-stat .s-val {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .mock-stat .s-val.critical { color: var(--critical); }
+  .mock-stat .s-val.high { color: var(--high); }
+  .mock-stat .s-val.accent { color: var(--accent); }
+  .mock-stat .s-val.white { color: var(--text); }
+
+  .mock-docs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .mock-doc {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .mock-doc:first-child {
+    border-color: rgba(255,68,68,0.3);
+    background: rgba(255,68,68,0.03);
+  }
+
+  .priority-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .p-critical { background: var(--critical); box-shadow: 0 0 8px var(--critical); }
+  .p-high { background: var(--high); }
+  .p-medium { background: var(--medium); }
+  .p-low { background: var(--accent); }
+
+  .doc-info .doc-name {
+    font-size: 12px;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .doc-info .doc-sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .doc-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text);
+    text-align: right;
+  }
+
+  .doc-flag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .flag-escalate {
+    background: rgba(255,68,68,0.1);
+    color: var(--critical);
+    border: 1px solid rgba(255,68,68,0.2);
+  }
+
+  .flag-review {
+    background: rgba(255,136,0,0.1);
+    color: var(--high);
+    border: 1px solid rgba(255,136,0,0.2);
+  }
+
+  .flag-ok {
+    background: var(--accent-dim);
+    color: var(--accent);
+    border: 1px solid rgba(0,255,148,0.15);
+  }
+
+  /* Language toggle */
+  .lang-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .lang-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .lang-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    transition: all 0.15s;
+  }
+
+  .lang-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .lang-summary {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+  }
+
+  /* ── FEATURES ───────────────────────── */
+  .features {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.3s ease both;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    margin-top: 40px;
+  }
+
+  .feature-item {
+    background: var(--bg);
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+
+  .feature-item:hover {
+    background: var(--surface);
+  }
+
+  .f-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .f-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .f-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── WORKFLOW ───────────────────────── */
+  .workflow {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.35s ease both;
+  }
+
+  .flow-steps {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .flow-step {
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 24px;
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .flow-step:last-child {
+    border-bottom: none;
+  }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    padding-top: 4px;
+  }
+
+  .step-content .step-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .step-content .step-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .step-content .step-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-dim);
+    border: 1px solid rgba(0,255,148,0.1);
+    padding: 8px 12px;
+    margin-top: 10px;
+    display: inline-block;
+  }
+
+  /* ── FORMATS ────────────────────────── */
+  .formats {
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .format-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .format-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    letter-spacing: 0.08em;
+    transition: all 0.15s;
+  }
+
+  .format-tag:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* ── ROADMAP ────────────────────────── */
+  .roadmap {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeUp 0.8s 0.4s ease both;
+  }
+
+  .roadmap-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-top: 40px;
+  }
+
+  .roadmap-item {
+    background: var(--bg);
+    padding: 28px 24px;
+  }
+
+  .rm-version {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+  }
+
+  .rm-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+
+  .rm-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── ARCHITECTURE ───────────────────── */
+  .arch {
+    padding: 72px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arch-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    margin-top: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 2;
+  }
+
+  .arch-block .a-accent { color: var(--accent); }
+  .arch-block .a-text { color: var(--text); }
+  .arch-block .a-dim { color: var(--border); }
+
+  /* ── FOOTER CTA ─────────────────────── */
+  .footer-cta {
+    padding: 80px 0;
+    text-align: center;
+    animation: fadeUp 0.8s 0.5s ease both;
+  }
+
+  .footer-cta h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+
+  .footer-cta h2 span { color: var(--accent); }
+
+  .footer-cta p {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .footer-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    padding: 14px 32px;
+    display: inline-block;
+    letter-spacing: 0.05em;
+    margin-bottom: 48px;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+
+  .footer-url:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .built-by {
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .built-by .by-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .built-by .by-title {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .built-by .by-contact {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .built-by .by-contact a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .container { padding: 0 20px; }
+    .pain-grid, .features-grid, .roadmap-grid { grid-template-columns: 1fr; }
+    .mock-stats { grid-template-columns: 1fr 1fr; }
+    .mock-doc { grid-template-columns: auto 1fr; }
+    .doc-flag, .doc-amount { display: none; }
+    .built-by { flex-direction: column; gap: 16px; text-align: center; }
+    .built-by .by-contact { text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-row">
+      <div class="logo-mark">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <span class="logo-text">ClearDesk</span>
+      <span class="logo-sep">v1.0 · PRIVATE DEMO</span>
+    </div>
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-tag">Accounts Receivable Intelligence</div>
+      <h1>Every document.<br><em>Processed.</em><br>Before your bots touch it.</h1>
+      <p class="hero-sub">
+        ClearDesk is the <strong>AI pre-processing layer</strong> that sits between raw AR documents and your automation stack. Upload anything. Claude extracts, prioritizes, escalates, and summarizes — in English and Spanish — in seconds.
+      </p>
+      <div class="cta-row">
+        <a href="https://clear-desk-ten.vercel.app" class="cta-primary" target="_blank">
+          Open Live Demo →
+        </a>
+        <span class="cta-url"><span>clear-desk-ten.vercel.app</span></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- PROBLEM -->
+  <section class="problem">
+    <div class="section-label">01 / The Problem</div>
+    <p class="problem-statement">
+      RPA bots are <em>brittle</em> on unstructured documents. Your team is the processing layer. That's the bottleneck.
+    </p>
+    <p style="font-size:14px;color:var(--muted);max-width:560px;line-height:1.7;">
+      Every invoice, dispute, statement, and collections notice that arrives in a different format forces a human to read it, interpret it, prioritize it, and decide whether to escalate — before automation can touch it. ClearDesk eliminates that step.
+    </p>
+
+    <div class="pain-grid">
+      <div class="pain-item">
+        <div class="pain-num">74%</div>
+        <p>of AR teams manually triage documents before any automation can begin</p>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">3–5×</div>
+        <p>longer cycle times when documents require manual format conversion</p>
+      </div>
+      <div class="pain-item">
+        <div class="pain-num">40%</div>
+        <p>of escalation delays traced to inconsistent priority assignment</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE DEMO MOCKUP -->
+  <section class="demo-section">
+    <div class="demo-header">
+      <div>
+        <div class="section-label">02 / The Dashboard</div>
+        <div class="demo-title">Real output. Real Claude AI.</div>
+      </div>
+      <span class="demo-badge">LIVE PREVIEW</span>
+    </div>
+
+    <div class="dashboard-mock">
+      <div class="mock-topbar">
+        <div class="mock-dot"></div>
+        <div class="mock-dot"></div>
+        <div class="mock-dot"></div>
+        <span class="mock-url">clear-desk-ten.vercel.app — <span>AR Intelligence Dashboard</span></span>
+      </div>
+
+      <div class="mock-body">
+        <div class="mock-stats">
+          <div class="mock-stat">
+            <div class="s-label">CRITICAL</div>
+            <div class="s-val critical">3</div>
+          </div>
+          <div class="mock-stat">
+            <div class="s-label">HIGH</div>
+            <div class="s-val high">7</div>
+          </div>
+          <div class="mock-stat">
+            <div class="s-label">ESCALATED</div>
+            <div class="s-val accent">4</div>
+          </div>
+          <div class="mock-stat">
+            <div class="s-label">TOTAL DOCS</div>
+            <div class="s-val white">24</div>
+          </div>
+        </div>
+
+        <div class="mock-docs">
+          <div class="mock-doc">
+            <div class="priority-dot p-critical"></div>
+            <div class="doc-info">
+              <div class="doc-name">Santos Freight Partners — Invoice Dispute</div>
+              <div class="doc-sub">invoice · dispute · due 3 days · confidence 94%</div>
+            </div>
+            <div class="doc-amount">$87,400</div>
+            <div class="doc-flag flag-escalate">ESCALATE</div>
+          </div>
+          <div class="mock-doc">
+            <div class="priority-dot p-high"></div>
+            <div class="doc-info">
+              <div class="doc-name">Meridian Logistics — Statement</div>
+              <div class="doc-sub">statement · overdue 18 days · confidence 98%</div>
+            </div>
+            <div class="doc-amount">$41,200</div>
+            <div class="doc-flag flag-review">REVIEW</div>
+          </div>
+          <div class="mock-doc">
+            <div class="priority-dot p-medium"></div>
+            <div class="doc-info">
+              <div class="doc-name">Coastal Distribution Inc — Invoice</div>
+              <div class="doc-sub">invoice · net-30 · confidence 99%</div>
+            </div>
+            <div class="doc-amount">$12,650</div>
+            <div class="doc-flag flag-ok">CLEAN</div>
+          </div>
+        </div>
+
+        <!-- Bilingual preview -->
+        <div class="lang-toggle-row">
+          <span class="lang-label">SUMMARY LANGUAGE</span>
+          <button class="lang-btn active">EN</button>
+          <button class="lang-btn">ES</button>
+        </div>
+        <div class="lang-summary">
+          Santos Freight Partners has disputed invoice #INV-2241 for $87,400, citing a billing discrepancy on line items 4–7. Payment is due in 3 days and the account has no prior dispute history. Immediate escalation recommended — human review required before automated collection proceeds.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features">
+    <div class="section-label">03 / Capabilities</div>
+
+    <div class="features-grid">
+      <div class="feature-item">
+        <div class="f-number">01</div>
+        <div class="f-title">AI Document Processing</div>
+        <p class="f-desc">Every upload runs through Claude. Extracts customer, amounts, dates, terms, document type, and action requirements. Works on any format, any structure, any quality.</p>
+      </div>
+      <div class="feature-item">
+        <div class="f-number">02</div>
+        <div class="f-title">Configurable Priority Engine</div>
+        <p class="f-desc">Set your own dollar thresholds. A $500 dispute scores higher than a clean $50k invoice because urgency isn't just dollar value. Thresholds inject directly into the AI system prompt.</p>
+      </div>
+      <div class="feature-item">
+        <div class="f-number">03</div>
+        <div class="f-title">Escalation Intelligence</div>
+        <p class="f-desc">Flags what needs human judgment with a specific reason and severity level — not generic alerts. Blocking, warning, or informational. Configurable per your operation's rules.</p>
+      </div>
+      <div class="feature-item">
+        <div class="f-number">04</div>
+        <div class="f-title">Bilingual Summaries</div>
+        <p class="f-desc">Every document generates a 3-sentence summary in both English and Spanish simultaneously. Toggle per document. Your Colombia team sees their language without any manual translation step.</p>
+      </div>
+      <div class="feature-item">
+        <div class="f-number">05</div>
+        <div class="f-title">AI Chat Assistant</div>
+        <p class="f-desc">Ask your entire document queue natural language questions. "Who is most overdue?" "Draft a follow-up for the Santos account." Only relevant documents inject as context — stays fast, stays accurate.</p>
+      </div>
+      <div class="feature-item">
+        <div class="f-number">06</div>
+        <div class="f-title">Structured API Output</div>
+        <p class="f-desc">Every processed document returns typed JSON — ready for your UiPath bots, RPA platforms, or downstream systems to consume. The integration point is a single endpoint call away.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKFLOW -->
+  <section class="workflow">
+    <div class="section-label">04 / How It Fits Your Stack</div>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">STEP 01</div>
+        <div class="step-content">
+          <div class="step-title">Document Arrives</div>
+          <p class="step-desc">Invoice, dispute, statement, collections notice, email thread. PDF, image, Excel, Word, EML — any format, any structure. Drop it in the dashboard or call the API endpoint directly.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">STEP 02</div>
+        <div class="step-content">
+          <div class="step-title">Claude Processes It</div>
+          <p class="step-desc">Server-side AI analysis extracts all structured fields, assigns priority based on your configured thresholds, identifies escalation conditions, and generates bilingual summaries. Confidence scored on every output.</p>
+          <span class="step-code">POST /api/analyze → structured JSON in ~3s</span>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">STEP 03</div>
+        <div class="step-content">
+          <div class="step-title">Your Team Sees What Matters</div>
+          <p class="step-desc">Dashboard surfaces critical items first. Escalation flags tell your team exactly why something needs human judgment. Spanish summaries route to your Colombia team automatically.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">STEP 04</div>
+        <div class="step-content">
+          <div class="step-title">Your Bots Take the Clean Data</div>
+          <p class="step-desc">UiPath, Power Automate, or any RPA platform calls the structured output endpoint. No manual formatting, no ambiguous fields. The document has already been normalized before automation touches it.</p>
+          <span class="step-code">GET /api/documents → bot-ready structured payload</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORMATS -->
+  <section class="formats">
+    <div class="section-label">05 / Supported Formats</div>
+    <div class="format-list">
+      <span class="format-tag">PDF</span>
+      <span class="format-tag">PNG</span>
+      <span class="format-tag">JPG</span>
+      <span class="format-tag">TIFF</span>
+      <span class="format-tag">DOCX</span>
+      <span class="format-tag">XLSX</span>
+      <span class="format-tag">XLS</span>
+      <span class="format-tag">EML</span>
+      <span class="format-tag">TXT</span>
+      <span class="format-tag">CSV</span>
+    </div>
+    <p style="margin-top:16px;font-size:12px;color:var(--muted);">Scanned/image documents processed via OCR. Confidence score included on every output to flag low-quality extractions.</p>
+  </section>
+
+  <!-- ARCHITECTURE -->
+  <section class="arch">
+    <div class="section-label">06 / Architecture</div>
+    <div class="arch-block">
+      <span class="a-dim">// Request flow</span><br>
+      <span class="a-text">Browser</span> <span class="a-dim">→</span> <span class="a-accent">POST /api/analyze</span> <span class="a-dim">(Vercel serverless)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="a-dim">→</span> <span class="a-accent">Claude Sonnet</span> <span class="a-dim">(document AI)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="a-dim">→</span> <span class="a-text">typed JSON response</span><br><br>
+      <span class="a-text">Chat</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="a-dim">→</span> <span class="a-accent">POST /api/chat</span> <span class="a-dim">(Vercel serverless)</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="a-dim">→</span> <span class="a-accent">Claude Haiku</span> <span class="a-dim">(conversational, selective context injection)</span><br><br>
+      <span class="a-dim">// Security</span><br>
+      <span class="a-text">ANTHROPIC_API_KEY</span> <span class="a-dim">→ server-side env only. Never reaches client.</span><br><br>
+      <span class="a-dim">// Stack</span><br>
+      <span class="a-text">React 19 · TypeScript · Vite · Tailwind · Vercel · Cloudflare KV</span>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="roadmap">
+    <div class="section-label">07 / What's Next</div>
+
+    <div class="roadmap-grid">
+      <div class="roadmap-item">
+        <div class="rm-version">v1.1</div>
+        <div class="rm-title">RPA Integration</div>
+        <p class="rm-desc">Dedicated endpoint for UiPath and other RPA platforms to consume structured document data directly. Webhooks for escalation alerts to Slack or Teams.</p>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-version">v1.2</div>
+        <div class="rm-title">Team Workspaces</div>
+        <p class="rm-desc">Multi-user access with role-based permissions. Full audit trail — every document action logged with timestamp and user. Built for compliance.</p>
+      </div>
+      <div class="roadmap-item">
+        <div class="rm-version">v1.3</div>
+        <div class="rm-title">Deeper Automation</div>
+        <p class="rm-desc">Additional language support beyond EN/ES. Custom extraction templates per document type. Direct ERP integration hooks.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER CTA -->
+  <section class="footer-cta">
+    <h2>The pre-processing layer<br>your stack is <span>missing.</span></h2>
+    <p>No setup. No login. Upload a real document and see what comes out.</p>
+    <a href="https://clear-desk-ten.vercel.app" class="footer-url" target="_blank">
+      clear-desk-ten.vercel.app
+    </a>
+
+    <div class="built-by">
+      <div>
+        <div class="by-name">Douglas Mitchell</div>
+        <div class="by-title">Operations Analyst · AI Systems Builder · Reliant AI</div>
+      </div>
+      <div class="by-contact">
+        <a href="mailto:DouglasMitchell@ReliantAI.org">DouglasMitchell@ReliantAI.org</a><br>
+        <a href="https://github.com/Senpai-Sama7" target="_blank">github.com/Senpai-Sama7</a>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Language toggle
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const summary = document.querySelector('.lang-summary');
+      const isES = btn.textContent === 'ES';
+
+      summary.style.opacity = '0';
+      summary.style.transition = 'opacity 0.2s';
+
+      setTimeout(() => {
+        summary.textContent = isES
+          ? 'Santos Freight Partners ha disputado la factura #INV-2241 por $87,400, citando una discrepancia de facturación en las líneas 4–7. El pago vence en 3 días y la cuenta no tiene historial previo de disputas. Se recomienda escalación inmediata — se requiere revisión humana antes de proceder con la cobranza automatizada.'
+          : 'Santos Freight Partners has disputed invoice #INV-2241 for $87,400, citing a billing discrepancy on line items 4–7. Payment is due in 3 days and the account has no prior dispute history. Immediate escalation recommended — human review required before automated collection proceeds.';
+        summary.style.opacity = '1';
+      }, 200);
+    });
+  });
+
+  // Subtle entrance animations on scroll
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('section').forEach(section => {
+    section.style.opacity = '0';
+    section.style.transform = 'translateY(16px)';
+    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(section);
+  });
+</script>
+
+</body>
+</html>

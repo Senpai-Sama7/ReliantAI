@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office">
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  WARM OUTREACH EMAIL — Production Template v1.0
+  ═══════════════════════════════════════════════════════════════════════
+  
+  REGISTER: Professional outreach — modern creative / indie business /
+            SaaS / freelance / agency. Warm, direct, human.
+            NOT intimidating. NOT corporate. NOT luxury fashion.
+  
+  ARCHITECTURE: Three-tier progressive enhancement (identical to v1)
+    Tier 1 — Apple Mail / iOS / Samsung: animations, web fonts, hover
+    Tier 2 — Gmail / Yahoo / Outlook.com: inlined CSS, system fonts
+    Tier 3 — Outlook (Windows): VML, MSO conditionals, table layout
+  
+  PALETTE: Warm terracotta + cream + charcoal
+  FONTS:   Fraunces (headlines) + DM Sans (body)
+  ═══════════════════════════════════════════════════════════════════════
+-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no, url=no">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:AllowPNG/>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+
+  <!--
+    Fraunces: optical-size variable serif. Warm, slightly quirky,
+    unmistakably human. Used by editorial and indie brands globally.
+    DM Sans: clean, wide aperture, reads warmly at small sizes.
+    Both chosen specifically to feel "written by a person" not "designed
+    by a committee." 
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,300;1,9..144,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <title>Quick thought for you — [Your Name]</title>
+
+  <style type="text/css">
+
+    /* ────────────────────────────────────────────────────────────────
+       GLOBAL RESET
+       ──────────────────────────────────────────────────────────────── */
+    *, *::before, *::after {
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      min-height: 100%;
+    }
+    body {
+      background-color: #EDEBE6 !important;
+      font-family: 'DM Sans', 'Optima', 'Gill Sans MT', 'Trebuchet MS', Verdana, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+      mso-line-height-rule: exactly;
+    }
+    table, td {
+      mso-table-lspace: 0pt !important;
+      mso-table-rspace: 0pt !important;
+      border-collapse: collapse !important;
+    }
+    img {
+      -ms-interpolation-mode: bicubic;
+      border: 0;
+      height: auto;
+      line-height: 100%;
+      outline: none;
+      text-decoration: none;
+      display: block;
+    }
+    a { text-decoration: none; }
+
+    /* ────────────────────────────────────────────────────────────────
+       PLATFORM LINK TARGETING
+       ──────────────────────────────────────────────────────────────── */
+    a[x-apple-data-detectors] {
+      color: inherit !important;
+      text-decoration: none !important;
+      font-size: inherit !important;
+      font-family: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
+    u + #body a {
+      color: inherit;
+      text-decoration: none;
+      font-size: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+    }
+    #MessageViewBody a {
+      color: inherit;
+      text-decoration: none;
+      font-size: inherit;
+      font-family: inherit;
+      font-weight: inherit;
+      line-height: inherit;
+    }
+
+    /* ────────────────────────────────────────────────────────────────
+       DESIGN TOKENS
+       ──────────────────────────────────────────────────────────────── */
+    :root {
+      /* Palette */
+      --bg:          #EDEBE6;   /* Page canvas — warm parchment */
+      --card:        #FAFAF7;   /* Email body — near white */
+      --surface:     #F3EDE4;   /* Inset panels, quote blocks */
+      --deep:        #EDE5D8;   /* Deeper surface for contrast */
+      --border:      #DDD5C8;   /* Hairlines */
+      --border-soft: rgba(180, 165, 148, 0.35);
+
+      --ink:         #1C1917;   /* Primary text — warm near-black */
+      --ink-mid:     #5C534A;   /* Secondary text */
+      --ink-faint:   #9B9089;   /* Muted text, captions */
+      --ink-ghost:   #C8C0B5;   /* Placeholders, disabled */
+
+      --terra:       #C95B2A;   /* Primary accent — terracotta */
+      --terra-deep:  #A64420;   /* Hover / active */
+      --terra-light: #FAE9E0;   /* Tint for highlight blocks */
+      --terra-mid:   rgba(201, 91, 42, 0.12);
+
+      /* Typography */
+      --font-serif: 'Fraunces', Georgia, 'Times New Roman', Times, serif;
+      --font-sans:  'DM Sans', 'Optima', 'Gill Sans MT', 'Trebuchet MS', Verdana, sans-serif;
+
+      /* Spacing */
+      --sp-3:  12px;   --sp-4:  16px;   --sp-5:  20px;
+      --sp-6:  24px;   --sp-8:  32px;   --sp-10: 40px;
+      --sp-12: 48px;   --sp-16: 64px;
+
+      /* Easing */
+      --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ────────────────────────────────────────────────────────────────
+       TYPOGRAPHY
+       ──────────────────────────────────────────────────────────────── */
+    .type-kicker {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--terra);
+      line-height: 1;
+      margin: 0;
+    }
+    .type-display {
+      font-family: var(--font-serif);
+      font-size: 42px;
+      font-weight: 300;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+      margin: 0;
+    }
+    .type-heading {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 1.3;
+      color: var(--ink);
+      margin: 0;
+    }
+    .type-subheading {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--ink);
+      margin: 0;
+    }
+    .type-body {
+      font-family: var(--font-sans);
+      font-size: 16px;
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink-mid);
+      margin: 0;
+    }
+    .type-body-sm {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.7;
+      color: var(--ink-mid);
+      margin: 0;
+    }
+    .type-caption {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 1.5;
+      color: var(--ink-faint);
+      margin: 0;
+    }
+
+    /* ────────────────────────────────────────────────────────────────
+       ANIMATIONS — Tier 1 (Apple Mail, iOS, Samsung)
+       Same architecture as v1: fill-mode: both prevents FOUC.
+       Non-animating clients see fully-rendered final state.
+       ──────────────────────────────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideRight {
+      from { transform: scaleX(0); transform-origin: left center; }
+      to   { transform: scaleX(1); transform-origin: left center; }
+    }
+
+    .anim-0 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.00s both; }
+    .anim-1 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.10s both; }
+    .anim-2 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.22s both; }
+    .anim-3 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.34s both; }
+    .anim-4 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.46s both; }
+    .anim-5 { animation: fadeUp 0.75s cubic-bezier(0.16,1,0.3,1) 0.56s both; }
+    .anim-bar { animation: slideRight 0.6s cubic-bezier(0.16,1,0.3,1) 0.15s both; }
+    .anim-fade { animation: fadeIn 1.1s ease 0.05s both; }
+
+    /* ────────────────────────────────────────────────────────────────
+       HOVER STATES — Tier 1
+       ──────────────────────────────────────────────────────────────── */
+    .btn-primary {
+      transition: background-color 0.22s ease,
+                  transform        0.28s cubic-bezier(0.16,1,0.3,1),
+                  box-shadow       0.28s ease;
+    }
+    .btn-primary:hover {
+      background-color: #A64420 !important;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(201, 91, 42, 0.32);
+    }
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-ghost {
+      transition: background-color 0.22s ease, color 0.22s ease;
+    }
+    .btn-ghost:hover {
+      background-color: var(--terra-light) !important;
+      color: var(--terra) !important;
+    }
+
+    /* Value point card lift */
+    .value-card {
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1),
+                  box-shadow 0.35s ease;
+    }
+    .value-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 32px rgba(28, 25, 23, 0.08);
+    }
+
+    /* ────────────────────────────────────────────────────────────────
+       ACCORDION (Pure CSS — same bug-fixed architecture as v1)
+       input:checked state drives max-height/opacity transitions.
+       Uses position:absolute hide (NOT display:none) to preserve
+       :checked pseudo-class in Apple Mail 16.x.
+       ──────────────────────────────────────────────────────────────── */
+    .acc-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .acc-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .acc-icon {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--terra-light);
+      color: var(--terra);
+      font-family: sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 20px;
+      text-align: center;
+      flex-shrink: 0;
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1),
+                  background-color 0.25s ease;
+    }
+    .acc-body {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1),
+                  opacity    0.35s ease;
+    }
+    /* State changes scoped per-item via inline <style> blocks below */
+
+    /* ────────────────────────────────────────────────────────────────
+       DARK MODE — Four-vector (identical architecture to v1)
+       Since this template IS light-mode by design, dark mode rules
+       invert to a dark-warm palette rather than just preserving darks.
+       ──────────────────────────────────────────────────────────────── */
+    @media (prefers-color-scheme: dark) {
+      body,
+      .dm-canvas  { background-color: #1A1714 !important; }
+      .dm-card    { background-color: #222019 !important; }
+      .dm-surface { background-color: #2B2822 !important; }
+
+      .dm-text-primary   { color: #F0EBE2 !important; }
+      .dm-text-secondary { color: #A89E94 !important; }
+      .dm-text-accent    { color: #E07040 !important; }
+      .dm-text-muted     { color: #6B6460 !important; }
+
+      .dm-border  { border-color: rgba(255,255,255,0.08) !important; }
+      .dm-bg-tint { background-color: rgba(201,91,42,0.14) !important; }
+
+      /* Protect light-only assets */
+      .lm-only { display: none !important; max-height: 0 !important; }
+      .dm-only { display: block !important; }
+    }
+
+    /* Gmail Web dark mode */
+    [data-ogsc] body,
+    [data-ogsc] .dm-canvas    { background-color: #1A1714 !important; }
+    [data-ogsc] .dm-card      { background-color: #222019 !important; }
+    [data-ogsc] .dm-surface   { background-color: #2B2822 !important; }
+    [data-ogsc] .dm-text-primary   { color: #F0EBE2 !important; }
+    [data-ogsc] .dm-text-secondary { color: #A89E94 !important; }
+    [data-ogsc] .dm-text-accent    { color: #E07040 !important; }
+    [data-ogsc] .dm-border    { border-color: rgba(255,255,255,0.08) !important; }
+    [data-ogsc] .lm-only      { display: none !important; }
+    [data-ogsc] .dm-only      { display: block !important; }
+
+    /* Gmail Android dark mode */
+    [data-gmail-darkreader] body        { background-color: #1A1714 !important; }
+    [data-gmail-darkreader] .dm-card    { background-color: #222019 !important; }
+    [data-gmail-darkreader] .dm-text-primary { color: #F0EBE2 !important; }
+    [data-gmail-darkreader] .dm-text-accent  { color: #E07040 !important; }
+
+    /* Outlook.com dark mode */
+    [data-ogsb] body        { background-color: #1A1714 !important; }
+    [data-ogsb] .dm-card    { background-color: #222019 !important; }
+    [data-ogsb] .dm-text-primary { color: #F0EBE2 !important; }
+
+    /* ────────────────────────────────────────────────────────────────
+       RESPONSIVE
+       ──────────────────────────────────────────────────────────────── */
+    @media only screen and (max-width: 620px) {
+      .email-wrap    { width: 100% !important; max-width: 100% !important; }
+      .content-pad   { padding-left: 22px !important; padding-right: 22px !important; }
+      .hero-pad      { padding: 40px 22px 36px !important; }
+      .section-pad   { padding-top: 36px !important; padding-bottom: 36px !important; }
+
+      .type-display  { font-size: 30px !important; }
+      .type-heading  { font-size: 21px !important; }
+
+      .col-half      { display: block !important; width: 100% !important; }
+      .col-half + .col-half { margin-top: 16px !important; }
+      .mobile-hide   { display: none !important; }
+      .mobile-center { text-align: center !important; }
+      .btn-full      { display: block !important; width: 100% !important; text-align: center !important; }
+    }
+
+  </style>
+
+  <!-- ─── OUTLOOK-ONLY OVERRIDES ──────────────────────────────────── -->
+  <!--[if mso]>
+  <style type="text/css">
+    body, #body {
+      background-color: #EDEBE6 !important;
+      font-family: 'Trebuchet MS', Verdana, sans-serif !important;
+    }
+    .dm-card    { background-color: #FAFAF7 !important; }
+    .dm-surface { background-color: #F3EDE4 !important; }
+    .dm-text-primary   { color: #1C1917 !important; }
+    .dm-text-secondary { color: #5C534A !important; }
+    .dm-text-accent    { color: #C95B2A !important; }
+
+    .type-display  { font-family: Georgia, serif !important; font-size: 38px !important; }
+    .type-heading  { font-family: Georgia, serif !important; font-size: 22px !important; }
+    .type-kicker   { font-family: 'Trebuchet MS', sans-serif !important; }
+    .type-body     { font-family: 'Trebuchet MS', sans-serif !important; }
+    .type-body-sm  { font-family: 'Trebuchet MS', sans-serif !important; }
+    .type-caption  { font-family: 'Trebuchet MS', sans-serif !important; }
+
+    .anim-0, .anim-1, .anim-2, .anim-3, .anim-4, .anim-5 {
+      animation: none !important;
+      opacity: 1 !important;
+      transform: none !important;
+    }
+    .email-wrap { width: 600px !important; }
+  </style>
+  <![endif]-->
+
+</head>
+
+<body id="body" class="dm-canvas" style="
+  margin: 0;
+  padding: 0;
+  background-color: #EDEBE6;
+  width: 100%;
+  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;">
+
+<!-- ─── PREHEADER ────────────────────────────────────────────────── -->
+<div style="
+  display:none; max-height:0; max-width:0;
+  overflow:hidden; opacity:0;
+  font-size:1px; line-height:1px; mso-hide:all;"
+  aria-hidden="true">
+  Had an idea that might save you some time — wanted to run it by you directly.&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;&#8199;&#847;
+</div>
+
+<!-- ─── OUTER TABLE (full-width canvas, Outlook requires this) ──── -->
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+  style="background-color: #EDEBE6;">
+  <tr>
+    <td align="center" valign="top" style="padding: 28px 0 40px;">
+
+      <!--[if mso]>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0"
+             width="600" align="center">
+      <tr><td>
+      <![endif]-->
+
+      <div class="email-wrap" style="
+        max-width: 600px;
+        width: 100%;
+        margin: 0 auto;">
+
+        <!-- ═══════════════════════════════════════════════════════
+             SECTION 1 — MINIMAL TOP BAR
+             Just a name/brand, a tiny utility link.
+             No navigation. No intimidating menu.
+             Goal: feels like a letter, not a broadcast.
+             ═══════════════════════════════════════════════════════ -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding: 0 4px 14px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td style="vertical-align: middle;">
+                    <!-- 
+                      No logo. No wordmark. Just a name.
+                      That's the outreach signal: a human sent this.
+                      Swap "[Your Name]" for your real name.
+                    -->
+                    <p style="
+                      font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                      font-size: 13px;
+                      font-weight: 500;
+                      color: #5C534A;
+                      margin: 0;
+                      mso-line-height-rule: exactly;
+                      line-height: 1;">
+                      [Your Name]
+                    </p>
+                  </td>
+                  <td align="right" style="vertical-align: middle;">
+                    <a href="#" style="
+                      font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                      font-size: 11px;
+                      color: #9B9089;
+                      text-decoration: none;
+                      border-bottom: 1px solid rgba(155,144,137,0.3);
+                      padding-bottom: 2px;">
+                      View in browser
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
+        <!-- ═══════════════════════════════════════════════════════
+             MAIN CARD — The email body sits on a warm card
+             Rounded corners on the outer div (modern clients).
+             Outlook renders without radius — clean table fallback.
+             ═══════════════════════════════════════════════════════ -->
+        <div class="dm-card" style="
+          background-color: #FAFAF7;
+          border-radius: 10px;
+          overflow: hidden;
+          box-shadow: 0 2px 20px rgba(28,25,23,0.07), 0 1px 4px rgba(28,25,23,0.04);">
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 2 — HERO / OPENER
+               
+               The opener is critical. It has to feel personal and
+               direct in the first two lines, not like a newsletter.
+               
+               Fraunces headline (warm, slightly quirky serif) +
+               a short human sub-line + single terracotta accent bar.
+               ═══════════════════════════════════════════════════ -->
+
+          <!--[if mso]>
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+          <td>
+            <v:rect xmlns:v="urn:schemas-microsoft-com:vml"
+                    fill="true" stroke="false"
+                    style="width:600px; height:300px; mso-position-horizontal:center;">
+              <v:fill type="gradient"
+                      color="#FAFAF7"
+                      color2="#F3EDE4"
+                      angle="160"
+                      focus="60%" />
+              <v:textbox style="mso-fit-shape-to-text:true" inset="40px,48px,40px,44px">
+          <![endif]-->
+
+          <div class="hero-pad dm-card" style="
+            padding: 56px 48px 52px;
+            background: linear-gradient(155deg,
+              #FAFAF7 0%,
+              #F7F3ED 45%,
+              #F0E9DF 100%
+            );
+            position: relative;
+            overflow: hidden;">
+
+            <!-- Decorative warm dot — Tier 1 only -->
+            <div aria-hidden="true" style="
+              position: absolute;
+              top: -60px;
+              right: -50px;
+              width: 220px;
+              height: 220px;
+              background: radial-gradient(circle,
+                rgba(201,91,42,0.09) 0%,
+                transparent 70%
+              );
+              pointer-events: none;
+              mso-hide: all;">
+            </div>
+
+            <!-- Kicker / eyebrow -->
+            <p class="type-kicker dm-text-accent" style="
+              font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+              font-size: 11px;
+              font-weight: 500;
+              letter-spacing: 0.12em;
+              text-transform: uppercase;
+              color: #C95B2A;
+              margin: 0 0 14px;
+              mso-line-height-rule: exactly;
+              line-height: 1;">
+              <!-- Swap for your context: "Quick question for you" / "An idea worth 5 minutes" -->
+              A quick note from me
+            </p>
+
+            <!-- Thin terracotta rule -->
+            <div class="" style="
+              width: 32px;
+              height: 2px;
+              background: #C95B2A;
+              border-radius: 2px;
+              margin-bottom: 22px;
+              border: 0;">
+            </div>
+
+            <!-- Headline — conversational, not advertising copy -->
+            <!-- NOTE: No animation class on the headline. fill-mode:both holds
+                 opacity:0 in non-animating contexts (browser preview, Gmail, Outlook).
+                 Entrance animations belong on secondary elements, never primary content. -->
+            <h1 class="type-display dm-text-primary" style="
+              font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+              font-size: 38px;
+              font-weight: 400;
+              line-height: 1.14;
+              letter-spacing: -0.018em;
+              color: #1A1410;
+              opacity: 1;
+              margin: 0 0 20px;
+              mso-line-height-rule: exactly;">
+              I think I can help you<br>save about 6 hours a week.
+            </h1>
+
+            <!-- Sub-line — one direct, honest sentence -->
+            <p class="type-body dm-text-secondary" style="
+              font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+              font-size: 16px;
+              font-weight: 400;
+              line-height: 1.72;
+              color: #3D3530;
+              opacity: 1;
+              margin: 0;
+              max-width: 420px;
+              mso-line-height-rule: exactly;">
+              Noticed [Company/Role] is growing fast. I build tools
+              that automate the admin work that slows teams like yours
+              down. Wanted to share what that looks like in practice.
+            </p>
+
+          </div>
+
+          <!--[if mso]>
+              </v:textbox>
+            </v:rect>
+          </td>
+          </tr>
+          </table>
+          <![endif]-->
+
+          <!-- Thin divider -->
+          <div style="height: 1px; background: linear-gradient(90deg, transparent, #DDD5C8, transparent); margin: 0 40px;"></div>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 3 — PERSONAL INTRO
+               Avatar + name + one-liner. Makes it feel 1-to-1.
+               Image is circular, accessible, with text fallback.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+            style="background-color: #FAFAF7;">
+            <tr>
+              <td class="content-pad" style="padding: 32px 48px 28px;">
+
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <!-- Avatar (circular image or initials fallback) -->
+                    <td style="vertical-align: top; padding-right: 18px; width: 52px;">
+                      <!--
+                        AVATAR: Replace src with your actual headshot hosted on a CDN.
+                        Physical image should be 104x104 (2x for retina).
+                        Use border-radius:50% for circle crop.
+                        alt="" is correct here — decorative, name is in text.
+                      -->
+                      <div style="
+                        width: 52px;
+                        height: 52px;
+                        border-radius: 50%;
+                        overflow: hidden;
+                        background-color: #F3EDE4;
+                        border: 2px solid #EDEBE6;
+                        flex-shrink: 0;">
+                        <img
+                          src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=104&h=104&q=88&fm=jpg&fit=crop&crop=faces"
+                          alt=""
+                          width="52"
+                          height="52"
+                          style="
+                            width: 52px;
+                            height: 52px;
+                            border-radius: 50%;
+                            display: block;
+                            border: 0;
+                            object-fit: cover;">
+                      </div>
+                    </td>
+                    <!-- Name + role -->
+                    <td style="vertical-align: middle;">
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 15px;
+                        font-weight: 500;
+                        color: #1C1917;
+                        margin: 0 0 3px;
+                        mso-line-height-rule: exactly;
+                        line-height: 1.3;">
+                        [Your Full Name]
+                      </p>
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 13px;
+                        font-weight: 300;
+                        color: #9B9089;
+                        margin: 0;
+                        mso-line-height-rule: exactly;
+                        line-height: 1.3;">
+                        [Title / What You Do] &middot;
+                        <a href="#" style="color: #C95B2A; text-decoration: none;">yoursite.com</a>
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- Thin divider -->
+          <div style="height: 1px; background: linear-gradient(90deg, transparent, #DDD5C8, transparent); margin: 0 40px;"></div>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 4 — BODY COPY
+               Real sentences. No bullet-point spam. 
+               The goal: feel like an email, not a pitch deck.
+               Three short paragraphs is optimal for outreach.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+            style="background-color: #FAFAF7;">
+            <tr>
+              <td class="content-pad" style="padding: 28px 48px 32px;">
+
+                <!-- Paragraph 1: what you noticed / why you're reaching out -->
+                <p class="type-body anim-2 dm-text-secondary" style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 16px;
+                  font-weight: 300;
+                  line-height: 1.75;
+                  color: #5C534A;
+                  margin: 0 0 18px;
+                  mso-line-height-rule: exactly;">
+                  I came across [Company] while looking into [Industry/Context].
+                  From what I can tell, you're doing [specific thing they're doing well]
+                  &mdash; which is genuinely impressive. I also noticed that most
+                  teams at your stage are spending a significant amount of time on
+                  [specific pain point].
+                </p>
+
+                <!-- Paragraph 2: what you do, briefly -->
+                <p class="type-body dm-text-secondary" style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 16px;
+                  font-weight: 300;
+                  line-height: 1.75;
+                  color: #5C534A;
+                  margin: 0 0 18px;
+                  mso-line-height-rule: exactly;">
+                  I build [type of tool/service] that [does specific thing].
+                  It's been working well for [type of company] &mdash; one client
+                  got back around [X hours/$ amount] in the first month.
+                  Not a guarantee, but it gives you a sense of what's possible.
+                </p>
+
+                <!-- Paragraph 3: the ask — keep it small and clear -->
+                <p class="type-body dm-text-secondary" style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 16px;
+                  font-weight: 300;
+                  line-height: 1.75;
+                  color: #5C534A;
+                  margin: 0;
+                  mso-line-height-rule: exactly;">
+                  Would it be worth a 20-minute call to see if there's a fit?
+                  No deck, no pressure &mdash; just a conversation.
+                </p>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 5 — VALUE POINTS (TINTED PANEL)
+               A warm inset panel with 3 short proof points.
+               Keeps the email scannable without going listicle.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td style="padding: 0 32px;">
+                <div class="dm-surface" style="
+                  background-color: #F3EDE4;
+                  border-radius: 8px;
+                  padding: 28px 32px 24px;
+                  border: 1px solid rgba(180,165,148,0.28);">
+
+                  <p style="
+                    font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                    font-size: 11px;
+                    font-weight: 500;
+                    letter-spacing: 0.1em;
+                    text-transform: uppercase;
+                    color: #C95B2A;
+                    margin: 0 0 18px;
+                    mso-line-height-rule: exactly;
+                    line-height: 1;">
+                    What you'd get
+                  </p>
+
+                  <!-- MSO column table -->
+                  <!--[if mso]>
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                  <td width="33%" valign="top" style="padding-right:12px;">
+                  <![endif]-->
+
+                  <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+
+                    <!-- Point 1 -->
+                    <div class="col-half value-card" style="
+                      flex: 1;
+                      min-width: 130px;
+                      padding: 16px 14px;
+                      background-color: #FAFAF7;
+                      border-radius: 6px;
+                      border: 1px solid rgba(180,165,148,0.2);">
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 22px;
+                        font-weight: 500;
+                        color: #C95B2A;
+                        margin: 0 0 5px;
+                        mso-line-height-rule: exactly;
+                        line-height: 1;">
+                        6 hrs
+                      </p>
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 12px;
+                        font-weight: 300;
+                        line-height: 1.5;
+                        color: #5C534A;
+                        margin: 0;
+                        mso-line-height-rule: exactly;">
+                        Saved per week on average
+                      </p>
+                    </div>
+
+                    <!--[if mso]></td><td width="33%" valign="top" style="padding-right:12px;"><![endif]-->
+
+                    <!-- Point 2 -->
+                    <div class="col-half value-card" style="
+                      flex: 1;
+                      min-width: 130px;
+                      padding: 16px 14px;
+                      background-color: #FAFAF7;
+                      border-radius: 6px;
+                      border: 1px solid rgba(180,165,148,0.2);">
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 22px;
+                        font-weight: 500;
+                        color: #C95B2A;
+                        margin: 0 0 5px;
+                        mso-line-height-rule: exactly;
+                        line-height: 1;">
+                        20 min
+                      </p>
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 12px;
+                        font-weight: 300;
+                        line-height: 1.5;
+                        color: #5C534A;
+                        margin: 0;
+                        mso-line-height-rule: exactly;">
+                        To see if it's worth it
+                      </p>
+                    </div>
+
+                    <!--[if mso]></td><td width="33%" valign="top"><![endif]-->
+
+                    <!-- Point 3 -->
+                    <div class="col-half value-card" style="
+                      flex: 1;
+                      min-width: 130px;
+                      padding: 16px 14px;
+                      background-color: #FAFAF7;
+                      border-radius: 6px;
+                      border: 1px solid rgba(180,165,148,0.2);">
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 22px;
+                        font-weight: 500;
+                        color: #C95B2A;
+                        margin: 0 0 5px;
+                        mso-line-height-rule: exactly;
+                        line-height: 1;">
+                        $0
+                      </p>
+                      <p style="
+                        font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                        font-size: 12px;
+                        font-weight: 300;
+                        line-height: 1.5;
+                        color: #5C534A;
+                        margin: 0;
+                        mso-line-height-rule: exactly;">
+                        To have a first conversation
+                      </p>
+                    </div>
+
+                  </div><!-- /flex -->
+
+                  <!--[if mso]>
+                  </td>
+                  </tr>
+                  </table>
+                  <![endif]-->
+
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 6 — PRIMARY CTA
+               Single ask. Big clear button. Human copy on the CTA.
+               "Let's find a time" > "Book a Call" > "Schedule Meeting"
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+            <tr>
+              <td class="content-pad" align="center" style="padding: 36px 48px 32px; text-align: center;">
+
+                <!--[if mso]>
+                <v:roundrect
+                  xmlns:v="urn:schemas-microsoft-com:vml"
+                  xmlns:w="urn:schemas-microsoft-com:office:word"
+                  href="https://calendly.com/yourusername"
+                  style="height:52px; v-text-anchor:middle; width:248px; mso-position-horizontal:center;"
+                  arcsize="10%"
+                  stroke="f"
+                  fillcolor="#C95B2A">
+                  <w:anchorlock/>
+                  <center style="font-family:'Trebuchet MS',sans-serif;font-size:14px;font-weight:500;color:#FFFFFF;letter-spacing:0.02em;">
+                    Let's find a time
+                  </center>
+                </v:roundrect>
+                <![endif]-->
+                <!--[if !mso]><!-->
+                <a href="https://calendly.com/yourusername"
+                   class="btn-primary btn-full"
+                   style="
+                     display: inline-block;
+                     background-color: #C95B2A;
+                     color: #FFFFFF;
+                     font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                     font-size: 15px;
+                     font-weight: 500;
+                     letter-spacing: 0.02em;
+                     text-decoration: none;
+                     padding: 16px 44px;
+                     border-radius: 6px;
+                     line-height: 1;
+                     mso-line-height-rule: exactly;">
+                  Let's find a time &rarr;
+                </a>
+                <!--<![endif]-->
+
+                <!-- Or, link-style secondary option -->
+                <p style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 13px;
+                  font-weight: 300;
+                  color: #9B9089;
+                  margin: 14px 0 0;
+                  mso-line-height-rule: exactly;
+                  line-height: 1.5;">
+                  Or just reply to this email &mdash; that works too.
+                </p>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 7 — SOCIAL PROOF (QUOTE)
+               One real quote from one real person.
+               More convincing than a 5-star grid.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+            style="background-color: #FAFAF7;">
+            <tr>
+              <td style="padding: 0 32px 36px;">
+                <div class="dm-surface" style="
+                  background-color: #F3EDE4;
+                  border-radius: 8px;
+                  padding: 24px 28px;
+                  border-left: 3px solid #C95B2A;">
+                  <p style="
+                    font-family: 'Fraunces', Georgia, serif;
+                    font-size: 16px;
+                    font-weight: 300;
+                    font-style: italic;
+                    line-height: 1.65;
+                    color: #1C1917;
+                    margin: 0 0 14px;
+                    mso-line-height-rule: exactly;">
+                    &ldquo;I was skeptical at first, but the first week alone
+                    it cleared three recurring headaches I had accepted
+                    as just part of the job. I wish I'd asked sooner.&rdquo;
+                  </p>
+                  <p style="
+                    font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                    font-size: 12px;
+                    font-weight: 500;
+                    color: #9B9089;
+                    margin: 0;
+                    letter-spacing: 0.04em;
+                    text-transform: uppercase;
+                    mso-line-height-rule: exactly;
+                    line-height: 1;">
+                    &mdash; [First Name L.], [Title] at [Company]
+                  </p>
+                </div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 8 — ACCORDION (FAQ / OBJECTION HANDLING)
+               Handles common hesitations before they become
+               reasons not to reply. Tier 1 interactive, 
+               others see static first item.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+            style="background-color: #FAFAF7;">
+            <tr>
+              <td class="content-pad" style="padding: 4px 48px 36px;">
+
+                <p style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 11px;
+                  font-weight: 500;
+                  letter-spacing: 0.1em;
+                  text-transform: uppercase;
+                  color: #9B9089;
+                  margin: 0 0 6px;
+                  mso-line-height-rule: exactly;
+                  line-height: 1;">
+                  Common questions
+                </p>
+
+                <!-- ── FAQ 1 ── -->
+                <div style="border-top: 1px solid rgba(180,165,148,0.3);">
+                  <input type="checkbox" id="q1" class="acc-input"
+                    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+                  <label for="q1" class="acc-toggle" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 0;
+                    cursor: pointer;
+                    font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                    font-size: 14px;
+                    font-weight: 400;
+                    color: #1C1917;
+                    mso-line-height-rule: exactly;
+                    line-height: 1.4;">
+                    What does it actually involve on my end?
+                    <span class="acc-icon" style="
+                      display: inline-block;
+                      width: 20px; height: 20px;
+                      border-radius: 50%;
+                      background: #FAE9E0;
+                      color: #C95B2A;
+                      font-size: 13px;
+                      font-weight: 400;
+                      line-height: 20px;
+                      text-align: center;
+                      flex-shrink: 0;
+                      font-family: sans-serif;
+                      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);">
+                      +
+                    </span>
+                  </label>
+                  <div class="acc-body" style="
+                    max-height: 0;
+                    overflow: hidden;
+                    opacity: 0;
+                    transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease;">
+                    <p style="
+                      font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                      font-size: 14px;
+                      font-weight: 300;
+                      line-height: 1.72;
+                      color: #5C534A;
+                      margin: 0 0 16px;
+                      mso-line-height-rule: exactly;">
+                      Just 20 minutes on a call to walk through your current
+                      workflow. I'll tell you honestly if I think I can help
+                      and what that would look like. No prep required on your end.
+                    </p>
+                  </div>
+                  <style>#q1:checked ~ .acc-body { max-height: 200px !important; opacity: 1 !important; }</style>
+                </div>
+
+                <!-- ── FAQ 2 ── -->
+                <div style="border-top: 1px solid rgba(180,165,148,0.3);">
+                  <input type="checkbox" id="q2" class="acc-input"
+                    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+                  <label for="q2" class="acc-toggle" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 0;
+                    cursor: pointer;
+                    font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                    font-size: 14px;
+                    font-weight: 400;
+                    color: #1C1917;
+                    mso-line-height-rule: exactly;
+                    line-height: 1.4;">
+                    Is this for teams or solo operators?
+                    <span class="acc-icon" style="
+                      display: inline-block;
+                      width: 20px; height: 20px;
+                      border-radius: 50%;
+                      background: #FAE9E0;
+                      color: #C95B2A;
+                      font-size: 13px;
+                      font-weight: 400;
+                      line-height: 20px;
+                      text-align: center;
+                      flex-shrink: 0;
+                      font-family: sans-serif;">
+                      +
+                    </span>
+                  </label>
+                  <div class="acc-body" style="
+                    max-height: 0;
+                    overflow: hidden;
+                    opacity: 0;
+                    transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease;">
+                    <p style="
+                      font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                      font-size: 14px;
+                      font-weight: 300;
+                      line-height: 1.72;
+                      color: #5C534A;
+                      margin: 0 0 16px;
+                      mso-line-height-rule: exactly;">
+                      Both. Most of my clients are small teams (2&ndash;15 people),
+                      but the work scales whether you're running it yourself or have
+                      a team. We'd tailor it to your specific setup.
+                    </p>
+                  </div>
+                  <style>#q2:checked ~ .acc-body { max-height: 200px !important; opacity: 1 !important; }</style>
+                </div>
+
+                <!-- ── FAQ 3 ── -->
+                <div style="border-top: 1px solid rgba(180,165,148,0.3); border-bottom: 1px solid rgba(180,165,148,0.3);">
+                  <input type="checkbox" id="q3" class="acc-input"
+                    style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;">
+                  <label for="q3" class="acc-toggle" style="
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 16px 0;
+                    cursor: pointer;
+                    font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                    font-size: 14px;
+                    font-weight: 400;
+                    color: #1C1917;
+                    mso-line-height-rule: exactly;
+                    line-height: 1.4;">
+                    What does it cost?
+                    <span class="acc-icon" style="
+                      display: inline-block;
+                      width: 20px; height: 20px;
+                      border-radius: 50%;
+                      background: #FAE9E0;
+                      color: #C95B2A;
+                      font-size: 13px;
+                      font-weight: 400;
+                      line-height: 20px;
+                      text-align: center;
+                      flex-shrink: 0;
+                      font-family: sans-serif;">
+                      +
+                    </span>
+                  </label>
+                  <div class="acc-body" style="
+                    max-height: 0;
+                    overflow: hidden;
+                    opacity: 0;
+                    transition: max-height 0.6s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease;">
+                    <p style="
+                      font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                      font-size: 14px;
+                      font-weight: 300;
+                      line-height: 1.72;
+                      color: #5C534A;
+                      margin: 0 0 16px;
+                      mso-line-height-rule: exactly;">
+                      Depends on scope &mdash; the call is the place to figure
+                      that out. I don't quote blind. If after talking it doesn't
+                      make sense financially for where you're at, I'll tell you.
+                    </p>
+                  </div>
+                  <style>#q3:checked ~ .acc-body { max-height: 200px !important; opacity: 1 !important; }</style>
+                </div>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- ═══════════════════════════════════════════════════
+               SECTION 9 — P.S. LINE
+               The P.S. is the second-most-read element in any
+               email (after the subject). Use it for the real ask
+               or a piece of genuine value with no strings.
+               ═══════════════════════════════════════════════════ -->
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"
+            style="background-color: #F7F4EF;">
+            <tr>
+              <td class="content-pad" style="
+                padding: 24px 48px 26px;
+                border-top: 1px solid rgba(180,165,148,0.25);">
+                <p style="
+                  font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                  font-size: 14px;
+                  font-weight: 300;
+                  line-height: 1.72;
+                  color: #6B6057;
+                  margin: 0;
+                  mso-line-height-rule: exactly;">
+                  <strong style="font-weight:500; color:#1C1917;">P.S.</strong>
+                  &mdash; Whether or not we work together, here's something that
+                  might be useful: [link to a genuinely helpful resource, tool,
+                  or piece of content related to their problem]. No signup,
+                  no catch.
+                </p>
+              </td>
+            </tr>
+          </table>
+
+        </div><!-- /main card -->
+
+        <!-- ═══════════════════════════════════════════════════════
+             FOOTER — Minimal, compliant, human
+             ═══════════════════════════════════════════════════════ -->
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="padding: 22px 4px 0;">
+
+              <!-- Legal / utility row -->
+              <p style="
+                font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                font-size: 11px;
+                line-height: 1.6;
+                color: #9B9089;
+                margin: 0 0 8px;
+                mso-line-height-rule: exactly;
+                text-align: center;">
+                You received this because [reason — e.g., "you're in the B2B SaaS space"].
+                &nbsp;
+                <a href="#" style="color: #9B9089; text-decoration: underline;">Unsubscribe</a>
+                &nbsp;&middot;&nbsp;
+                <a href="#" style="color: #9B9089; text-decoration: underline;">Privacy Policy</a>
+              </p>
+
+              <!-- Physical address (CAN-SPAM required) -->
+              <p style="
+                font-family: 'DM Sans', 'Trebuchet MS', Verdana, sans-serif;
+                font-size: 11px;
+                line-height: 1.5;
+                color: #C8C0B5;
+                margin: 0;
+                mso-line-height-rule: exactly;
+                text-align: center;">
+                [Your Name] &middot; [City, State] &middot; [ZIP]
+              </p>
+
+            </td>
+          </tr>
+        </table>
+
+      </div><!-- /.email-wrap -->
+
+      <!--[if mso]>
+      </td>
+      </tr>
+      </table>
+      <![endif]-->
+
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>

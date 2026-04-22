@@ -1,0 +1,10 @@
+# Defines a task to run the Julia causal model.
+agent = "julia_expert"
+description = "Estimates the causal effect from the health dataset."
+
+[params]
+action = "estimate"
+data_path = "data/health.csv"
+graph = "your_dot_string_graph_definition"
+treatment = "treatment_variable_name"
+outcome = "outcome_variable_name"

@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Rule Engine API
+  version: '1.0'
+paths:
+  /evaluate:
+    post:
+      summary: Evaluate rules on an event
+      description: >
+        Sends an event to the rule engine and returns the list of actions
+        fired. The rules are defined within the service and can be
+        customised by editing `rules.py`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                type: number
+      responses:
+        '200':
+          description: Fired actions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  actions:
+                    type: array
+                    items:
+                      type: string

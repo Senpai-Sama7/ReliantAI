@@ -1,0 +1,250 @@
+version: "3.9"
+
+services:
+  # -------------------- Infrastructure --------------------
+  redis:
+    image: redis:7-alpine
+    container_name: citadel-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: citadel-timescaledb
+    environment:
+      POSTGRES_USER: ${TS_USER}
+      POSTGRES_PASSWORD: ${TS_PASSWORD}
+      POSTGRES_DB: ${TS_DB}
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB -h localhost -p 5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  neo4j:
+    image: neo4j:5
+    container_name: citadel-neo4j
+    environment:
+      NEO4J_AUTH: "${NEO4J_USER}/${NEO4J_PASSWORD}"
+    volumes:
+      - neo4j-data:/data
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  # -------------------- AI & Utility Services --------------------
+  vector_search:
+    build: ./services/vector_search
+    container_name: citadel-vector_search
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      API_KEY: ${API_KEY}
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL}
+    ports:
+      - "8001:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  knowledge_graph:
+    build: ./services/knowledge_graph
+    container_name: citadel-knowledge_graph
+    environment:
+      NEO4J_URL: bolt://neo4j:7687
+      NEO4J_USER: ${NEO4J_USER}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      API_KEY: ${API_KEY}
+    ports:
+      - "8002:8000"
+    depends_on:
+      - neo4j
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  causal_inference:
+    build: ./services/causal_inference
+    container_name: citadel-causal_inference
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8003:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  time_series:
+    build: ./services/time_series
+    container_name: citadel-time_series
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8004:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  multi_modal:
+    build: ./services/multi_modal
+    container_name: citadel-multi_modal
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8005:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  hierarchical_classification:
+    build: ./services/hierarchical_classification
+    container_name: citadel-hierarchical_classification
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8006:8000"
+    volumes:
+      - ./data/models:/data/models
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  rule_engine:
+    build: ./services/rule_engine
+    container_name: citadel-rule_engine
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8007:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  shell_command:
+    build: ./services/shell_command
+    container_name: citadel-shell_command
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8011:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  # -------------------- Core Services --------------------
+  orchestrator:
+    build: ./services/orchestrator
+    container_name: citadel-orchestrator
+    environment:
+      REDIS_URL: ${REDIS_URL}
+      NEO4J_URL: bolt://neo4j:7687
+      NEO4J_USER: ${NEO4J_USER}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD}
+      TS_HOST: timescaledb
+      TS_USER: ${TS_USER}
+      TS_PASSWORD: ${TS_PASSWORD}
+      TS_DB: ${TS_DB}
+      API_KEY: ${API_KEY}
+    ports:
+      - "8008:8000"
+    depends_on:
+      - redis
+      - neo4j
+      - timescaledb
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  web_service:
+    build: ./services/web_service
+    container_name: citadel-web_service
+    environment:
+      API_KEY: ${API_KEY}
+    ports:
+      - "8009:8000"
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  api_gateway:
+    build: ./notebooks/gateway
+    container_name: citadel-api_gateway
+    environment:
+      API_KEY: ${API_KEY}
+      VECTOR_SEARCH_URL: http://vector_search:8000
+      KNOWLEDGE_GRAPH_URL: http://knowledge_graph:8000
+      CAUSAL_INFERENCE_URL: http://causal_inference:8000
+      TIME_SERIES_URL: http://time_series:8000
+      MULTI_MODAL_URL: http://multi_modal:8000
+      HIERARCHICAL_CLASSIFICATION_URL: http://hierarchical_classification:8000
+      RULE_ENGINE_URL: http://rule_engine:8000
+      ORCHESTRATOR_URL: http://orchestrator:8000
+      WEB_SERVICE_URL: http://web_service:8000
+      SHELL_COMMAND_URL: http://shell_command:8000
+    ports:
+      - "8010:8000"
+    depends_on:
+      - vector_search
+      - knowledge_graph
+      - causal_inference
+      - time_series
+      - multi_modal
+      - hierarchical_classification
+      - rule_engine
+      - orchestrator
+      - web_service
+      - shell_command
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+  nl_agent:
+    build: ./services/nl_agent
+    container_name: citadel-nl_agent
+    environment:
+      GATEWAY_URL: http://api_gateway:8000
+      API_KEY: ${API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+    ports:
+      - "8012:8000"
+    depends_on:
+      - api_gateway
+    restart: unless-stopped
+    networks:
+      - citadel-net
+
+# -------------------- Networking --------------------
+networks:
+  citadel-net:
+    driver: bridge
+
+# -------------------- Persistent Volumes --------------------
+volumes:
+  redis-data:
+  timescale-data:
+  neo4j-data:
+  vector-search-data:

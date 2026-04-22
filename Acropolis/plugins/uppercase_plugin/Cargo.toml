@@ -1,0 +1,18 @@
+# plugins/uppercase_plugin/Cargo.toml
+[package]
+name        = "uppercase_plugin"
+version     = "0.1.0"
+edition     = "2021"
+description = "Upper-case agent plugin for the adaptive_expert_platform"
+
+[lib]                       # builds .rlib (tests) AND .so for dlopen()
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+adaptive_expert_platform= { path = "../../adaptive_expert_platform" }
+async-trait              = "0.1"
+anyhow                   = "1.0"
+serde                    = { version = "1.0", features = ["derive"] }
+serde_json               = "1.0"
+tracing                  = "0.1"
+

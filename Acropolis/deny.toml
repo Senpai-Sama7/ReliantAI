@@ -1,0 +1,78 @@
+# cargo-deny configuration for security and license scanning
+
+[graph]
+targets = [
+  { triple = "x86_64-unknown-linux-gnu" },
+  { triple = "x86_64-apple-darwin" },
+  { triple = "x86_64-pc-windows-msvc" },
+]
+all-features = true
+
+[output]
+feature-depth = 1
+
+[advisories]
+version = 2
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+# All advisories are now deny by default with v2
+ignore = [
+  # Add any specific advisories to ignore here
+  # "RUSTSEC-2020-0001",
+]
+
+[licenses]
+version = 2
+confidence-threshold = 0.8
+# All licenses are now deny by default unless explicitly allowed
+allow = [
+  "MIT",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "ISC",
+  "Unicode-DFS-2016",
+  "CC0-1.0",
+]
+exceptions = [
+  # { allow = ["GPL-3.0"], name = "some-gpl-dependency" },
+]
+
+[[licenses.clarify]]
+name = "ring"
+version = "*"
+expression = "MIT AND ISC AND OpenSSL"
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+
+[bans]
+multiple-versions = "warn"
+wildcards = "allow"
+highlight = "all"
+workspace-default-features = "allow"
+external-default-features = "allow"
+allow = [
+  # Allow specific crates with multiple versions due to ecosystem dependencies
+  { name = "windows-sys", version = "*" },
+  { name = "windows_x86_64_msvc", version = "*" },
+  { name = "syn", version = "*" },
+]
+deny = [
+  # Deny known problematic crates
+  { name = "openssl", reason = "Use rustls instead" },
+  { name = "git2", reason = "Large dependency, use alternative if possible" },
+]
+skip = [
+  # Skip certain crates from multiple version checking
+  { name = "windows-sys", version = "=0.48.0" },
+]
+skip-tree = [
+  # Skip entire dependency trees
+  { name = "criterion", version = "*" }, # Dev dependency
+]
+
+[sources]
+unknown-registry = "warn"
+unknown-git = "warn"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = ["https://github.com/adaptive-expert-platform/"]

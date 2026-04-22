@@ -1,0 +1,147 @@
+version: '3.8'
+
+services:
+  backup-service:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      args:
+        BUILD_DATE: ${BUILD_DATE:-$(date -u +'%Y-%m-%dT%H:%M:%SZ')}
+        VERSION: ${VERSION:-1.0.0}
+        VCS_REF: ${VCS_REF:-$(git rev-parse --short HEAD)}
+    image: intelligent-backup-enterprise:${VERSION:-latest}
+    container_name: backup-service
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=production
+      - SECRET_API_KEY=${SECRET_API_KEY}
+      - SECRET_ENCRYPTION_KEY=${SECRET_ENCRYPTION_KEY}
+    volumes:
+      - backup-data:/data/backup-source:ro
+      - backup-logs:/home/appuser/app/logs
+      - ./config:/home/appuser/app/config:ro
+    ports:
+      - "8080:8080"  # Health/API
+      - "9090:9090"  # Metrics
+    networks:
+      - backup-network
+    depends_on:
+      - redis
+      - neo4j
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+          cpus: "2.0"
+        reservations:
+          memory: 1G
+          cpus: "0.5"
+
+  redis:
+    image: redis:7-alpine
+    container_name: backup-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    networks:
+      - backup-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  neo4j:
+    image: neo4j:5.11-community
+    container_name: backup-neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/backup-enterprise-password
+      - NEO4J_PLUGINS=["apoc", "graph-data-science"]
+      - NEO4J_db_tx__log_rotation_retention__policy=1 days
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=1G
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    networks:
+      - backup-network
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "backup-enterprise-password", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: backup-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ../../monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9091:9090"
+    networks:
+      - backup-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: backup-grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=backup-enterprise-admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ../../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ../../monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3000:3000"
+    networks:
+      - backup-network
+    depends_on:
+      - prometheus
+
+volumes:
+  backup-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${BACKUP_SOURCE_PATH:-/tmp/backup-source}
+  backup-logs:
+    driver: local
+  redis-data:
+    driver: local
+  neo4j-data:
+    driver: local
+  neo4j-logs:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+networks:
+  backup-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

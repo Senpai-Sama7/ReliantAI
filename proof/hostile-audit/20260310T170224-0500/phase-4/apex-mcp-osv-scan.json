@@ -1,0 +1,19 @@
+{
+  "packages": [
+    {
+      "name": "dotenv",
+      "version": "16.6.1",
+      "vulns": []
+    },
+    {
+      "name": "express",
+      "version": "4.22.1",
+      "vulns": []
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "vulns": []
+    }
+  ]
+}

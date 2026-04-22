@@ -1,0 +1,2 @@
+local_agent/FullAIChat filter=lfs diff=lfs merge=lfs -text
+local_agent/desktop_gui filter=lfs diff=lfs merge=lfs -text

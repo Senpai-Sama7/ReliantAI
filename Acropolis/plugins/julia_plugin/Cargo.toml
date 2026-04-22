@@ -1,0 +1,30 @@
+# plugins/julia_plugin/Cargo.toml
+[package]
+name = "julia_plugin"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+adaptive_expert_platform = { path = "../../adaptive_expert_platform" }
+anyhow = "1.0"
+async-trait = "0.1"
+jlrs = { version = "0.21.1", optional = true }
+once_cell = "1.19"
+serde_json = "1.0"
+tokio = { version = "1.37", features = ["rt", "macros"] }
+tracing = "0.1"
+
+# Security dependencies for sandboxing
+regex = "1.10"
+sha2 = "0.10"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"
+
+[features]
+default = ["julia"]
+julia = ["dep:jlrs"]

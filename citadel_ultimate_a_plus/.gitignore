@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+workspace/state/*.db
+workspace/state/*.db-*
+workspace/logs/*.log
+workspace/outbox/*.eml
+workspace/builds/*
+!workspace/builds/.gitkeep
+workspace/deploys/*
+!workspace/deploys/.gitkeep
+market/market_weights.json
+FUND_PLAY.md

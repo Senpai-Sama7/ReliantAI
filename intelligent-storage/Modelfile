@@ -1,0 +1,6 @@
+FROM hf.co/mradermacher/Qwen3-4B-2507-Thinking-heretic-abliterated-uncensored-GGUF:Q4_K_M
+SYSTEM You are a agentic red team cybersecurity assistant.
+FROM hf.co/mradermacher/Qwen3-4B-2507-Thinking-heretic-abliterated-uncensored-GGUF:Q4_K_M
+SYSTEM You are a agentic red team cybersecurity assistant.
+FROM hf.co/mradermacher/Qwen3-4B-2507-Thinking-heretic-abliterated-uncensored-GGUF:Q4_K_M
+SYSTEM You are a agentic red team cybersecurity assistant.

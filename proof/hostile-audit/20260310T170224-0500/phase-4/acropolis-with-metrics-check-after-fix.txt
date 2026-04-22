@@ -1,0 +1,80 @@
+    Checking adaptive_expert_platform v0.1.0 (/home/donovan/Projects/ReliantAI/Acropolis/adaptive_expert_platform)
+warning: field `load_balancer` is never read
+   --> adaptive_expert_platform/src/mesh.rs:140:5
+    |
+134 | pub struct AgentMesh {
+    |            --------- field in this struct
+...
+140 |     load_balancer: Arc<LoadBalancer>,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `strategy` is never read
+   --> adaptive_expert_platform/src/mesh.rs:458:5
+    |
+457 | pub struct LoadBalancer {
+    |            ------------ field in this struct
+458 |     strategy: LoadBalancingStrategy,
+    |     ^^^^^^^^
+
+warning: fields `config` and `task_results` are never read
+   --> adaptive_expert_platform/src/mesh.rs:469:5
+    |
+468 | pub struct NetworkTransport {
+    |            ---------------- fields in this struct
+469 |     config: MeshConfig,
+    |     ^^^^^^
+470 |     message_sender: Arc<RwLock<Option<mpsc::Sender<MeshMessage>>>>,
+471 |     task_results: Arc<DashMap<Uuid, oneshot::Sender<TaskResult>>>,
+    |     ^^^^^^^^^^^^
+
+warning: field `max_concurrent` is never read
+   --> adaptive_expert_platform/src/mesh.rs:527:5
+    |
+526 | pub struct TaskExecutor {
+    |            ------------ field in this struct
+527 |     max_concurrent: usize,
+    |     ^^^^^^^^^^^^^^
+
+warning: fields `cache_system`, `websocket_server`, and `agent_mesh` are never read
+  --> adaptive_expert_platform/src/orchestrator.rs:37:5
+   |
+25 | pub struct Orchestrator {
+   |            ------------ fields in this struct
+...
+37 |     cache_system: Arc<MultiTierCache>,
+   |     ^^^^^^^^^^^^
+38 |     websocket_server: Arc<WebSocketServer>,
+   |     ^^^^^^^^^^^^^^^^
+39 |     agent_mesh: Option<Arc<AgentMesh>>,
+   |     ^^^^^^^^^^
+
+warning: field `timeout_seconds` is never read
+  --> adaptive_expert_platform/src/server.rs:67:5
+   |
+64 | struct ExecuteTaskRequest {
+   |        ------------------ field in this struct
+...
+67 |     timeout_seconds: Option<u64>,
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `ExecuteTaskRequest` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: function `create_dummy_memory` is never used
+   --> adaptive_expert_platform/src/server.rs:447:4
+    |
+447 | fn create_dummy_memory() -> Memory {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: `extern` fn uses type `dyn Agent`, which is not FFI-safe
+  --> adaptive_expert_platform/src/plugin.rs:17:18
+   |
+17 | type FactoryFn = unsafe extern "C" fn() -> *mut dyn Agent;
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not FFI-safe
+   |
+   = note: trait objects have no C equivalent
+   = note: `#[warn(improper_ctypes_definitions)]` on by default
+
+warning: `adaptive_expert_platform` (lib) generated 8 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.55s

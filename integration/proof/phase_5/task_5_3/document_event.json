@@ -1,0 +1,1 @@
+{"metadata":{"event_id":"evt_1772784829.866293_dd9a2ed3","event_type":"document.processed","timestamp":"2026-03-06T08:13:49.866319Z","correlation_id":"ds-524a5c9ac1c0","tenant_id":"bap-live","source_service":"bap-upload","version":"1.0"},"payload":{"dataset_id":"ds-524a5c9ac1c0","name":"live_dataset","file_type":"csv","row_count":3,"column_count":2,"created_by":"system"}}

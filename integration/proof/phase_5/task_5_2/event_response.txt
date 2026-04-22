@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+date: Fri, 06 Mar 2026 08:00:57 GMT
+server: uvicorn
+content-length: 593
+content-type: application/json
+
+{"metadata":{"event_id":"evt_1772784012.511476_f84b3c53","event_type":"dispatch.completed","timestamp":"2026-03-06T08:00:12.511515Z","correlation_id":"c114eb20-846b-4cdf-ac9a-9a4c7e6da12a","tenant_id":"money-live","source_service":"money-dispatch","version":"1.0"},"payload":{"dispatch_id":"c114eb20-846b-4cdf-ac9a-9a4c7e6da12a","status":"complete","result":{"raw_output":"Mock engine dispatched: URGENT","confidence":0.99,"metadata":{"urgency_level":"URGENT","recommended_action":"SAME_DAY_DISPATCH","safety_flag":false,"outdoor_temp_f":95.0,"timestamp":"2026-03-06T08:00:12.491955+00:00"}}}}

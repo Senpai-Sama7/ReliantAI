@@ -1,0 +1,112 @@
+# Adaptive Expert Platform Configuration
+# This file contains all configuration options with secure defaults
+
+[server]
+host = "127.0.0.1"
+port = 8080
+max_connections = 1000
+request_timeout_seconds = 30
+enable_cors = false                       # Disabled by default for security
+cors_origins = ["https://localhost:3000"]
+rate_limit_per_minute = 100
+
+[logging]
+level = "info"
+format = "json"          # JSON format for production
+output = "stdout"
+enable_timestamps = true
+enable_thread_ids = true
+enable_target = false
+
+[orchestrator]
+max_concurrent_tasks = 10
+task_timeout_seconds = 30
+enable_hot_reload = true
+plugin_scan_interval_seconds = 60
+max_plugin_size_mb = 10
+enable_agent_health_checks = true
+health_check_interval_seconds = 300
+
+[plugins]
+directory = "plugins"
+auto_reload = true
+max_plugin_size_mb = 10
+enable_signature_verification = true
+
+[memory]
+provider = "in_memory" # or "redis"
+# url = "redis://localhost:6379"  # Uncomment for Redis
+cache_size = 10000
+max_fragments = 1000
+fragment_size_kb = 64
+
+[llm]
+provider = "llama"
+default_model = "default"
+max_tokens = 512
+temperature = 0.7
+enable_streaming = false
+
+[llm.models.default]
+path = "models/gguf/gemma-3n-E4B-it-UD-Q4_K_XL.gguf"
+context_size = 2048
+max_tokens = 512
+temperature = 0.7
+top_p = 0.9
+top_k = 40
+
+# CRITICAL SECURITY CONFIGURATION
+[security]
+# Authentication (REQUIRED in production)
+enable_authentication = true
+jwt_secret = "CHANGE_THIS_IN_PRODUCTION_USE_STRONG_SECRET" # MUST be changed
+jwt_expiry_hours = 8
+api_key_header = "X-API-Key"
+
+# CORS and Origins
+enable_cors = false                          # Disabled by default
+allowed_origins = ["https://localhost:3000"] # Restrictive by default
+
+# Rate Limiting
+enable_rate_limiting = true
+rate_limit_per_minute = 100 # Restrictive default
+
+# Request Limits
+max_request_size_mb = 5 # Small default for security
+
+# Plugin Security
+enable_plugin_signatures = true # ALWAYS enabled in production
+plugin_allowlist_hashes = [
+  # Add SHA256 hashes of allowed plugins here
+  # Example: "a1b2c3d4e5f6789..."
+]
+max_plugin_size_mb = 10
+
+# Resource Limits
+enable_resource_limits = true
+max_execution_time_seconds = 30
+max_memory_mb = 512
+
+# Additional Security
+enable_security_headers = true
+session_timeout_minutes = 480  # 8 hours
+max_login_attempts = 5
+lockout_duration_minutes = 15
+
+[observability]
+enable_metrics = true
+metrics_port = 9090
+enable_tracing = true
+tracing_sampler = 0.1
+enable_profiling = false
+profiling_port = 6060
+# otlp_endpoint = "http://localhost:4317"  # Uncomment for OpenTelemetry
+# jaeger_endpoint = "http://localhost:14268"  # Uncomment for Jaeger
+
+# ENVIRONMENT-SPECIFIC OVERRIDES
+# Use environment variables with AEP_ prefix:
+# export AEP_SECURITY__JWT_SECRET="your-production-secret"
+# export AEP_SECURITY__ENABLE_AUTHENTICATION=true
+# export AEP_SERVER__HOST="0.0.0.0"
+# export AEP_MEMORY__PROVIDER="redis"
+# export AEP_MEMORY__URL="redis://redis:6379"

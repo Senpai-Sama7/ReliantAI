@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Vector Search API
+  version: '1.0'
+paths:
+  /index:
+    post:
+      summary: Index a batch of documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: Documents indexed
+  /search:
+    post:
+      summary: Search for similar documents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+components:
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+      required:
+        - id
+        - text
+    SearchRequest:
+      type: object
+      properties:
+        query:
+          type: string
+        top_k:
+          type: integer
+      required:
+        - query

@@ -1,0 +1,4 @@
+DocuMancer/frontend/renderer.js:131:        DOM.fileList.innerHTML = '<div class="empty-state">No files selected</div>';
+DocuMancer/frontend/renderer.js:136:    DOM.fileList.innerHTML = AppState.files.map((file, index) => `
+DocuMancer/frontend/renderer.js:284:        DOM.resultsList.innerHTML = '';
+DocuMancer/frontend/renderer.js:294:    DOM.resultsList.innerHTML = AppState.convertedFiles.map(file => `

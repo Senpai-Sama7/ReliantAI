@@ -1,0 +1,55 @@
+[
+  {
+    "attempt": 1,
+    "status_code": 201,
+    "retry_after": null,
+    "body": {
+      "message": "User registered successfully",
+      "username": "rl-register-0"
+    }
+  },
+  {
+    "attempt": 2,
+    "status_code": 201,
+    "retry_after": null,
+    "body": {
+      "message": "User registered successfully",
+      "username": "rl-register-1"
+    }
+  },
+  {
+    "attempt": 3,
+    "status_code": 201,
+    "retry_after": null,
+    "body": {
+      "message": "User registered successfully",
+      "username": "rl-register-2"
+    }
+  },
+  {
+    "attempt": 4,
+    "status_code": 201,
+    "retry_after": null,
+    "body": {
+      "message": "User registered successfully",
+      "username": "rl-register-3"
+    }
+  },
+  {
+    "attempt": 5,
+    "status_code": 201,
+    "retry_after": null,
+    "body": {
+      "message": "User registered successfully",
+      "username": "rl-register-4"
+    }
+  },
+  {
+    "attempt": 6,
+    "status_code": 429,
+    "retry_after": "58",
+    "body": {
+      "detail": "Rate limit exceeded for /register"
+    }
+  }
+]

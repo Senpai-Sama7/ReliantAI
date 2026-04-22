@@ -1,0 +1,1082 @@
+    Fetching advisory database from `https://github.com/RustSec/advisory-db.git`
+      Loaded 949 security advisories (from /home/donovan/.cargo/advisory-db)
+    Updating crates.io index
+    Scanning Cargo.lock for vulnerabilities (816 crate dependencies)
+Crate:     bytes
+Version:   1.10.1
+Title:     Integer overflow in `BytesMut::reserve`
+Date:      2026-02-03
+ID:        RUSTSEC-2026-0007
+URL:       https://github.com/advisories/GHSA-434x-w66g-qw3r
+Solution:  Upgrade to >=1.11.1
+Dependency tree:
+bytes 1.10.1
+├── tungstenite 0.24.0
+│   └── tokio-tungstenite 0.24.0
+│       └── axum 0.7.9
+│           ├── axum-extra 0.9.6
+│           │   └── adaptive_expert_platform 0.1.0
+│           │       ├── uppercase_plugin 0.1.0
+│           │       ├── julia_plugin 0.1.0
+│           │       ├── dqn_plugin 0.1.0
+│           │       └── adaptive_expert_gui 0.1.0
+│           └── adaptive_expert_platform 0.1.0
+├── tower-http 0.5.2
+│   └── adaptive_expert_platform 0.1.0
+├── tonic 0.9.2
+│   ├── opentelemetry-proto 0.4.0
+│   │   └── opentelemetry-otlp 0.14.0
+│   │       └── adaptive_expert_platform 0.1.0
+│   ├── opentelemetry-otlp 0.14.0
+│   └── etcd-rs 1.0.1
+│       └── adaptive_expert_platform 0.1.0
+├── tokio-util 0.7.15
+│   ├── tower-http 0.5.2
+│   ├── tower 0.4.13
+│   │   ├── tonic 0.9.2
+│   │   ├── axum 0.6.20
+│   │   │   └── tonic 0.9.2
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── redis 0.24.0
+│   │   └── bb8-redis 0.14.0
+│   │       └── adaptive_expert_platform 0.1.0
+│   ├── h2 0.4.11
+│   │   └── hyper 1.6.0
+│   │       ├── metrics-exporter-prometheus 0.15.3
+│   │       │   └── adaptive_expert_platform 0.1.0
+│   │       ├── hyper-util 0.1.16
+│   │       │   ├── metrics-exporter-prometheus 0.15.3
+│   │       │   ├── hyper-rustls 0.27.7
+│   │       │   │   └── metrics-exporter-prometheus 0.15.3
+│   │       │   └── axum 0.7.9
+│   │       ├── hyper-rustls 0.27.7
+│   │       └── axum 0.7.9
+│   ├── h2 0.3.27
+│   │   ├── tonic 0.9.2
+│   │   ├── reqwest 0.11.27
+│   │   │   ├── consul 0.4.2
+│   │   │   │   └── adaptive_expert_platform 0.1.0
+│   │   │   └── adaptive_expert_platform 0.1.0
+│   │   └── hyper 0.14.32
+│   │       ├── tonic 0.9.2
+│   │       ├── reqwest 0.11.27
+│   │       ├── hyper-tls 0.5.0
+│   │       │   └── reqwest 0.11.27
+│   │       ├── hyper-timeout 0.4.1
+│   │       │   └── tonic 0.9.2
+│   │       └── axum 0.6.20
+│   └── combine 4.6.7
+│       ├── redis 0.25.4
+│       │   └── adaptive_expert_platform 0.1.0
+│       ├── redis 0.24.0
+│       ├── mmap-rs 0.6.1
+│       │   └── hnsw_rs 0.3.2
+│       │       └── adaptive_expert_platform 0.1.0
+│       └── jni 0.20.0
+│           └── tao 0.16.10
+│               └── wry 0.24.11
+│                   └── tauri-runtime-wry 0.14.11
+│                       └── tauri 1.8.3
+│                           └── adaptive_expert_gui 0.1.0
+├── tokio-test 0.4.4
+│   ├── julia_plugin 0.1.0
+│   ├── dqn_plugin 0.1.0
+│   └── adaptive_expert_platform 0.1.0
+├── tokio 1.47.1
+│   ├── tower-http 0.5.2
+│   ├── tower 0.5.2
+│   │   ├── axum-extra 0.9.6
+│   │   └── axum 0.7.9
+│   ├── tower 0.4.13
+│   ├── tonic 0.9.2
+│   ├── tokio-util 0.7.15
+│   ├── tokio-tungstenite 0.24.0
+│   ├── tokio-test 0.4.4
+│   ├── tokio-stream 0.1.17
+│   │   ├── tonic 0.9.2
+│   │   ├── tokio-test 0.4.4
+│   │   └── etcd-rs 1.0.1
+│   ├── tokio-rustls 0.26.2
+│   │   └── hyper-rustls 0.27.7
+│   ├── tokio-rustls 0.24.1
+│   │   └── tonic 0.9.2
+│   ├── tokio-native-tls 0.3.1
+│   │   ├── reqwest 0.11.27
+│   │   └── hyper-tls 0.5.0
+│   ├── tokio-io-timeout 1.2.1
+│   │   └── hyper-timeout 0.4.1
+│   ├── tauri 1.8.3
+│   ├── reqwest 0.11.27
+│   ├── redis 0.24.0
+│   ├── opentelemetry-otlp 0.14.0
+│   ├── metrics-exporter-prometheus 0.15.3
+│   ├── llama_cpp 0.3.2
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── julia_plugin 0.1.0
+│   ├── hyper-util 0.1.16
+│   ├── hyper-tls 0.5.0
+│   ├── hyper-timeout 0.4.1
+│   ├── hyper-rustls 0.27.7
+│   ├── hyper 1.6.0
+│   ├── hyper 0.14.32
+│   ├── h2 0.4.11
+│   ├── h2 0.3.27
+│   ├── etcd-rs 1.0.1
+│   ├── combine 4.6.7
+│   ├── bb8 0.8.6
+│   │   ├── bb8-redis 0.14.0
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── axum 0.7.9
+│   ├── async-compression 0.4.27
+│   │   └── tower-http 0.5.2
+│   ├── adaptive_expert_platform 0.1.0
+│   └── adaptive_expert_gui 0.1.0
+├── reqwest 0.11.27
+├── redis 0.24.0
+├── prost-build 0.11.9
+│   └── tonic-build 0.9.2
+│       └── etcd-rs 1.0.1
+├── prost 0.11.9
+│   ├── tonic 0.9.2
+│   ├── prost-types 0.11.9
+│   │   └── prost-build 0.11.9
+│   ├── prost-build 0.11.9
+│   ├── opentelemetry-proto 0.4.0
+│   ├── opentelemetry-otlp 0.14.0
+│   └── etcd-rs 1.0.1
+├── multer 3.1.0
+│   └── axum-extra 0.9.6
+├── hyper-util 0.1.16
+├── hyper-tls 0.5.0
+├── hyper 1.6.0
+├── hyper 0.14.32
+├── http-body-util 0.1.3
+│   ├── tower-http 0.5.2
+│   ├── metrics-exporter-prometheus 0.15.3
+│   ├── axum-extra 0.9.6
+│   ├── axum-core 0.4.5
+│   │   ├── axum-extra 0.9.6
+│   │   └── axum 0.7.9
+│   └── axum 0.7.9
+├── http-body 1.0.1
+│   ├── tower-http 0.5.2
+│   ├── hyper-util 0.1.16
+│   ├── hyper 1.6.0
+│   ├── http-body-util 0.1.3
+│   ├── axum-extra 0.9.6
+│   ├── axum-core 0.4.5
+│   └── axum 0.7.9
+├── http-body 0.4.6
+│   ├── tonic 0.9.2
+│   ├── reqwest 0.11.27
+│   ├── hyper 0.14.32
+│   ├── axum-core 0.3.4
+│   │   └── axum 0.6.20
+│   └── axum 0.6.20
+├── http 1.3.1
+│   ├── tungstenite 0.24.0
+│   ├── tower-http 0.5.2
+│   ├── multer 3.1.0
+│   ├── hyper-util 0.1.16
+│   ├── hyper-rustls 0.27.7
+│   ├── hyper 1.6.0
+│   ├── http-body-util 0.1.3
+│   ├── http-body 1.0.1
+│   ├── h2 0.4.11
+│   ├── axum-extra 0.9.6
+│   ├── axum-core 0.4.5
+│   └── axum 0.7.9
+├── http 0.2.12
+│   ├── wry 0.24.11
+│   ├── tonic 0.9.2
+│   ├── tauri-runtime 0.14.6
+│   │   ├── tauri-runtime-wry 0.14.11
+│   │   └── tauri 1.8.3
+│   ├── tauri 1.8.3
+│   ├── reqwest 0.11.27
+│   ├── opentelemetry-otlp 0.14.0
+│   ├── hyper 0.14.32
+│   ├── http-body 0.4.6
+│   ├── h2 0.3.27
+│   ├── etcd-rs 1.0.1
+│   ├── axum-core 0.3.4
+│   └── axum 0.6.20
+├── h2 0.4.11
+├── h2 0.3.27
+├── combine 4.6.7
+├── axum-extra 0.9.6
+├── axum-core 0.4.5
+├── axum-core 0.3.4
+├── axum 0.7.9
+└── axum 0.6.20
+
+Crate:     protobuf
+Version:   2.28.0
+Title:     Crash due to uncontrolled recursion in protobuf crate
+Date:      2024-12-12
+ID:        RUSTSEC-2024-0437
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0437
+Solution:  Upgrade to >=3.7.2
+Dependency tree:
+protobuf 2.28.0
+└── prometheus 0.13.4
+    └── adaptive_expert_platform 0.1.0
+        ├── uppercase_plugin 0.1.0
+        ├── julia_plugin 0.1.0
+        ├── dqn_plugin 0.1.0
+        └── adaptive_expert_gui 0.1.0
+
+Crate:     slab
+Version:   0.4.10
+Title:     Out-of-bounds access in `get_disjoint_mut` due to incorrect bounds check
+Date:      2025-08-12
+ID:        RUSTSEC-2025-0047
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0047
+Solution:  Upgrade to >=0.4.11
+Dependency tree:
+slab 0.4.10
+├── tower 0.4.13
+│   ├── tonic 0.9.2
+│   │   ├── opentelemetry-proto 0.4.0
+│   │   │   └── opentelemetry-otlp 0.14.0
+│   │   │       └── adaptive_expert_platform 0.1.0
+│   │   │           ├── uppercase_plugin 0.1.0
+│   │   │           ├── julia_plugin 0.1.0
+│   │   │           ├── dqn_plugin 0.1.0
+│   │   │           └── adaptive_expert_gui 0.1.0
+│   │   ├── opentelemetry-otlp 0.14.0
+│   │   └── etcd-rs 1.0.1
+│   │       └── adaptive_expert_platform 0.1.0
+│   ├── axum 0.6.20
+│   │   └── tonic 0.9.2
+│   └── adaptive_expert_platform 0.1.0
+├── tokio 1.47.1
+│   ├── tower-http 0.5.2
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── tower 0.5.2
+│   │   ├── axum-extra 0.9.6
+│   │   │   └── adaptive_expert_platform 0.1.0
+│   │   └── axum 0.7.9
+│   │       ├── axum-extra 0.9.6
+│   │       └── adaptive_expert_platform 0.1.0
+│   ├── tower 0.4.13
+│   ├── tonic 0.9.2
+│   ├── tokio-util 0.7.15
+│   │   ├── tower-http 0.5.2
+│   │   ├── tower 0.4.13
+│   │   ├── redis 0.24.0
+│   │   │   └── bb8-redis 0.14.0
+│   │   │       └── adaptive_expert_platform 0.1.0
+│   │   ├── h2 0.4.11
+│   │   │   └── hyper 1.6.0
+│   │   │       ├── metrics-exporter-prometheus 0.15.3
+│   │   │       │   └── adaptive_expert_platform 0.1.0
+│   │   │       ├── hyper-util 0.1.16
+│   │   │       │   ├── metrics-exporter-prometheus 0.15.3
+│   │   │       │   ├── hyper-rustls 0.27.7
+│   │   │       │   │   └── metrics-exporter-prometheus 0.15.3
+│   │   │       │   └── axum 0.7.9
+│   │   │       ├── hyper-rustls 0.27.7
+│   │   │       └── axum 0.7.9
+│   │   ├── h2 0.3.27
+│   │   │   ├── tonic 0.9.2
+│   │   │   ├── reqwest 0.11.27
+│   │   │   │   ├── consul 0.4.2
+│   │   │   │   │   └── adaptive_expert_platform 0.1.0
+│   │   │   │   └── adaptive_expert_platform 0.1.0
+│   │   │   └── hyper 0.14.32
+│   │   │       ├── tonic 0.9.2
+│   │   │       ├── reqwest 0.11.27
+│   │   │       ├── hyper-tls 0.5.0
+│   │   │       │   └── reqwest 0.11.27
+│   │   │       ├── hyper-timeout 0.4.1
+│   │   │       │   └── tonic 0.9.2
+│   │   │       └── axum 0.6.20
+│   │   └── combine 4.6.7
+│   │       ├── redis 0.25.4
+│   │       │   └── adaptive_expert_platform 0.1.0
+│   │       ├── redis 0.24.0
+│   │       ├── mmap-rs 0.6.1
+│   │       │   └── hnsw_rs 0.3.2
+│   │       │       └── adaptive_expert_platform 0.1.0
+│   │       └── jni 0.20.0
+│   │           └── tao 0.16.10
+│   │               └── wry 0.24.11
+│   │                   └── tauri-runtime-wry 0.14.11
+│   │                       └── tauri 1.8.3
+│   │                           └── adaptive_expert_gui 0.1.0
+│   ├── tokio-tungstenite 0.24.0
+│   │   └── axum 0.7.9
+│   ├── tokio-test 0.4.4
+│   │   ├── julia_plugin 0.1.0
+│   │   ├── dqn_plugin 0.1.0
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── tokio-stream 0.1.17
+│   │   ├── tonic 0.9.2
+│   │   ├── tokio-test 0.4.4
+│   │   └── etcd-rs 1.0.1
+│   ├── tokio-rustls 0.26.2
+│   │   └── hyper-rustls 0.27.7
+│   ├── tokio-rustls 0.24.1
+│   │   └── tonic 0.9.2
+│   ├── tokio-native-tls 0.3.1
+│   │   ├── reqwest 0.11.27
+│   │   └── hyper-tls 0.5.0
+│   ├── tokio-io-timeout 1.2.1
+│   │   └── hyper-timeout 0.4.1
+│   ├── tauri 1.8.3
+│   ├── reqwest 0.11.27
+│   ├── redis 0.24.0
+│   ├── opentelemetry-otlp 0.14.0
+│   ├── metrics-exporter-prometheus 0.15.3
+│   ├── llama_cpp 0.3.2
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── julia_plugin 0.1.0
+│   ├── hyper-util 0.1.16
+│   ├── hyper-tls 0.5.0
+│   ├── hyper-timeout 0.4.1
+│   ├── hyper-rustls 0.27.7
+│   ├── hyper 1.6.0
+│   ├── hyper 0.14.32
+│   ├── h2 0.4.11
+│   ├── h2 0.3.27
+│   ├── etcd-rs 1.0.1
+│   ├── combine 4.6.7
+│   ├── bb8 0.8.6
+│   │   ├── bb8-redis 0.14.0
+│   │   └── adaptive_expert_platform 0.1.0
+│   ├── axum 0.7.9
+│   ├── async-compression 0.4.27
+│   │   └── tower-http 0.5.2
+│   ├── adaptive_expert_platform 0.1.0
+│   └── adaptive_expert_gui 0.1.0
+├── h2 0.4.11
+├── h2 0.3.27
+└── futures-util 0.3.31
+    ├── tower-http 0.5.2
+    ├── tower 0.5.2
+    ├── tower 0.4.13
+    ├── tonic 0.9.2
+    ├── tokio-tungstenite 0.24.0
+    ├── tauri 1.8.3
+    ├── reqwest 0.11.27
+    ├── redis 0.24.0
+    ├── opentelemetry_sdk 0.21.2
+    │   ├── tracing-opentelemetry 0.22.0
+    │   │   └── adaptive_expert_platform 0.1.0
+    │   ├── opentelemetry-proto 0.4.0
+    │   └── opentelemetry-otlp 0.14.0
+    ├── multer 3.1.0
+    │   └── axum-extra 0.9.6
+    ├── hyper-util 0.1.16
+    ├── hyper 1.6.0
+    ├── hyper 0.14.32
+    ├── h2 0.3.27
+    ├── futures-executor 0.3.31
+    │   ├── opentelemetry_sdk 0.21.2
+    │   ├── glib 0.15.12
+    │   │   ├── wry 0.24.11
+    │   │   ├── webkit2gtk 0.18.2
+    │   │   │   ├── wry 0.24.11
+    │   │   │   ├── tauri-runtime-wry 0.14.11
+    │   │   │   └── tauri 1.8.3
+    │   │   ├── tauri 1.8.3
+    │   │   ├── tao 0.16.10
+    │   │   ├── soup2 0.2.1
+    │   │   │   ├── wry 0.24.11
+    │   │   │   └── webkit2gtk 0.18.2
+    │   │   ├── pango 0.15.10
+    │   │   │   ├── gtk 0.15.5
+    │   │   │   │   ├── wry 0.24.11
+    │   │   │   │   ├── webkit2gtk 0.18.2
+    │   │   │   │   ├── tauri-runtime-wry 0.14.11
+    │   │   │   │   ├── tauri-runtime 0.14.6
+    │   │   │   │   │   ├── tauri-runtime-wry 0.14.11
+    │   │   │   │   │   └── tauri 1.8.3
+    │   │   │   │   ├── tauri 1.8.3
+    │   │   │   │   └── tao 0.16.10
+    │   │   │   └── gdk 0.15.4
+    │   │   │       ├── wry 0.24.11
+    │   │   │       ├── webkit2gtk 0.18.2
+    │   │   │       ├── tao 0.16.10
+    │   │   │       └── gtk 0.15.5
+    │   │   ├── javascriptcore-rs 0.16.0
+    │   │   │   └── webkit2gtk 0.18.2
+    │   │   ├── gtk 0.15.5
+    │   │   ├── gio 0.15.12
+    │   │   │   ├── wry 0.24.11
+    │   │   │   ├── webkit2gtk 0.18.2
+    │   │   │   ├── tao 0.16.10
+    │   │   │   ├── soup2 0.2.1
+    │   │   │   ├── gtk 0.15.5
+    │   │   │   ├── gdk-pixbuf 0.15.11
+    │   │   │   │   ├── tao 0.16.10
+    │   │   │   │   ├── gtk 0.15.5
+    │   │   │   │   └── gdk 0.15.4
+    │   │   │   └── gdk 0.15.4
+    │   │   ├── gdk-pixbuf 0.15.11
+    │   │   ├── gdk 0.15.4
+    │   │   ├── cairo-rs 0.15.12
+    │   │   │   ├── webkit2gtk 0.18.2
+    │   │   │   ├── tao 0.16.10
+    │   │   │   ├── gtk 0.15.5
+    │   │   │   └── gdk 0.15.4
+    │   │   └── atk 0.15.1
+    │   │       └── gtk 0.15.5
+    │   └── futures 0.3.31
+    │       ├── llama_cpp 0.3.2
+    │       ├── governor 0.6.3
+    │       │   └── adaptive_expert_platform 0.1.0
+    │       ├── etcd-rs 1.0.1
+    │       └── adaptive_expert_platform 0.1.0
+    ├── futures 0.3.31
+    ├── bb8 0.8.6
+    ├── axum-extra 0.9.6
+    ├── axum-core 0.4.5
+    │   ├── axum-extra 0.9.6
+    │   └── axum 0.7.9
+    ├── axum-core 0.3.4
+    │   └── axum 0.6.20
+    ├── axum 0.7.9
+    ├── axum 0.6.20
+    └── adaptive_expert_platform 0.1.0
+
+Crate:     time
+Version:   0.3.41
+Title:     Denial of Service via Stack Exhaustion
+Date:      2026-02-05
+ID:        RUSTSEC-2026-0009
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0009
+Severity:  6.8 (medium)
+Solution:  Upgrade to >=0.3.47
+Dependency tree:
+time 0.3.41
+├── tauri-codegen 1.4.6
+│   └── tauri-macros 1.4.7
+│       └── tauri 1.8.3
+│           └── adaptive_expert_gui 0.1.0
+├── simple_asn1 0.6.3
+│   └── jsonwebtoken 9.3.1
+│       └── adaptive_expert_platform 0.1.0
+│           ├── uppercase_plugin 0.1.0
+│           ├── julia_plugin 0.1.0
+│           ├── dqn_plugin 0.1.0
+│           └── adaptive_expert_gui 0.1.0
+├── serde_with 3.14.0
+│   └── tauri-utils 1.6.2
+│       ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri-runtime 0.14.6
+│       │   ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri-macros 1.4.7
+│       ├── tauri-codegen 1.4.6
+│       ├── tauri-build 1.5.6
+│       │   └── adaptive_expert_gui 0.1.0
+│       └── tauri 1.8.3
+├── plist 1.7.4
+│   ├── tauri-codegen 1.4.6
+│   └── tauri 1.8.3
+└── cookie 0.18.1
+    └── axum-extra 0.9.6
+        └── adaptive_expert_platform 0.1.0
+
+Crate:     tracing-subscriber
+Version:   0.3.19
+Title:     Logging user input may result in poisoning logs with ANSI escape sequences
+Date:      2025-08-29
+ID:        RUSTSEC-2025-0055
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0055
+Solution:  Upgrade to >=0.3.20
+Dependency tree:
+tracing-subscriber 0.3.19
+├── tracing-test 0.2.5
+│   └── adaptive_expert_platform 0.1.0
+│       ├── uppercase_plugin 0.1.0
+│       ├── julia_plugin 0.1.0
+│       ├── dqn_plugin 0.1.0
+│       └── adaptive_expert_gui 0.1.0
+├── tracing-opentelemetry 0.22.0
+│   └── adaptive_expert_platform 0.1.0
+├── loom 0.5.6
+│   └── state 0.5.3
+│       └── tauri 1.8.3
+│           └── adaptive_expert_gui 0.1.0
+├── adaptive_expert_platform 0.1.0
+└── adaptive_expert_gui 0.1.0
+
+Crate:     wasmtime
+Version:   35.0.0
+Title:     Panic adding excessive fields to a `wasi:http/types.fields` instance
+Date:      2026-02-24
+ID:        RUSTSEC-2026-0021
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0021
+Severity:  6.9 (medium)
+Solution:  Upgrade to >=24.0.6, <25.0.0 OR >=36.0.6, <37.0.0 OR >=40.0.4, <41.0.0 OR >=41.0.4
+Dependency tree:
+wasmtime 35.0.0
+└── adaptive_expert_platform 0.1.0
+    ├── uppercase_plugin 0.1.0
+    ├── julia_plugin 0.1.0
+    ├── dqn_plugin 0.1.0
+    └── adaptive_expert_gui 0.1.0
+
+Crate:     wasmtime
+Version:   35.0.0
+Title:     Unsound API access to a WebAssembly shared linear memory
+Date:      2025-11-11
+ID:        RUSTSEC-2025-0118
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0118
+Severity:  1.8 (low)
+Solution:  Upgrade to >=38.0.4 OR >=37.0.3, <38.0.0 OR >=36.0.3, <37.0.0 OR >=24.0.5, <25.0.0
+
+Crate:     wasmtime
+Version:   35.0.0
+Title:     Guest-controlled resource exhaustion in WASI implementations
+Date:      2026-02-24
+ID:        RUSTSEC-2026-0020
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0020
+Severity:  6.9 (medium)
+Solution:  Upgrade to >=24.0.6, <25.0.0 OR >=36.0.6, <37.0.0 OR >=40.0.4, <41.0.0 OR >=41.0.4
+
+Crate:     wasmtime
+Version:   35.0.0
+Title:     Wasmtime segfault or unused out-of-sandbox load with `f64.copysign` operator on x86-64
+Date:      2026-01-26
+ID:        RUSTSEC-2026-0006
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0006
+Severity:  4.1 (medium)
+Solution:  Upgrade to >=41.0.1 OR >=40.0.3, <41.0.0 OR >=36.0.5, <37.0.0 OR <29.0.0
+
+Crate:     atk
+Version:   0.15.1
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0413
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0413
+Dependency tree:
+atk 0.15.1
+└── gtk 0.15.5
+    ├── wry 0.24.11
+    │   └── tauri-runtime-wry 0.14.11
+    │       └── tauri 1.8.3
+    │           └── adaptive_expert_gui 0.1.0
+    ├── webkit2gtk 0.18.2
+    │   ├── wry 0.24.11
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri-runtime-wry 0.14.11
+    ├── tauri-runtime 0.14.6
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri 1.8.3
+    └── tao 0.16.10
+        └── wry 0.24.11
+
+Crate:     atk-sys
+Version:   0.15.1
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0416
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0416
+Dependency tree:
+atk-sys 0.15.1
+├── webkit2gtk-sys 0.18.0
+│   ├── wry 0.24.11
+│   │   └── tauri-runtime-wry 0.14.11
+│   │       └── tauri 1.8.3
+│   │           └── adaptive_expert_gui 0.1.0
+│   └── webkit2gtk 0.18.2
+│       ├── wry 0.24.11
+│       ├── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+├── gtk-sys 0.15.3
+│   ├── webkit2gtk-sys 0.18.0
+│   ├── webkit2gtk 0.18.2
+│   └── gtk 0.15.5
+│       ├── wry 0.24.11
+│       ├── webkit2gtk 0.18.2
+│       ├── tauri-runtime-wry 0.14.11
+│       ├── tauri-runtime 0.14.6
+│       │   ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri 1.8.3
+│       └── tao 0.16.10
+│           └── wry 0.24.11
+└── atk 0.15.1
+    └── gtk 0.15.5
+
+Crate:     bincode
+Version:   1.3.3
+Warning:   unmaintained
+Title:     Bincode is unmaintained
+Date:      2025-12-16
+ID:        RUSTSEC-2025-0141
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0141
+Dependency tree:
+bincode 1.3.3
+├── hnsw_rs 0.3.2
+│   └── adaptive_expert_platform 0.1.0
+│       ├── uppercase_plugin 0.1.0
+│       ├── julia_plugin 0.1.0
+│       ├── dqn_plugin 0.1.0
+│       └── adaptive_expert_gui 0.1.0
+└── adaptive_expert_platform 0.1.0
+
+Crate:     fxhash
+Version:   0.2.1
+Warning:   unmaintained
+Title:     fxhash - no longer maintained
+Date:      2025-09-05
+ID:        RUSTSEC-2025-0057
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0057
+Dependency tree:
+fxhash 0.2.1
+├── sled 0.34.7
+│   └── adaptive_expert_platform 0.1.0
+│       ├── uppercase_plugin 0.1.0
+│       ├── julia_plugin 0.1.0
+│       ├── dqn_plugin 0.1.0
+│       └── adaptive_expert_gui 0.1.0
+├── selectors 0.22.0
+│   └── kuchikiki 0.8.2
+│       ├── wry 0.24.11
+│       │   └── tauri-runtime-wry 0.14.11
+│       │       └── tauri 1.8.3
+│       │           └── adaptive_expert_gui 0.1.0
+│       └── tauri-utils 1.6.2
+│           ├── tauri-runtime-wry 0.14.11
+│           ├── tauri-runtime 0.14.6
+│           │   ├── tauri-runtime-wry 0.14.11
+│           │   └── tauri 1.8.3
+│           ├── tauri-macros 1.4.7
+│           │   └── tauri 1.8.3
+│           ├── tauri-codegen 1.4.6
+│           │   └── tauri-macros 1.4.7
+│           ├── tauri-build 1.5.6
+│           │   └── adaptive_expert_gui 0.1.0
+│           └── tauri 1.8.3
+└── fxprof-processed-profile 0.6.0
+    └── wasmtime 35.0.0
+        └── adaptive_expert_platform 0.1.0
+
+Crate:     gdk
+Version:   0.15.4
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0412
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0412
+Dependency tree:
+gdk 0.15.4
+├── wry 0.24.11
+│   └── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+│           └── adaptive_expert_gui 0.1.0
+├── webkit2gtk 0.18.2
+│   ├── wry 0.24.11
+│   ├── tauri-runtime-wry 0.14.11
+│   └── tauri 1.8.3
+├── tao 0.16.10
+│   └── wry 0.24.11
+└── gtk 0.15.5
+    ├── wry 0.24.11
+    ├── webkit2gtk 0.18.2
+    ├── tauri-runtime-wry 0.14.11
+    ├── tauri-runtime 0.14.6
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri 1.8.3
+    └── tao 0.16.10
+
+Crate:     gdk-sys
+Version:   0.15.1
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0418
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0418
+Dependency tree:
+gdk-sys 0.15.1
+├── webkit2gtk-sys 0.18.0
+│   ├── wry 0.24.11
+│   │   └── tauri-runtime-wry 0.14.11
+│   │       └── tauri 1.8.3
+│   │           └── adaptive_expert_gui 0.1.0
+│   └── webkit2gtk 0.18.2
+│       ├── wry 0.24.11
+│       ├── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+├── webkit2gtk 0.18.2
+├── tao 0.16.10
+│   └── wry 0.24.11
+├── gtk-sys 0.15.3
+│   ├── webkit2gtk-sys 0.18.0
+│   ├── webkit2gtk 0.18.2
+│   └── gtk 0.15.5
+│       ├── wry 0.24.11
+│       ├── webkit2gtk 0.18.2
+│       ├── tauri-runtime-wry 0.14.11
+│       ├── tauri-runtime 0.14.6
+│       │   ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri 1.8.3
+│       └── tao 0.16.10
+├── gdkx11-sys 0.15.1
+│   └── tao 0.16.10
+├── gdkwayland-sys 0.15.3
+│   └── tao 0.16.10
+└── gdk 0.15.4
+    ├── wry 0.24.11
+    ├── webkit2gtk 0.18.2
+    ├── tao 0.16.10
+    └── gtk 0.15.5
+
+Crate:     gdkwayland-sys
+Version:   0.15.3
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0411
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0411
+Dependency tree:
+gdkwayland-sys 0.15.3
+└── tao 0.16.10
+    └── wry 0.24.11
+        └── tauri-runtime-wry 0.14.11
+            └── tauri 1.8.3
+                └── adaptive_expert_gui 0.1.0
+
+Crate:     gdkx11-sys
+Version:   0.15.1
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0414
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0414
+Dependency tree:
+gdkx11-sys 0.15.1
+└── tao 0.16.10
+    └── wry 0.24.11
+        └── tauri-runtime-wry 0.14.11
+            └── tauri 1.8.3
+                └── adaptive_expert_gui 0.1.0
+
+Crate:     gtk
+Version:   0.15.5
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0415
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0415
+Dependency tree:
+gtk 0.15.5
+├── wry 0.24.11
+│   └── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+│           └── adaptive_expert_gui 0.1.0
+├── webkit2gtk 0.18.2
+│   ├── wry 0.24.11
+│   ├── tauri-runtime-wry 0.14.11
+│   └── tauri 1.8.3
+├── tauri-runtime-wry 0.14.11
+├── tauri-runtime 0.14.6
+│   ├── tauri-runtime-wry 0.14.11
+│   └── tauri 1.8.3
+├── tauri 1.8.3
+└── tao 0.16.10
+    └── wry 0.24.11
+
+Crate:     gtk-sys
+Version:   0.15.3
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0420
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0420
+Dependency tree:
+gtk-sys 0.15.3
+├── webkit2gtk-sys 0.18.0
+│   ├── wry 0.24.11
+│   │   └── tauri-runtime-wry 0.14.11
+│   │       └── tauri 1.8.3
+│   │           └── adaptive_expert_gui 0.1.0
+│   └── webkit2gtk 0.18.2
+│       ├── wry 0.24.11
+│       ├── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+├── webkit2gtk 0.18.2
+└── gtk 0.15.5
+    ├── wry 0.24.11
+    ├── webkit2gtk 0.18.2
+    ├── tauri-runtime-wry 0.14.11
+    ├── tauri-runtime 0.14.6
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri 1.8.3
+    └── tao 0.16.10
+        └── wry 0.24.11
+
+Crate:     gtk3-macros
+Version:   0.15.6
+Warning:   unmaintained
+Title:     gtk-rs GTK3 bindings - no longer maintained
+Date:      2024-03-04
+ID:        RUSTSEC-2024-0419
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0419
+Dependency tree:
+gtk3-macros 0.15.6
+└── gtk 0.15.5
+    ├── wry 0.24.11
+    │   └── tauri-runtime-wry 0.14.11
+    │       └── tauri 1.8.3
+    │           └── adaptive_expert_gui 0.1.0
+    ├── webkit2gtk 0.18.2
+    │   ├── wry 0.24.11
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri-runtime-wry 0.14.11
+    ├── tauri-runtime 0.14.6
+    │   ├── tauri-runtime-wry 0.14.11
+    │   └── tauri 1.8.3
+    ├── tauri 1.8.3
+    └── tao 0.16.10
+        └── wry 0.24.11
+
+Crate:     instant
+Version:   0.1.13
+Warning:   unmaintained
+Title:     `instant` is unmaintained
+Date:      2024-09-01
+ID:        RUSTSEC-2024-0384
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0384
+Dependency tree:
+instant 0.1.13
+├── tao 0.16.10
+│   └── wry 0.24.11
+│       └── tauri-runtime-wry 0.14.11
+│           └── tauri 1.8.3
+│               └── adaptive_expert_gui 0.1.0
+├── parking_lot_core 0.8.6
+│   └── parking_lot 0.11.2
+│       └── sled 0.34.7
+│           └── adaptive_expert_platform 0.1.0
+│               ├── uppercase_plugin 0.1.0
+│               ├── julia_plugin 0.1.0
+│               ├── dqn_plugin 0.1.0
+│               └── adaptive_expert_gui 0.1.0
+└── parking_lot 0.11.2
+
+Crate:     paste
+Version:   1.0.15
+Warning:   unmaintained
+Title:     paste - no longer maintained
+Date:      2024-10-07
+ID:        RUSTSEC-2024-0436
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0436
+Dependency tree:
+paste 1.0.15
+├── gemm-f64 0.17.1
+│   └── gemm 0.17.1
+│       └── candle-core 0.7.2
+│           ├── candle-nn 0.7.2
+│           │   └── adaptive_expert_platform 0.1.0
+│           │       ├── uppercase_plugin 0.1.0
+│           │       ├── julia_plugin 0.1.0
+│           │       ├── dqn_plugin 0.1.0
+│           │       └── adaptive_expert_gui 0.1.0
+│           └── adaptive_expert_platform 0.1.0
+├── gemm-f32 0.17.1
+│   ├── gemm-f16 0.17.1
+│   │   └── gemm 0.17.1
+│   └── gemm 0.17.1
+├── gemm-f16 0.17.1
+├── gemm-common 0.17.1
+│   ├── gemm-f64 0.17.1
+│   ├── gemm-f32 0.17.1
+│   ├── gemm-f16 0.17.1
+│   ├── gemm-c64 0.17.1
+│   │   └── gemm 0.17.1
+│   ├── gemm-c32 0.17.1
+│   │   └── gemm 0.17.1
+│   └── gemm 0.17.1
+├── gemm-c64 0.17.1
+├── gemm-c32 0.17.1
+└── gemm 0.17.1
+
+Crate:     proc-macro-error
+Version:   1.0.4
+Warning:   unmaintained
+Title:     proc-macro-error is unmaintained
+Date:      2024-09-01
+ID:        RUSTSEC-2024-0370
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0370
+Dependency tree:
+proc-macro-error 1.0.4
+├── gtk3-macros 0.15.6
+│   └── gtk 0.15.5
+│       ├── wry 0.24.11
+│       │   └── tauri-runtime-wry 0.14.11
+│       │       └── tauri 1.8.3
+│       │           └── adaptive_expert_gui 0.1.0
+│       ├── webkit2gtk 0.18.2
+│       │   ├── wry 0.24.11
+│       │   ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri-runtime-wry 0.14.11
+│       ├── tauri-runtime 0.14.6
+│       │   ├── tauri-runtime-wry 0.14.11
+│       │   └── tauri 1.8.3
+│       ├── tauri 1.8.3
+│       └── tao 0.16.10
+│           └── wry 0.24.11
+└── glib-macros 0.15.13
+    └── glib 0.15.12
+        ├── wry 0.24.11
+        ├── webkit2gtk 0.18.2
+        ├── tauri 1.8.3
+        ├── tao 0.16.10
+        ├── soup2 0.2.1
+        │   ├── wry 0.24.11
+        │   └── webkit2gtk 0.18.2
+        ├── pango 0.15.10
+        │   ├── gtk 0.15.5
+        │   └── gdk 0.15.4
+        │       ├── wry 0.24.11
+        │       ├── webkit2gtk 0.18.2
+        │       ├── tao 0.16.10
+        │       └── gtk 0.15.5
+        ├── javascriptcore-rs 0.16.0
+        │   └── webkit2gtk 0.18.2
+        ├── gtk 0.15.5
+        ├── gio 0.15.12
+        │   ├── wry 0.24.11
+        │   ├── webkit2gtk 0.18.2
+        │   ├── tao 0.16.10
+        │   ├── soup2 0.2.1
+        │   ├── gtk 0.15.5
+        │   ├── gdk-pixbuf 0.15.11
+        │   │   ├── tao 0.16.10
+        │   │   ├── gtk 0.15.5
+        │   │   └── gdk 0.15.4
+        │   └── gdk 0.15.4
+        ├── gdk-pixbuf 0.15.11
+        ├── gdk 0.15.4
+        ├── cairo-rs 0.15.12
+        │   ├── webkit2gtk 0.18.2
+        │   ├── tao 0.16.10
+        │   ├── gtk 0.15.5
+        │   └── gdk 0.15.4
+        └── atk 0.15.1
+            └── gtk 0.15.5
+
+Crate:     rustls-pemfile
+Version:   1.0.4
+Warning:   unmaintained
+Title:     rustls-pemfile is unmaintained
+Date:      2025-11-28
+ID:        RUSTSEC-2025-0134
+URL:       https://rustsec.org/advisories/RUSTSEC-2025-0134
+Dependency tree:
+rustls-pemfile 1.0.4
+├── tonic 0.9.2
+│   ├── opentelemetry-proto 0.4.0
+│   │   └── opentelemetry-otlp 0.14.0
+│   │       └── adaptive_expert_platform 0.1.0
+│   │           ├── uppercase_plugin 0.1.0
+│   │           ├── julia_plugin 0.1.0
+│   │           ├── dqn_plugin 0.1.0
+│   │           └── adaptive_expert_gui 0.1.0
+│   ├── opentelemetry-otlp 0.14.0
+│   └── etcd-rs 1.0.1
+│       └── adaptive_expert_platform 0.1.0
+└── reqwest 0.11.27
+    ├── consul 0.4.2
+    │   └── adaptive_expert_platform 0.1.0
+    └── adaptive_expert_platform 0.1.0
+
+Crate:     glib
+Version:   0.15.12
+Warning:   unsound
+Title:     Unsoundness in `Iterator` and `DoubleEndedIterator` impls for `glib::VariantStrIter`
+Date:      2024-03-30
+ID:        RUSTSEC-2024-0429
+URL:       https://rustsec.org/advisories/RUSTSEC-2024-0429
+Dependency tree:
+glib 0.15.12
+├── wry 0.24.11
+│   └── tauri-runtime-wry 0.14.11
+│       └── tauri 1.8.3
+│           └── adaptive_expert_gui 0.1.0
+├── webkit2gtk 0.18.2
+│   ├── wry 0.24.11
+│   ├── tauri-runtime-wry 0.14.11
+│   └── tauri 1.8.3
+├── tauri 1.8.3
+├── tao 0.16.10
+│   └── wry 0.24.11
+├── soup2 0.2.1
+│   ├── wry 0.24.11
+│   └── webkit2gtk 0.18.2
+├── pango 0.15.10
+│   ├── gtk 0.15.5
+│   │   ├── wry 0.24.11
+│   │   ├── webkit2gtk 0.18.2
+│   │   ├── tauri-runtime-wry 0.14.11
+│   │   ├── tauri-runtime 0.14.6
+│   │   │   ├── tauri-runtime-wry 0.14.11
+│   │   │   └── tauri 1.8.3
+│   │   ├── tauri 1.8.3
+│   │   └── tao 0.16.10
+│   └── gdk 0.15.4
+│       ├── wry 0.24.11
+│       ├── webkit2gtk 0.18.2
+│       ├── tao 0.16.10
+│       └── gtk 0.15.5
+├── javascriptcore-rs 0.16.0
+│   └── webkit2gtk 0.18.2
+├── gtk 0.15.5
+├── gio 0.15.12
+│   ├── wry 0.24.11
+│   ├── webkit2gtk 0.18.2
+│   ├── tao 0.16.10
+│   ├── soup2 0.2.1
+│   ├── gtk 0.15.5
+│   ├── gdk-pixbuf 0.15.11
+│   │   ├── tao 0.16.10
+│   │   ├── gtk 0.15.5
+│   │   └── gdk 0.15.4
+│   └── gdk 0.15.4
+├── gdk-pixbuf 0.15.11
+├── gdk 0.15.4
+├── cairo-rs 0.15.12
+│   ├── webkit2gtk 0.18.2
+│   ├── tao 0.16.10
+│   ├── gtk 0.15.5
+│   └── gdk 0.15.4
+└── atk 0.15.1
+    └── gtk 0.15.5
+
+Crate:     lru
+Version:   0.12.5
+Warning:   unsound
+Title:     `IterMut` violates Stacked Borrows by invalidating internal pointer
+Date:      2026-01-07
+ID:        RUSTSEC-2026-0002
+URL:       https://rustsec.org/advisories/RUSTSEC-2026-0002
+Dependency tree:
+lru 0.12.5
+└── adaptive_expert_platform 0.1.0
+    ├── uppercase_plugin 0.1.0
+    ├── julia_plugin 0.1.0
+    ├── dqn_plugin 0.1.0
+    └── adaptive_expert_gui 0.1.0
+
+Crate:     slab
+Version:   0.4.10
+Warning:   yanked
+
+error: 9 vulnerabilities found!
+warning: 18 allowed warnings found

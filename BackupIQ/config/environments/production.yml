@@ -1,0 +1,82 @@
+version: "1.0.0"
+
+backup:
+  source:
+    path: "/data/backup-source"
+    filters:
+      exclude_patterns:
+        - "*.tmp"
+        - "*.log"
+        - "__pycache__"
+        - "node_modules"
+        - ".git"
+      max_file_size_mb: 1024
+
+  destinations:
+    - type: "icloud"
+      config:
+        path: "/backup/production"
+        retry_attempts: 3
+        timeout_seconds: 300
+    - type: "s3"
+      config:
+        bucket: "company-backups-prod"
+        region: "us-west-2"
+        storage_class: "STANDARD_IA"
+
+  resources:
+    max_memory_gb: 4.0
+    max_cpu_percent: 75
+    concurrent_uploads: 5
+    batch_size: 500
+    chunk_size_mb: 64
+
+  schedule:
+    incremental: "0 2 * * *"  # Daily at 2 AM
+    full_backup: "0 1 * * 0"  # Weekly on Sunday at 1 AM
+
+monitoring:
+  enabled: true
+  endpoints:
+    health_port: 8080
+    metrics_port: 9090
+  logging:
+    level: "INFO"
+    format: "json"
+    retention_days: 30
+  metrics:
+    push_gateway: "http://prometheus-pushgateway:9091"
+    scrape_interval: "15s"
+
+security:
+  encryption:
+    enabled: true
+    algorithm: "AES-256-GCM"
+    key_rotation_days: 90
+  authentication:
+    type: "oauth2"
+    token_expiry_hours: 24
+  audit:
+    enabled: true
+    log_all_operations: true
+
+performance:
+  circuit_breaker:
+    failure_threshold: 5
+    timeout_seconds: 30
+    reset_timeout_seconds: 60
+  retry_policy:
+    max_attempts: 3
+    backoff_multiplier: 2.0
+    initial_delay_ms: 1000
+    max_delay_ms: 30000
+
+compliance:
+  gdpr:
+    enabled: true
+    data_retention_days: 2555  # 7 years
+  hipaa:
+    enabled: false
+  sox:
+    enabled: true
+    audit_trail_required: true

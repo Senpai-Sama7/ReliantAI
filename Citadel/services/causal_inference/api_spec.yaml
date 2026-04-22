@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Causal Inference API
+  version: '1.0'
+paths:
+  /effect:
+    post:
+      summary: Estimate causal effect
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EffectRequest'
+      responses:
+        '200':
+          description: Effect estimate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  effect:
+                    type: number
+components:
+  schemas:
+    EffectRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties:
+              type: number
+        treatment:
+          type: string
+        outcome:
+          type: string
+        confounders:
+          type: array
+          items:
+            type: string
+      required: [data, treatment, outcome]

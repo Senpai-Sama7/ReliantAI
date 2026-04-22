@@ -1,0 +1,119 @@
+FF....................F................................                  [100%]
+=================================== FAILURES ===================================
+_______________ TestDocuMancerAuth.test_get_current_user_success _______________
+
+self = <backend.tests.test_auth_integration.TestDocuMancerAuth object at 0x75b0d86c7750>
+
+    def test_get_current_user_success(self):
+        """Test successful user retrieval."""
+        mock_credentials = MagicMock()
+        mock_credentials.credentials = "valid_token"
+    
+        mock_user = {"username": "doc_user", "roles": ["user"]}
+    
+        with patch("auth_integration.validator") as mock_validator:
+            mock_validator.validate_token.return_value = mock_user
+    
+>           user = get_current_user_from_shared_auth(mock_credentials)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+DocuMancer/backend/tests/test_auth_integration.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+credentials = <MagicMock id='129401596740000'>
+
+    def get_current_user_from_shared_auth(credentials: Optional[HTTPAuthorizationCredentials] = Security(security)) -> Dict[str, Any]:
+        """FastAPI dependency to get the current user from the shared JWT validator."""
+        if not JWT_AVAILABLE or not validator or not JWT_SECRET:
+>           raise HTTPException(status_code=503, detail="JWT validation service unavailable")
+E           fastapi.exceptions.HTTPException: 503: JWT validation service unavailable
+
+DocuMancer/backend/auth_integration.py:36: HTTPException
+____________ TestDocuMancerAuth.test_get_current_user_invalid_token ____________
+
+self = <backend.tests.test_auth_integration.TestDocuMancerAuth object at 0x75b0d81382d0>
+
+    def test_get_current_user_invalid_token(self):
+        """Test failure with invalid token."""
+        mock_credentials = MagicMock()
+        mock_credentials.credentials = "invalid_token"
+    
+        with patch("auth_integration.validator") as mock_validator:
+            mock_validator.validate_token.return_value = None
+    
+            with pytest.raises(HTTPException) as excinfo:
+                get_current_user_from_shared_auth(mock_credentials)
+    
+>           assert excinfo.value.status_code == 401
+E           AssertionError: assert 503 == 401
+E            +  where 503 = HTTPException(status_code=503, detail='JWT validation service unavailable').status_code
+E            +    where HTTPException(status_code=503, detail='JWT validation service unavailable') = <ExceptionInfo HTTPException(status_code=503, detail='JWT validation service unavailable') tblen=2>.value
+
+DocuMancer/backend/tests/test_auth_integration.py:42: AssertionError
+________________ TestDocumentParser.test_parser_initialization _________________
+
+self = <backend.tests.test_converter.TestDocumentParser object at 0x75b0a870afd0>
+parser = <converter.DocumentParser object at 0x75b0a8351400>
+
+    def test_parser_initialization(self, parser):
+        """Test parser initialization."""
+        assert parser.language == 'en'
+        assert parser.normalizer is not None
+>       assert len(parser.stop_words) > 0
+E       assert 0 > 0
+E        +  where 0 = len(set())
+E        +    where set() = <converter.DocumentParser object at 0x75b0a8351400>.stop_words
+
+DocuMancer/backend/tests/test_converter.py:229: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+2026-03-10 17:27:17,832 - WARNING - Failed to load NLTK stopwords: 
+**********************************************************************
+  Resource stopwords not found.
+  Please use the NLTK Downloader to obtain the resource:
+
+  >>> import nltk
+  >>> nltk.download('stopwords')
+  
+  For more information see: https://www.nltk.org/data.html
+
+  Attempted to load corpora/stopwords
+
+  Searched in:
+    - '/home/donovan/nltk_data'
+    - '/usr/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/local/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/local/lib/nltk_data'
+**********************************************************************
+
+------------------------------ Captured log setup ------------------------------
+WARNING  converter:converter.py:647 Failed to load NLTK stopwords: 
+**********************************************************************
+  Resource [93mstopwords[0m not found.
+  Please use the NLTK Downloader to obtain the resource:
+
+  [31m>>> import nltk
+  >>> nltk.download('stopwords')
+  [0m
+  For more information see: https://www.nltk.org/data.html
+
+  Attempted to load [93mcorpora/stopwords[0m
+
+  Searched in:
+    - '/home/donovan/nltk_data'
+    - '/usr/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/share/nltk_data'
+    - '/usr/local/share/nltk_data'
+    - '/usr/lib/nltk_data'
+    - '/usr/local/lib/nltk_data'
+**********************************************************************
+=========================== short test summary info ============================
+FAILED DocuMancer/backend/tests/test_auth_integration.py::TestDocuMancerAuth::test_get_current_user_success
+FAILED DocuMancer/backend/tests/test_auth_integration.py::TestDocuMancerAuth::test_get_current_user_invalid_token
+FAILED DocuMancer/backend/tests/test_converter.py::TestDocumentParser::test_parser_initialization
+3 failed, 52 passed in 10.15s

@@ -1,0 +1,25 @@
+# Ignore Python junk
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.log
+
+# Ignore Git and metadata
+.git
+.gitignore
+
+# Ignore big assets & archives
+*.zip
+*.mp4
+*.mp3
+*.jpg
+*.png
+
+# Ignore OS stuff
+.DS_Store
+Thumbs.db
+

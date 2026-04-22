@@ -1,0 +1,310 @@
+warning: unused import: `error`
+  --> adaptive_expert_platform/src/agent.rs:10:27
+   |
+10 | use tracing::{info, warn, error, instrument};
+   |                           ^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `json`
+  --> adaptive_expert_platform/src/batch.rs:18:25
+   |
+18 | use serde_json::{Value, json};
+   |                         ^^^^
+
+warning: unused import: `warn`
+  --> adaptive_expert_platform/src/websocket.rs:12:21
+   |
+12 | use tracing::{info, warn, error, instrument, debug};
+   |                     ^^^^
+
+warning: variable does not need to be mutable
+   --> adaptive_expert_platform/src/server.rs:202:9
+    |
+202 |     let mut orchestrator = state.orchestrator.write().await;
+    |         ----^^^^^^^^^^^^
+    |         |
+    |         help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `Agent`
+  --> adaptive_expert_platform/src/server.rs:18:13
+   |
+18 |     agent::{Agent, HashEmbeddingAgent, LengthRerankAgent},
+   |             ^^^^^
+
+warning: variable does not need to be mutable
+   --> adaptive_expert_platform/src/agent.rs:442:13
+    |
+442 |         let mut child = cmd.spawn()
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+
+warning: unused variable: `config`
+   --> adaptive_expert_platform/src/agent.rs:611:43
+    |
+611 |     pub fn create_agent(agent_type: &str, config: serde_json::Value, settings: &Settings) -> Result<Box<dyn Agent>> {
+    |                                           ^^^^^^ help: if this is intentional, prefix it with an underscore: `_config`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `mesh`
+  --> adaptive_expert_platform/src/orchestrator.rs:81:21
+   |
+81 |         if let Some(ref mesh) = agent_mesh {
+   |                     ^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_mesh`
+
+warning: unused variable: `instances`
+   --> adaptive_expert_platform/src/lifecycle.rs:787:13
+    |
+787 |         let instances = self.instances.clone();
+    |             ^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_instances`
+
+warning: unused variable: `scaling_decisions`
+   --> adaptive_expert_platform/src/lifecycle.rs:788:13
+    |
+788 |         let scaling_decisions = self.scaling_decisions.clone();
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_scaling_decisions`
+
+warning: unused variable: `lifecycle_manager`
+   --> adaptive_expert_platform/src/lifecycle.rs:789:13
+    |
+789 |         let lifecycle_manager = self.clone();
+    |             ^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_lifecycle_manager`
+
+warning: unused variable: `access_time`
+   --> adaptive_expert_platform/src/cache.rs:435:33
+    |
+435 |     async fn record_miss(&self, access_time: Option<Duration>) {
+    |                                 ^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_access_time`
+
+warning: unused variable: `state`
+   --> adaptive_expert_platform/src/server.rs:278:11
+    |
+278 |     State(state): State<AppState>,
+    |           ^^^^^ help: if this is intentional, prefix it with an underscore: `_state`
+
+warning: unused variable: `otlp_endpoint`
+  --> adaptive_expert_platform/src/telemetry.rs:14:13
+   |
+14 | pub fn init(otlp_endpoint: Option<&str>) -> Result<()> {
+   |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_otlp_endpoint`
+
+warning: unused variable: `auth_token`
+   --> adaptive_expert_platform/src/websocket.rs:298:57
+    |
+298 |     async fn handle_connection(self, socket: WebSocket, auth_token: Option<String>) {
+    |                                                         ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_auth_token`
+
+warning: unused variable: `subscriptions`
+   --> adaptive_expert_platform/src/websocket.rs:368:13
+    |
+368 |         let subscriptions: Arc<DashMap<String, Vec<Uuid>>> = self.subscriptions.clone();
+    |             ^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_subscriptions`
+
+warning: unused variable: `message_broadcaster`
+   --> adaptive_expert_platform/src/websocket.rs:369:13
+    |
+369 |         let message_broadcaster: broadcast::Sender<(String, WebSocketMessage)> = self.message_broadcaster.clone();
+    |             ^^^^^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_message_broadcaster`
+
+warning: unused variable: `token`
+   --> adaptive_expert_platform/src/websocket.rs:477:25
+    |
+477 |             if let Some(token) = payload.auth_token {
+    |                         ^^^^^ help: if this is intentional, prefix it with an underscore: `_token`
+
+warning: field `load_balancer` is never read
+   --> adaptive_expert_platform/src/mesh.rs:140:5
+    |
+134 | pub struct AgentMesh {
+    |            --------- field in this struct
+...
+140 |     load_balancer: Arc<LoadBalancer>,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `strategy` is never read
+   --> adaptive_expert_platform/src/mesh.rs:458:5
+    |
+457 | pub struct LoadBalancer {
+    |            ------------ field in this struct
+458 |     strategy: LoadBalancingStrategy,
+    |     ^^^^^^^^
+
+warning: fields `config` and `task_results` are never read
+   --> adaptive_expert_platform/src/mesh.rs:469:5
+    |
+468 | pub struct NetworkTransport {
+    |            ---------------- fields in this struct
+469 |     config: MeshConfig,
+    |     ^^^^^^
+470 |     message_sender: Arc<RwLock<Option<mpsc::Sender<MeshMessage>>>>,
+471 |     task_results: Arc<DashMap<Uuid, oneshot::Sender<TaskResult>>>,
+    |     ^^^^^^^^^^^^
+
+warning: field `max_concurrent` is never read
+   --> adaptive_expert_platform/src/mesh.rs:527:5
+    |
+526 | pub struct TaskExecutor {
+    |            ------------ field in this struct
+527 |     max_concurrent: usize,
+    |     ^^^^^^^^^^^^^^
+
+warning: fields `cache_system`, `websocket_server`, and `agent_mesh` are never read
+  --> adaptive_expert_platform/src/orchestrator.rs:37:5
+   |
+25 | pub struct Orchestrator {
+   |            ------------ fields in this struct
+...
+37 |     cache_system: Arc<MultiTierCache>,
+   |     ^^^^^^^^^^^^
+38 |     websocket_server: Arc<WebSocketServer>,
+   |     ^^^^^^^^^^^^^^^^
+39 |     agent_mesh: Option<Arc<AgentMesh>>,
+   |     ^^^^^^^^^^
+
+warning: field `timeout_seconds` is never read
+  --> adaptive_expert_platform/src/server.rs:67:5
+   |
+64 | struct ExecuteTaskRequest {
+   |        ------------------ field in this struct
+...
+67 |     timeout_seconds: Option<u64>,
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `ExecuteTaskRequest` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: function `create_dummy_memory` is never used
+   --> adaptive_expert_platform/src/server.rs:447:4
+    |
+447 | fn create_dummy_memory() -> Memory {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: `extern` fn uses type `dyn Agent`, which is not FFI-safe
+  --> adaptive_expert_platform/src/plugin.rs:17:18
+   |
+17 | type FactoryFn = unsafe extern "C" fn() -> *mut dyn Agent;
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not FFI-safe
+   |
+   = note: trait objects have no C equivalent
+   = note: `#[warn(improper_ctypes_definitions)]` on by default
+
+warning: `adaptive_expert_platform` (lib) generated 26 warnings (run `cargo fix --lib -p adaptive_expert_platform` to apply 17 suggestions)
+   Compiling adaptive_expert_platform v0.1.0 (/home/donovan/Projects/ReliantAI/Acropolis/adaptive_expert_platform)
+warning: unexpected `cfg` condition value: `proptest`
+   --> adaptive_expert_platform/tests/basic_agent_test.rs:363:7
+    |
+363 | #[cfg(feature = "proptest")]
+    |       ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: expected values for `feature` are: `default`, `with-distributed`, `with-faiss`, `with-julia`, `with-llama`, `with-metrics`, `with-observability`, `with-redis`, `with-vector-search`, `with-wasm`, and `with-zig`
+    = help: consider adding `proptest` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+
+warning: unused imports: `collections::HashSet` and `path::PathBuf`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:16:11
+   |
+16 | use std::{path::PathBuf, sync::Arc, time::Duration, collections::HashSet};
+   |           ^^^^^^^^^^^^^                             ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `tokio::time::timeout`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:17:5
+   |
+17 | use tokio::time::timeout;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Value`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:18:24
+   |
+18 | use serde_json::{json, Value};
+   |                        ^^^^^
+
+warning: unused import: `NamedTempFile`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:19:25
+   |
+19 | use tempfile::{tempdir, NamedTempFile};
+   |                         ^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+   --> adaptive_expert_platform/tests/basic_agent_test.rs:294:18
+    |
+294 |         let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+    |                  ----^^
+    |                  |
+    |                  help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `adaptive_expert_platform` (test "basic_agent_test") generated 6 warnings (run `cargo fix --test "basic_agent_test" -p adaptive_expert_platform` to apply 5 suggestions)
+warning: unused variable: `cors_layer`
+   --> adaptive_expert_platform/src/middleware.rs:192:13
+    |
+192 |         let cors_layer = create_cors_layer(&config);
+    |             ^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_cors_layer`
+
+warning: `adaptive_expert_platform` (lib test) generated 27 warnings (26 duplicates) (run `cargo fix --lib -p adaptive_expert_platform --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.74s
+     Running unittests src/lib.rs (target/debug/deps/adaptive_expert_platform-1e4284f59f7b121a)
+
+running 19 tests
+test batch::tests::test_batch_config_validation ... ok
+test memory::tests::test_cache_key_generation ... ok
+test memory::tests::test_cosine_similarity ... ok
+test memory::redis_store::tests::test_in_memory_cache ... ok
+test memory::tests::test_memory_clear ... ok
+test batch::tests::test_batch_config_loading ... ok
+test memory::tests::test_memory_stats ... ok
+test middleware::tests::test_cors_configuration ... ok
+test memory::tests::test_memory_kv_operations ... ok
+test memory::redis_store::tests::test_cache_concurrent_access ... ok
+test plugin::tests::test_plugin_security_config_default ... ok
+test plugin::tests::test_file_hash_calculation ... ok
+test middleware::tests::test_rate_limiter ... ok
+test plugin::tests::test_validate_plugin_path ... ok
+test orchestrator::tests::test_orchestrator_dispatch_timeout ... ok
+test orchestrator::tests::test_orchestrator_agent_registration ... ok
+test auth::tests::test_admin_initialization ... ok
+test auth::tests::test_user_management ... ok
+test auth::tests::test_password_hashing ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.56s
+
+     Running unittests src/main.rs (target/debug/deps/acropolis_cli-6d13196e5219f4ad)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basic_agent_test.rs (target/debug/deps/basic_agent_test-e86c0214876ca9a8)
+
+running 14 tests
+test test_json_input_validation ... ok
+test test_memory_system_basic ... ok
+test test_plugin_size_limits ... ok
+test test_plugin_security_validation ... ok
+test test_settings_validation ... ok
+test test_echo_agent_basic_functionality ... ok
+test test_orchestrator_timeout_handling ... ok
+test test_error_propagation ... ok
+test test_orchestrator_agent_management ... ok
+test test_orchestrator_concurrent_dispatch ... ok
+test test_orchestrator_performance_basic ... ok
+test benchmarks::bench_orchestrator_throughput ... ok
+test test_python_tool_agent ... ok
+test test_python_tool_agent_error_handling ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+   Doc-tests adaptive_expert_platform
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,115 @@
+{
+  "documentType": "Accounts Receivable Statement",
+  "priority": 5,
+  "issuer": {
+    "company": "Swift Haul Transport",
+    "address": "7800 Freight Corridor Drive, Fort Worth, TX 76104",
+    "phone": "(817) 555-0300",
+    "email": "ar@swifthaul.com"
+  },
+  "customer": {
+    "accountName": "Lone Star Distribution LLC",
+    "accountNumber": "AR-2026-1142",
+    "contact": "David Garza, AP Manager",
+    "address": "3300 Miller Road, Dallas, TX 75217",
+    "phone": "(214) 555-0411",
+    "email": "dgarza@lonestardist.com"
+  },
+  "statementDate": "2026-03-02",
+  "paymentDeadline": "2026-03-15",
+  "accountSummary": {
+    "current_0_30": "$12,400.00",
+    "pastDue_30": "$18,750.00",
+    "pastDue_60": "$9,325.50",
+    "pastDue_90plus": "$34,820.00",
+    "totalOutstanding": "$75,295.50",
+    "lateFeeAssessed": "$1,103.64",
+    "creditHoldStatus": "ACTIVE",
+    "creditHoldDate": "2026-02-20"
+  },
+  "invoices": [
+    {
+      "invoiceNumber": "SHT-2025-4401",
+      "invoiceDate": "2025-09-15",
+      "dueDate": "2025-10-15",
+      "originalAmount": "$34,820.00",
+      "paid": "$0.00",
+      "balance": "$34,820.00",
+      "daysPastDue": 138,
+      "status": "OVERDUE"
+    },
+    {
+      "invoiceNumber": "SHT-2025-4887",
+      "invoiceDate": "2025-11-20",
+      "dueDate": "2025-12-20",
+      "originalAmount": "$9,325.50",
+      "paid": "$0.00",
+      "balance": "$9,325.50",
+      "daysPastDue": 72,
+      "status": "OVERDUE"
+    },
+    {
+      "invoiceNumber": "SHT-2026-0091",
+      "invoiceDate": "2026-01-10",
+      "dueDate": "2026-02-09",
+      "originalAmount": "$18,750.00",
+      "paid": "$0.00",
+      "balance": "$18,750.00",
+      "daysPastDue": 21,
+      "status": "OVERDUE"
+    },
+    {
+      "invoiceNumber": "SHT-2026-0204",
+      "invoiceDate": "2026-02-01",
+      "dueDate": "2026-03-03",
+      "originalAmount": "$12,400.00",
+      "paid": "$0.00",
+      "balance": "$12,400.00",
+      "daysPastDue": 0,
+      "status": "CURRENT"
+    }
+  ],
+  "communications": [
+    {
+      "date": "2026-02-14",
+      "from": "David Garza",
+      "note": "Disputes invoice SHT-2025-4401 \u2013 claims freight was delivered late causing $12,000 in downstream losses. Requesting credit memo."
+    },
+    {
+      "date": "2026-02-22",
+      "from": "AR Manager Tom Willis",
+      "note": "Customer provided signed delivery receipts showing 4-day delay. Reviewing against SLA contract. Late delivery penalty clause may apply both ways."
+    },
+    {
+      "date": "2026-03-01",
+      "from": "David Garza",
+      "note": "Will not pay any invoices until oldest dispute is resolved. Requests meeting with account manager this week."
+    }
+  ],
+  "entities": {
+    "amount": "$75,295.50",
+    "dueDate": "2026-03-15",
+    "accountName": "Lone Star Distribution LLC",
+    "actionRequired": "Schedule dispute resolution meeting. Verify SLA terms on SHT-2025-4401. Maintain credit hold."
+  },
+  "summary": "Lone Star Distribution owes $75,295.50 across four invoices, with $34,820 over 138 days past due. Customer is withholding all payments pending resolution of a late delivery dispute on the oldest invoice. Credit hold is active. Deadline for payment plan is March 15 or account moves to external collections.",
+  "recommendedAction": "Schedule immediate meeting with customer to address SLA dispute. Pull delivery logs and contract SLA terms for invoice SHT-2025-4401. If late delivery confirmed, assess partial credit before escalating remaining balance.",
+  "requiresHumanReview": true,
+  "escalationReasons": [
+    {
+      "type": "Payment Withholding",
+      "description": "Customer refusing all payments pending oldest invoice dispute resolution",
+      "triggeringField": "communications"
+    },
+    {
+      "type": "SLA Dispute",
+      "description": "Late delivery claim on $34,820 invoice may trigger contractual penalty clause in either direction",
+      "triggeringField": "invoices[0]"
+    },
+    {
+      "type": "High Balance + Credit Hold",
+      "description": "Total exposure $75,295.50 with active credit hold and approaching external collections deadline",
+      "triggeringField": "accountSummary.totalOutstanding"
+    }
+  ]
+}

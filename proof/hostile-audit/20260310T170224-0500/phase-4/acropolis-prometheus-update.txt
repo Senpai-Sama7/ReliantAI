@@ -1,0 +1,4 @@
+    Updating crates.io index
+    Updating prometheus v0.13.4 -> v0.14.0
+    Removing protobuf v2.28.0
+note: pass `--verbose` to see 245 unchanged dependencies behind latest

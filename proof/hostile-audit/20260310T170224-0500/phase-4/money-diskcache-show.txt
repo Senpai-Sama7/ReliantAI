@@ -1,0 +1,32 @@
+Name: diskcache
+Version: 5.6.3
+Summary: Disk Cache -- Disk and file backed persistent cache.
+Home-page: http://www.grantjenks.com/docs/diskcache/
+Author: Grant Jenks
+Author-email: contact@grantjenks.com
+License: Apache 2.0
+Location: /tmp/reliantai-money-audit/lib/python3.13/site-packages
+Requires: 
+Required-by: instructor
+---
+Name: instructor
+Version: 1.14.5
+Summary: structured outputs for llm
+Home-page: 
+Author: Jason Liu, Ivan Leo
+Author-email: 
+License: MIT
+Location: /tmp/reliantai-money-audit/lib/python3.13/site-packages
+Requires: aiohttp, diskcache, docstring-parser, jinja2, jiter, openai, pydantic, pydantic-core, requests, rich, tenacity, typer
+Required-by: crewai
+---
+Name: crewai
+Version: 1.10.1
+Summary: Cutting-edge framework for orchestrating role-playing, autonomous AI agents. By fostering collaborative intelligence, CrewAI empowers agents to work together seamlessly, tackling complex tasks.
+Home-page: https://crewai.com
+Author: 
+Author-email: Joao Moura <joao@crewai.com>
+License: 
+Location: /tmp/reliantai-money-audit/lib/python3.13/site-packages
+Requires: aiosqlite, appdirs, chromadb, click, httpx, instructor, json-repair, json5, jsonref, lancedb, mcp, openai, openpyxl, opentelemetry-api, opentelemetry-exporter-otlp-proto-http, opentelemetry-sdk, pdfplumber, portalocker, pydantic, pydantic-settings, pyjwt, python-dotenv, regex, textual, tokenizers, tomli, tomli-w, uv
+Required-by: composio-crewai, crewai-tools

@@ -1,0 +1,7 @@
+HTTP/1.1 200 OK
+date: Fri, 06 Mar 2026 07:52:47 GMT
+server: uvicorn
+content-length: 555
+content-type: application/json
+
+{"access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwaGFzZTVfdXNlcl8xNzcyNzgzNTY3IiwidGVuYW50X2lkIjoidGVuYW50LXBoYXNlNSIsInJvbGUiOiJhZG1pbiIsInR5cGUiOiJhY2Nlc3MiLCJleHAiOjE3NzI3ODUzNjgsImlhdCI6MTc3Mjc4MzU2OH0.Kl2cb4MQHgZ6guFkmMDv4V1Nx0Vpfe8pSq2RYsVt1j4","refresh_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwaGFzZTVfdXNlcl8xNzcyNzgzNTY3IiwidGVuYW50X2lkIjoidGVuYW50LXBoYXNlNSIsInR5cGUiOiJyZWZyZXNoIiwiZXhwIjoxNzczMzg4MzY4LCJpYXQiOjE3NzI3ODM1Njh9.0MRgOAggkzCZleMoaFeZN1aFotqnz9DWSM6Ls0bXF9A","token_type":"bearer","expires_in":1800}

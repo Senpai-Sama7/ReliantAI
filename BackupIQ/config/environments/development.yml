@@ -1,0 +1,60 @@
+version: "1.0.0"
+
+backup:
+  source:
+    path: "/tmp/backup-test-source"
+    filters:
+      exclude_patterns:
+        - "*.tmp"
+        - "*.log"
+      max_file_size_mb: 100
+
+  destinations:
+    - type: "icloud"
+      config:
+        path: "/backup/development"
+        retry_attempts: 2
+        timeout_seconds: 60
+
+  resources:
+    max_memory_gb: 2.0
+    max_cpu_percent: 50
+    concurrent_uploads: 2
+    batch_size: 50
+    chunk_size_mb: 16
+
+monitoring:
+  enabled: true
+  endpoints:
+    health_port: 8080
+    metrics_port: 9090
+  logging:
+    level: "DEBUG"
+    format: "text"
+    retention_days: 7
+
+security:
+  encryption:
+    enabled: false  # Disabled for development
+    algorithm: "AES-256-GCM"
+  authentication:
+    type: "api_key"
+
+performance:
+  circuit_breaker:
+    failure_threshold: 3
+    timeout_seconds: 10
+    reset_timeout_seconds: 30
+  retry_policy:
+    max_attempts: 2
+    backoff_multiplier: 1.5
+    initial_delay_ms: 500
+    max_delay_ms: 5000
+
+compliance:
+  gdpr:
+    enabled: false
+  hipaa:
+    enabled: false
+  sox:
+    enabled: false

@@ -1,0 +1,226 @@
+---
+# src/content/docs/synchronization.mdx
+#
+# Executable Topology Specification — Synchronization section.
+#
+# This file is both documentation and a test harness. The MDX compilation
+# pipeline transforms it into an Astro component tree where:
+#
+#   - Static prose and code blocks render as zero-JS HTML (Astro default)
+#   - The <NexusMemoryViz> import renders as an Astro island with client:visible
+#
+# The client:visible directive instructs Astro to:
+#   1. Serialize the island's props into the HTML as a script type="application/json"
+#   2. Emit a tiny (< 2KB) intersection observer bootstrap script
+#   3. When the island enters the viewport, dynamically import the island bundle
+#      and call ReactDOM.createRoot().render() with the deserialized props
+#
+# This means the WASM module does not boot until the user scrolls to the
+# synchronization section — matching the lazy island hydration architecture
+# described in the specification.
+#
+# Frontmatter is validated against the content collection schema in
+# src/content/config.ts. The `title` field populates <meta name="og:title">.
+
+title: "Synchronization: Mesa-Semantics Atomics"
+description: "Executable proof of the TOCTOU-safe double-buffer synchronization protocol"
+section: "Architecture"
+order: 3
+---
+
+import NexusMemoryViz from "../../islands/NexusMemoryViz.tsx";
+
+## Synchronization: Correct Mesa-Semantics Atomics
+
+The most hostile concept for engineers onboarding to NEXUS is not the Rust
+syntax or the wasm-bindgen export surface. It is the invisible, temporal state
+of the `SharedArrayBuffer` as the JS and WASM threads execute the double-buffer
+swap protocol.
+
+The visualization below is not a diagram. It boots a lightweight instance of
+the actual `nexus-engine` compiled with the `doc-viz` feature flag and reads
+live memory state from the `WebAssembly.Memory` object using the seqlock
+protocol. Every state transition you observe corresponds to an actual
+`Atomics.store`, `Atomics.load`, or `Atomics.notify` call in the running binary.
+
+<NexusMemoryViz client:visible wasmUrl="/wasm/nexus_engine_doc_viz_bg.wasm" />
+
+---
+
+### The Atomics.waitAsync Semantic Constraint
+
+The most common implementation error in this pattern is treating
+`Atomics.waitAsync` as a generic "notify me when anything changes" primitive.
+It is not. The API is formally specified as:
+
+```
+Atomics.waitAsync(typedArray, index, expectedValue)
+  → { async: boolean, value: Promise<"ok" | "not-equal" | "timed-out"> }
+```
+
+The promise resolves **immediately** with `"not-equal"` if
+`typedArray[index] !== expectedValue` at call time. This means: if you pass
+a sentinel value (e.g., `-1`) against an index that holds `0` or `1`, the
+condition is guaranteed to be unequal, and the promise resolves immediately
+on every call. Your "hardware-backed sleep" becomes a polling loop throttled
+entirely by the display refresh rate.
+
+The correct pattern is a **generation-tracking consumer**: the expected value
+is the index of the buffer you **last consumed**, not an impossible sentinel.
+
+```typescript
+// WRONG — sentinel -1 produces guaranteed immediate resolution.
+// This is a polling loop disguised as hardware-backed synchronization.
+const result = await Atomics.waitAsync(ctrl, CTRL_READY_IDX, -1).value;
+
+// CORRECT — blocks while the ready buffer is still what we last consumed.
+// Suspends the microtask queue at zero CPU cost until the Worker notifies.
+let lastConsumed: 0 | 1 = 1; // Init to 1 — Rust publishes buffer 0 first
+const result = await Atomics.waitAsync(ctrl, CTRL_READY_IDX, lastConsumed).value;
+```
+
+Both `"ok"` and `"not-equal"` are valid wake conditions. `"not-equal"` is the
+fast-path: the Worker completed a frame *before* the consumer called
+`waitAsync`, and the API correctly skips suspension. Both branches require
+identical handler logic.
+
+---
+
+### Release/Acquire Ordering: Not Defensive Programming
+
+The `Ordering::Release` and `Ordering::Acquire` parameters on the Rust atomic
+operations and `Atomics.load` on the JS side are not stylistic choices.
+They establish a **happens-before relationship** across threads as specified
+by the C++11/C++20 memory model (which the WebAssembly memory model adopts
+directly for atomic operations).
+
+Without Release/Acquire pairing, the CPU's out-of-order execution engine
+(present on every modern architecture) and the compiler's instruction
+reordering are legally permitted to make frame writes **visible after** the
+notification that signals their completion. On x86 (TSO memory model), this
+rarely manifests because x86 provides strong store ordering by default.
+On ARM (weakly-ordered), it produces silent data corruption at non-zero
+probability on every buffer swap.
+
+The WASM specification targets the hardware memory model of the executing
+platform. A WASM binary distributed to ARM-based devices (iOS Safari, Apple
+Silicon) without correct atomic orderings will silently produce torn frames
+in production.
+
+```rust
+// Every framebuffer write precedes this Release store.
+// The Release ordering guarantees: any thread that observes
+// this value via an Acquire load is guaranteed to see all
+// memory writes that preceded this store.
+ctrl[CTRL_READY_IDX].store(write_buf, Ordering::Release);
+
+// Notify: wakes the JS consumer's Atomics.waitAsync promise.
+atomic_notify(&ctrl[CTRL_READY_IDX], 1);
+```
+
+```typescript
+// Acquire load: establishes happens-before with the Release store above.
+// After this load, all framebuffer bytes written before the Release store
+// are guaranteed visible to this thread.
+const readBuf = Atomics.load(ctrl, CTRL_READY_IDX) as 0 | 1;
+```
+
+---
+
+### The Third-Observer Problem
+
+The live visualization above is a **third observer** of the double-buffer
+protocol — it reads the `SharedArrayBuffer` concurrently with both the Rust
+Worker (writer) and the JS main thread (frame consumer). It cannot
+participate in the production Atomics signaling chain: calling `waitAsync`
+would consume notifications intended for the frame consumer, and writing to
+`CTRL_CONSUME_IDX` would ACK frames before they are painted.
+
+The solution is a **software seqlock**: read `CTRL_WRITE_IDX` before and after
+sampling the control block. If the value changes between reads, a buffer swap
+occurred during the sample — the observation is potentially torn and must be
+retried or discarded.
+
+```typescript
+// Seqlock read protocol — third observer safe
+const preWrite  = Atomics.load(ctrl, CTRL.WRITE_IDX);   // Pre-discriminant
+const state     = readControlBlock();                    // Sample
+const postWrite = Atomics.load(ctrl, CTRL.WRITE_IDX);   // Post-discriminant
+
+if (preWrite === postWrite) {
+  // Consistent: no buffer swap occurred during our read.
+  // CTRL_WRITE_IDX is the sequence discriminant — it changes
+  // exactly once per buffer swap event.
+  return { consistent: true, ...state };
+}
+// Inconsistent: retry or mark as torn read.
+```
+
+The seqlock converges in 0–1 retries in practice. The buffer swap is a single
+`Atomics.store`, and the control block read window is approximately 200ns on
+a modern CPU. The retry budget of 8 is purely defensive against pathological
+scheduling preemptions between the pre and post discriminant reads.
+
+---
+
+### Memory Growth Safety
+
+`WebAssembly.Memory` with `{shared: true}` wraps a `SharedArrayBuffer`.
+The critical property: **SAB instances are never detached on `memory.grow()`**.
+
+Compare to non-shared WASM memory: `memory.grow()` allocates a new, larger
+`ArrayBuffer` and detaches the old one. Any `TypedArray` view over the old
+buffer immediately throws `TypeError` on access — a common source of silent
+memory corruption in WASM-JS interop code that caches view references.
+
+With SAB-backed shared memory, cached `TypedArray` views survive growth events.
+The `WasmMemoryBridge` detects growth by comparing `memory.buffer.byteLength`
+against its cached value and re-derives the `MemoryLayout` from the live
+pointer exports. This is a cache invalidation for correctness of offset
+arithmetic — not a safety requirement, since the views themselves remain valid.
+
+```typescript
+// Detect growth without a growth event (WebAssembly.Memory has no callback).
+// Cost: ~2 property reads per sample cycle.
+private checkGrowth(): void {
+  const currentBytes = this.exports.memory.buffer.byteLength;
+  if (currentBytes !== this.cachedByteLength) {
+    this.cachedByteLength = currentBytes;
+    this.layout = this.deriveLayout(); // Re-derive from live pointer exports
+  }
+}
+```
+
+---
+
+### CI Integration
+
+The `check_memory_invariants()` wasm-bindgen export transforms this
+documentation page into an integration test. From a Playwright test run
+against the deployed documentation:
+
+```typescript
+// playwright/invariants.spec.ts
+import { test, expect } from "@playwright/test";
+
+test("nexus-engine memory invariants", async ({ page }) => {
+  // Navigate to the synchronization section (loads the island)
+  await page.goto("/docs/synchronization");
+
+  // Wait for the WASM module to instantiate
+  await page.waitForSelector("[data-nexus-viz-ready]");
+
+  // Execute the invariant check in the browser context
+  const violations = await page.evaluate(() => {
+    // The island exposes the bridge on window for test access
+    return (window as any).__nexusBridge?.checkInvariants() ?? -1;
+  });
+
+  expect(violations).toBe(0);
+});
+```
+
+A PR that introduces overlapping memory regions — for example, extending the
+SoA FieldBatch without adjusting the framebuffer offsets — produces a
+non-zero `violations` bitfield, causing this test to fail before the PR is
+merged. The documentation is the integration test.

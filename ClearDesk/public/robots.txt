@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://clear-desk-ten.vercel.app/sitemap.xml

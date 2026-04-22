@@ -1,0 +1,34 @@
+SWIFT HAUL TRANSPORT - ACCOUNTS RECEIVABLE STATEMENT
+Statement Date,2026-03-02
+Account Number,AR-2026-1142
+Prepared By,"Lisa Nguyen, AR Specialist"
+
+CUSTOMER INFORMATION
+Account Name,Lone Star Distribution LLC
+Contact,"David Garza, AP Manager"
+Address,"3300 Miller Road, Dallas, TX 75217"
+Phone,(214) 555-0411
+Email,dgarza@lonestardist.com
+
+ACCOUNT SUMMARY
+Category,Amount
+Current (0-30 Days),"$12,400.00"
+30 Days Past Due,"$18,750.00"
+60 Days Past Due,"$9,325.50"
+90+ Days Past Due,"$34,820.00"
+TOTAL OUTSTANDING,"$75,295.50"
+
+INVOICE AGING DETAIL
+Invoice #,Invoice Date,Due Date,Original Amount,Paid,Balance,Days Past Due,Status
+SHT-2025-4401,2025-09-15,2025-10-15,"$34,820.00",$0.00,"$34,820.00",138,OVERDUE
+SHT-2025-4887,2025-11-20,2025-12-20,"$9,325.50",$0.00,"$9,325.50",72,OVERDUE
+SHT-2026-0091,2026-01-10,2026-02-09,"$18,750.00",$0.00,"$18,750.00",21,OVERDUE
+SHT-2026-0204,2026-02-01,2026-03-03,"$12,400.00",$0.00,"$12,400.00",0,CURRENT
+
+LATE FEES
+Late Fee Rate,2.5% monthly on balances 60+ days
+Late Fee Assessed,"$1,103.64"
+Credit Hold Status,ACTIVE as of 2026-02-20
+
+PAYMENT DEADLINE,2026-03-15
+Next Action,Escalate to collections if no payment plan by deadline

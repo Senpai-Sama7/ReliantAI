@@ -1,0 +1,48 @@
+SWIFT HAUL TRANSPORT - FREIGHT INVOICE
+Invoice Number,SHT-2026-0388
+Invoice Date,2026-02-20
+Due Date,2026-03-22
+PO Number,LST-PO-20260210
+
+BILL TO
+Company,Lone Star Distribution LLC
+Attention,"David Garza, AP Manager"
+Address,"3300 Miller Road, Dallas, TX 75217"
+Phone,(214) 555-0411
+Email,dgarza@lonestardist.com
+
+SHIP FROM / TO
+Origin,"Fort Worth Distribution Hub, 7800 Freight Corridor Dr, Fort Worth TX 76104"
+Destination,"Lone Star Distribution Center, 3300 Miller Road, Dallas TX 75217"
+Pickup Date,2026-02-10
+Delivery Date,2026-02-12
+BOL Number,BOL-2026-0388-A
+Driver,James Ortega
+Truck #,SHT-TRK-047
+
+LINE ITEMS
+Line,Description,Quantity,Unit,Unit Price,Extended,Notes
+1,LTL Freight – Fort Worth to Dallas (22 pallets),22,pallets,$138.00,"$3,036.00",
+2,Fuel Surcharge (11.5%),—,—,—,$349.14,Rate effective 2/1/2026
+3,Residential/Limited Access Delivery Fee,1,stop,$175.00,$175.00,Customer warehouse has height restriction
+4,Pallet Exchange,22,pallets,$12.00,$264.00,Per tariff section 3.4
+5,Liftgate Service,1,stop,$95.00,$95.00,Requested day-of by receiver
+6,Detention – Driver Wait Time,1.5,hours,$75.00,$112.50,Gate closed at scheduled arrival
+7,"Insurance – Declared Value ($85,000)",—,—,—,$68.00,Standard cargo coverage
+
+TOTALS
+Subtotal,"$4,099.64"
+Early Payment Discount (2% if paid by 3/2/2026),-$82.00
+Subtotal After Discount,"$4,017.64"
+Sales Tax (8.25%),$331.46
+TOTAL AMOUNT DUE,"$4,349.10"
+
+PAYMENT TERMS
+Terms,Net 30
+Early Payment Discount,2% if paid by 2026-03-02 (EXPIRED)
+Late Penalty,1.5% per month on overdue balance
+Accepted Methods,"ACH, Wire Transfer, Check, Credit Card (+3.5% fee)"
+
+PAYMENT STATUS,UNPAID
+Customer Dispute,Liftgate charge ($95) disputed — claims was not requested
+Detention Dispute,Detention time ($112.50) disputed — claims gate was open

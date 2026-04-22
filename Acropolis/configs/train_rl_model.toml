@@ -1,0 +1,9 @@
+agent = "julia_expert"
+description = "Trains the reinforcement learning model."
+
+[params]
+# This corresponds to the rl_training.jl module
+module = "rl_training" 
+action = "train"
+episodes = 500
+model_id = "cartpole_v1"

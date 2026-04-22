@@ -1,0 +1,2 @@
+JWT Validation Error: JWT secret not configured
+node auth sanity passed for CyberArchitect and DocuMancer

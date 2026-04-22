@@ -1,0 +1,8 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+httpx==0.28.1
+neo4j==5.28.2
+psycopg2-binary==2.9.10
+pydantic==2.11.7
+async-timeout==5.0.1
+redis==6.4.0

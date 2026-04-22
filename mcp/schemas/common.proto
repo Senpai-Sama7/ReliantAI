@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package reliantai.common;
+
+// Define common types used across the ReliantAI Enterprise Suite.
+
+// Example: A timestamp representation.
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+// Example: Basic entity identifier.
+message EntityId {
+  string id = 1;
+}
+
+// Example: A common response structure for operations that might return an error.
+message OperationResponse {
+  bool success = 1;
+  string error_message = 2;
+  // Potentially include common IDs or statuses here.
+}

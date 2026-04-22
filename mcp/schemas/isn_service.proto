@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+import "common.proto"; // Import common types
+
+package reliantai.services.isn;
+
+// Service for querying and managing the Intelligent Storage (ISN) knowledge graph.
+service ISNService {
+  // Retrieves entities from ISN based on a query.
+  rpc SearchEntities(SearchEntitiesRequest) returns (SearchEntitiesResponse);
+
+  // Retrieves specific nodes by their names.
+  rpc GetNodesByName(GetNodesByNameRequest) returns (GetNodesByNameResponse);
+
+  // Adds new entities to the knowledge graph.
+  rpc CreateEntities(CreateEntitiesRequest) returns (CreateEntitiesResponse);
+
+  // Creates relations between existing entities.
+  rpc CreateRelations(CreateRelationsRequest) returns (CreateRelationsResponse);
+
+  // Adds observations to existing entities.
+  rpc AddObservations(AddObservationsRequest) returns (common.OperationResponse);
+
+  // Deletes entities and their associated relations.
+  rpc DeleteEntities(DeleteEntitiesRequest) returns (common.OperationResponse);
+
+  // Deletes specific observations from entities.
+  rpc DeleteObservations(DeleteObservationsRequest) returns (common.OperationResponse);
+
+  // Deletes relations between entities.
+  rpc DeleteRelations(DeleteRelationsRequest) returns (common.OperationResponse);
+}
+
+// --- Request and Response Messages ---
+
+message SearchEntitiesRequest {
+  string query = 1; // The search query.
+  // Add pagination, filtering options as needed later.
+}
+
+message SearchEntitiesResponse {
+  repeated EntityWithDetails entities = 1;
+}
+
+message EntityWithDetails {
+  string name = 1;
+  string entity_type = 2;
+  repeated string observations = 3;
+  // Potentially add graph relationship details here.
+}
+
+message GetNodesByNameRequest {
+  repeated string names = 1; // Entity names to retrieve.
+}
+
+message GetNodesByNameResponse {
+  repeated EntityWithDetails entities = 1;
+}
+
+// Messages for CreateEntities, CreateRelations, AddObservations, Delete operations
+// would mirror the payloads defined in the Python API's tool definitions for those operations.
+// For brevity in this example, we'll reference the idea that these would map to the corresponding tool calls.
+
+message CreateEntitiesRequest {
+  // Placeholder: actual structure would mirror the 'entities' parameter of the CreateEntities tool.
+  // Example:
+  // message EntitySpec {
+  //   string name = 1;
+  //   string entity_type = 2;
+  //   repeated string observations = 3;
+  // }
+  // repeated EntitySpec entities_to_create = 1;
+}
+
+message CreateEntitiesResponse {
+  repeated common.EntityId created_entity_ids = 1;
+}
+
+message CreateRelationsRequest {
+  // Placeholder: Structure would mirror the 'relations' parameter of the CreateRelations tool.
+}
+
+message CreateRelationsResponse {
+  // Potentially confirmation or IDs of created relations.
+  common.OperationResponse status = 1;
+}
+
+message AddObservationsRequest {
+  // Placeholder: Structure would mirror the 'observations' parameter of the AddObservations tool.
+}
+
+message DeleteEntitiesRequest {
+  repeated string entity_names = 1;
+}
+
+message DeleteObservationsRequest {
+  // Placeholder: Structure would mirror the 'deletions' parameter of the DeleteObservations tool.
+}
+
+message DeleteRelationsRequest {
+  // Placeholder: Structure would mirror the 'relations' parameter of the DeleteRelations tool.
+}

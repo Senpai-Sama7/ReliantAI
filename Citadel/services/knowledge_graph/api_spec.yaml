@@ -1,0 +1,81 @@
+openapi: 3.0.3
+info:
+  title: Knowledge Graph API
+  version: '1.0'
+paths:
+  /nodes:
+    post:
+      summary: Create a new node
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Node'
+      responses:
+        '200':
+          description: Node created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+  /relationships:
+    post:
+      summary: Create a relationship between two nodes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Relationship'
+      responses:
+        '200':
+          description: Relationship created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+  /query:
+    post:
+      summary: Execute a Cypher query
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QueryRequest'
+      responses:
+        '200':
+          description: Query results
+components:
+  schemas:
+    Node:
+      type: object
+      properties:
+        label:
+          type: string
+        properties:
+          type: object
+      required: [label, properties]
+    Relationship:
+      type: object
+      properties:
+        start_id:
+          type: integer
+        end_id:
+          type: integer
+        rel_type:
+          type: string
+        properties:
+          type: object
+      required: [start_id, end_id, rel_type]
+    QueryRequest:
+      type: object
+      properties:
+        cypher:
+          type: string
+        params:
+          type: object

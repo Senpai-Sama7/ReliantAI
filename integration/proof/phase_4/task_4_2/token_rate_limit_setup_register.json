@@ -1,0 +1,8 @@
+{
+  "status_code": 201,
+  "retry_after": null,
+  "body": {
+    "message": "User registered successfully",
+    "username": "rl-token-user"
+  }
+}

@@ -1,0 +1,9 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+pandas==2.3.1
+numpy==2.3.2
+dowhy==0.13
+econml==0.16.0
+scikit-learn==1.6.0
+pydantic==2.11.7
+ecos==2.0.13

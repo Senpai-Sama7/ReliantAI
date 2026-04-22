@@ -1,0 +1,11 @@
+[
+  "CREATE (p:Person {name: 'Alice'})",
+  "CREATE (p:Person {name: 'Bob'})",
+  "CREATE (c:City {name: 'Paris'})",
+  "CREATE (c:City {name: 'London'})",
+  "MATCH (a:Person {name: 'Alice'}), (b:Person {name: 'Bob'}) CREATE (a)-[:KNOWS]->(b)",
+  "MATCH (p:Person {name: 'Alice'}), (c:City {name: 'Paris'}) CREATE (p)-[:LIVES_IN]->(c)",
+  "MATCH (p:Person {name: 'Bob'}), (c:City {name: 'London'}) CREATE (p)-[:LIVES_IN]->(c)",
+  "MATCH (p:Person {name: 'Alice'}) SET p.age = 30",
+  "MATCH (p:Person {name: 'Bob'}) SET p.age = 25"
+]

@@ -1,0 +1,12 @@
+
+env_name = "CartPole-v1"
+state_dim = 4
+action_dim = 2
+capacity = 50000
+alpha = 0.6
+beta_start = 0.4
+beta_frames = 100000
+gamma = 0.99
+lr = 0.0005
+batch_size = 64
+update_target = 1000

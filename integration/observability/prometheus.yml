@@ -1,0 +1,130 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'reliantai-integration'
+    environment: 'production'
+
+scrape_configs:
+  # Auth Service
+  - job_name: 'auth-service'
+    static_configs:
+      - targets: ['auth-service:8080']
+    metrics_path: '/metrics'
+
+  # Event Bus
+  - job_name: 'event-bus'
+    static_configs:
+      - targets: ['event-bus:8081']
+    metrics_path: '/metrics'
+
+  # Saga Orchestrator
+  - job_name: 'saga-orchestrator'
+    static_configs:
+      - targets: ['saga-orchestrator:8090']
+    metrics_path: '/metrics'
+
+  # API Gateway (Kong)
+  - job_name: 'kong'
+    static_configs:
+      - targets: ['kong:8001']
+    metrics_path: '/metrics'
+
+  # Linkerd Service Mesh
+  - job_name: 'linkerd-controller'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names: ['linkerd']
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        action: keep
+        regex: ^prometheus$
+
+  # Core Intelligence Services
+  - job_name: 'apex-core'
+    static_configs:
+      - targets: ['apex-core:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'apex-agents'
+    static_configs:
+      - targets: ['apex-agents:8001']
+    metrics_path: '/metrics'
+
+  - job_name: 'citadel'
+    static_configs:
+      - targets: ['citadel:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'acropolis'
+    static_configs:
+      - targets: ['acropolis:8000']
+    metrics_path: '/metrics'
+
+  # Business Operations Services
+  - job_name: 'b-a-p'
+    static_configs:
+      - targets: ['b-a-p:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'money'
+    static_configs:
+      - targets: ['money:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'gen-h'
+    static_configs:
+      - targets: ['gen-h:3000']
+    metrics_path: '/metrics'
+
+  - job_name: 'cleardesk'
+    static_configs:
+      - targets: ['cleardesk:5173']
+    metrics_path: '/metrics'
+
+  # Specialized Services
+  - job_name: 'backupiq'
+    static_configs:
+      - targets: ['backupiq:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'intelligent-storage'
+    static_configs:
+      - targets: ['intelligent-storage:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'citadel-ultimate'
+    static_configs:
+      - targets: ['citadel-ultimate:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'documancer'
+    static_configs:
+      - targets: ['documancer:8000']
+    metrics_path: '/metrics'
+
+  - job_name: 'regenesis'
+    static_configs:
+      - targets: ['regenesis:3000']
+    metrics_path: '/metrics'
+
+  - job_name: 'cyberarchitect'
+    static_configs:
+      - targets: ['cyberarchitect:3000']
+    metrics_path: '/metrics'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Alerting rules
+rule_files:
+  - '/etc/prometheus/alerts.yml'
+
+# Storage
+storage:
+  tsdb:
+    retention.time: 30d
+    retention.size: 50GB

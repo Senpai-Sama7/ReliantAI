@@ -1,0 +1,84 @@
+verticals:
+  plumbing:
+    display_name: Plumbing
+    audience: owner/operator plumbing teams
+    headline_phrase: faster plumbing lead follow-through
+    proof_angle: emergency response + scheduled-service consistency
+    pain_points:
+      - Low-quality targets and weak qualification discipline
+      - Generic outreach that does not create urgency
+      - Limited visibility from first touch to closed revenue
+    observation_prompts:
+      - weak service-area page depth
+      - stale promo/offer messaging
+      - missing conversion CTA above the fold
+
+  hvac:
+    display_name: HVAC
+    audience: HVAC service and install teams
+    headline_phrase: faster HVAC lead follow-through
+    proof_angle: seasonal demand windows + maintenance retention
+    pain_points:
+      - Targeting not aligned to seasonal buying windows
+      - Generic outreach without urgency/timing context
+      - Fragmented visibility from outreach to booked jobs
+    observation_prompts:
+      - no seasonal CTA language
+      - weak maintenance-plan positioning
+      - stale financing/install messaging
+
+  roofing:
+    display_name: Roofing
+    audience: roofing contractors and production managers
+    headline_phrase: higher-intent roofing conversations
+    proof_angle: storm-window responsiveness + estimate conversion
+    pain_points:
+      - Broad lists with poor intent qualification
+      - Low-response outreach after estimate windows
+      - Weak handoff visibility between sales and production
+    observation_prompts:
+      - no storm damage response messaging
+      - estimate CTA buried
+      - outdated project gallery/proof
+
+  landscaping:
+    display_name: Landscaping
+    audience: landscaping maintenance/design operators
+    headline_phrase: more qualified landscaping opportunities
+    proof_angle: route density + recurring-service expansion
+    pain_points:
+      - Outbound lists not segmented by service fit
+      - Messaging does not differentiate recurring vs project work
+      - Poor tracking of outreach outcomes by territory
+    observation_prompts:
+      - weak recurring-service positioning
+      - no route-area clarity
+      - thin before/after proof
+
+  electrical:
+    display_name: Electrical
+    audience: residential/commercial electrical teams
+    headline_phrase: more qualified electrical project conversations
+    proof_angle: safety-critical urgency + project qualification
+    pain_points:
+      - Low-quality targets and high no-response rates
+      - Outreach copy too generic for safety-critical work
+      - Limited visibility into conversion bottlenecks
+    observation_prompts:
+      - weak emergency/safety framing
+      - unclear service segmentation
+      - missing trust/compliance indicators
+
+  painting:
+    display_name: Painting
+    audience: residential/commercial painting contractors
+    headline_phrase: more qualified painting estimate requests
+    proof_angle: estimate velocity + close-rate uplift
+    pain_points:
+      - Targeting too broad for profitable project mix
+      - Generic outreach with low reply rates
+      - Inconsistent reporting from outreach to estimate close
+    observation_prompts:
+      - weak estimate CTA clarity
+      - outdated portfolio proof
+      - no premium-service differentiation

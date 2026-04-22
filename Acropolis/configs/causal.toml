@@ -1,0 +1,5 @@
+
+graph = "digraph{drug_dose->recovery_rate;age->drug_dose;age->recovery_rate}"
+data_path = "data/health.csv"
+treatment = "drug_dose"
+outcome = "recovery_rate"

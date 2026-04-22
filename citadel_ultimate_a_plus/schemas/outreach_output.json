@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "lead_slug",
+    "channel",
+    "to_email",
+    "subject",
+    "preview_text",
+    "body_text",
+    "body_html",
+    "cta_url",
+    "compliance_footer",
+    "disclosures_included",
+    "beat_audit",
+    "beat_compliance_warning"
+  ],
+  "properties": {
+    "lead_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{5,120}$"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email"
+      ]
+    },
+    "to_email": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "email",
+      "maxLength": 254
+    },
+    "subject": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 140,
+      "pattern": "^[^\\n\\r]+$"
+    },
+    "preview_text": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 120,
+      "pattern": "^[^\\n\\r]+$"
+    },
+    "body_text": {
+      "type": "string",
+      "minLength": 100,
+      "maxLength": 10000
+    },
+    "body_html": {
+      "type": "string",
+      "minLength": 50,
+      "maxLength": 40000
+    },
+    "cta_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "compliance_footer": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    "disclosures_included": {
+      "type": "boolean",
+      "enum": [
+        true
+      ]
+    },
+    "beat_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pattern_break",
+        "cost_of_inaction",
+        "belief_shift",
+        "mechanism",
+        "proof_unit",
+        "offer",
+        "action"
+      ],
+      "properties": {
+        "pattern_break": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "cost_of_inaction": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "belief_shift": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "mechanism": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "proof_unit": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "offer": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "action": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        }
+      }
+    },
+    "beat_compliance_warning": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      }
+    }
+  }
+}

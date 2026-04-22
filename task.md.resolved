@@ -1,0 +1,50 @@
+# ReliantAI Architecture Audit Resolution Status
+
+Verified against the current repository on 2026-03-10.
+
+## Current Status
+
+- `[x]` Phase 1: Critical Security & Stability Fixes
+  - `[x]` Fix `bcrypt` version mismatch in root and auth requirements
+  - `[x]` Patch Auth Service `/register` endpoint to prevent role escalation
+  - `[x]` Add COOP/COEP headers to Kong configuration for Nexus WASM support
+- `[/]` Phase 2: Integration Resilience & Schema Consistency
+  - `[x]` Implement circuit breaker behavior in `Money` auth-service calls
+  - `[x]` Create `integration/shared/event_types.py` as the shared event schema source
+  - `[x]` Update `integration/event-bus/event_bus.py` and `Money/main.py` to use shared event types
+  - `[x]` Implement `integration/shared/audit.py` and wire `emit_audit()` into auth-service register/login flows
+- `[x]` Phase 3: Testing & B-A-P Fixes
+  - `[x]` Add authenticated JWT test fixtures in `B-A-P/tests/conftest.py`
+  - `[x]` Update failing B-A-P tests to use authenticated clients
+  - `[x]` Complete the B-A-P Gemini client migration and retain legacy `OPENAI_*` env aliases only as compatibility fallbacks
+- `[/]` Phase 4: Observability & CI/CD
+  - `[x]` Add Gemini chain performance metrics to the Money project
+  - `[ ]` Create GitHub Actions CI workflow for multi-stack builds
+- `[/]` Phase 5: Workspace Consolidation
+  - `[/]` `scripts/bootstrap_env.sh` creates per-project `.env` files and generates `AUTH_SECRET_KEY` for integration, but it does not yet propagate shared JWT verification secrets across all projects
+  - `[ ]` Add project-specific linting commands to the CI pipeline
+- `[/]` Phase 6: Gemini 3.1 Flash Workspace Migration
+  - `[x]` Stabilize Money test/dependency setup and project-local verification path
+  - `[x]` Refactor Money runtime/config/docs to Gemini 3.1 Flash
+  - `[x]` Refactor `intelligent-storage` to Gemini, including `gemini_client.py` and `text-embedding-004` / 768-dim usage
+  - `[x]` Complete the full B-A-P Gemini client migration, including Gemini SDK wiring, direct client tests, and B-A-P deployment defaults
+  - `[x]` Complete the `apex` embedding/router migration for `apex/apex-agents/memory/embeddings.py`
+  - `[x]` Complete the Citadel NL agent migration for `Citadel/services/nl_agent/main.py`
+  - `[/]` Workspace-wide Gemini cleanup is still in progress; the operational `apex` embedding path and `Citadel/services/nl_agent` are migrated, but `Citadel/local_agent` and broader workspace cleanup still remain
+  - `[x]` Run targeted regression suites to verify the currently completed work
+
+## Verified Evidence
+
+- `cd B-A-P && poetry run pytest tests -q` -> `68 passed, 2 skipped`
+- `cd B-A-P && poetry run ruff check src tests` -> `All checks passed!`
+- `cd Money && ENV=test .venv/bin/python -m pytest tests/test_auth_integration.py tests/test_event_bus_integration.py tests/test_state_machine.py -q` -> `12 passed, 1 skipped`
+- `cd Money && python3 -m compileall openclaw_integration.py tools/smoke_test_neural.py` -> both files compiled
+- `cd integration && .venv/bin/pytest auth/test_verify_endpoint.py tests/test_rate_limiter_edges.py tests/test_jwt_validator_edges.py tests/test_event_bus_dlq.py -q` -> `8 passed`
+- `cd apex/apex-agents && /tmp/reliantai-apex-venv2/bin/python -m pytest test_embeddings.py -q` -> `3 passed`
+- `cd Citadel && PYTHONPATH=/home/donovan/Projects/ReliantAI/Citadel /tmp/reliantai-citadel-venv/bin/python -m pytest tests/test_nl_agent.py -q` -> `3 passed`
+- `python3 -m compileall apex/apex-agents/memory/embeddings.py apex/apex-agents/test_embeddings.py Citadel/services/nl_agent/main.py Citadel/tests/test_nl_agent.py` -> all files compiled
+
+## Remaining Gaps
+
+- Full multi-stack CI is still not present. `.github/workflows/hostile-audit.yml` exists, but the planned path-filtered B-A-P / Money / integration workflows are not in place.
+- `Citadel/local_agent/main.py` and `Citadel/local_agent/agent.py` still use the local `llama_cpp` / `MODEL_PATH` runtime; this pass covered `Citadel/services/nl_agent/main.py`, not the desktop/local-agent path.

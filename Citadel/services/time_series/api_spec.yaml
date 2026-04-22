@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Time Series API
+  version: '1.0'
+paths:
+  /forecast:
+    post:
+      summary: Forecast future values
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastRequest'
+      responses:
+        '200':
+          description: Forecast results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ds:
+                          type: string
+                        yhat:
+                          type: number
+                        yhat_lower:
+                          type: number
+                        yhat_upper:
+                          type: number
+  /anomaly:
+    post:
+      summary: Detect anomalies in a time series
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForecastRequest'
+      responses:
+        '200':
+          description: Anomaly detection results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  anomalies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ds:
+                          type: string
+                        y:
+                          type: number
+                        yhat_lower:
+                          type: number
+                        yhat_upper:
+                          type: number
+                        anomaly:
+                          type: boolean
+components:
+  schemas:
+    ForecastRequest:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              ds:
+                type: string
+              y:
+                type: number
+        horizon:
+          type: integer
+          description: Number of future periods to forecast
+      required: [data, horizon]

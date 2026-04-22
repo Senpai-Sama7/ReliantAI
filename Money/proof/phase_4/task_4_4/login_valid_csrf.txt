@@ -1,0 +1,11 @@
+HTTP/1.1 302 Found
+date: Fri, 06 Mar 2026 07:36:48 GMT
+server: uvicorn
+content-length: 0
+location: /admin
+set-cookie: dispatch_session=eyJ1IjoiYWRtaW4ifQ.aaqEEQ.c73WvBrI0slFX55zJAkqjUk4QJs; HttpOnly; Max-Age=86400; Path=/; SameSite=lax
+set-cookie: dispatch_login_csrf=""; expires=Fri, 06 Mar 2026 07:36:49 GMT; Max-Age=0; Path=/; SameSite=lax
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: DENY
+

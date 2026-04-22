@@ -1,0 +1,8 @@
+HTTP/1.1 401 Unauthorized
+date: Fri, 06 Mar 2026 07:53:23 GMT
+server: uvicorn
+www-authenticate: Bearer
+content-length: 58
+content-type: application/json
+
+{"detail":"Missing or invalid authentication credentials"}

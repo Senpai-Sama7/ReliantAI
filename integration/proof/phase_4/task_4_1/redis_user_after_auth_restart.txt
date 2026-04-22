@@ -1,0 +1,10 @@
+username
+persistent_user
+email
+persistent_user@example.com
+tenant_id
+tenant-persist
+role
+admin
+hashed_password
+$2b$12$5tH35Io91aO87L6irAbSL.zxO81Jb.GegQl7466LwpcoBtuBVV7Na

@@ -1,0 +1,6 @@
+fastapi==0.116.1
+uvicorn==0.35.0
+httpx==0.28.1
+google-genai==1.66.0
+pydantic==2.11.7
+watchdog==6.0.0

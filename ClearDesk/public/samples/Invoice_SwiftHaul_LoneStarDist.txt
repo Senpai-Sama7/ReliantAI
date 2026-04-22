@@ -1,0 +1,92 @@
+================================================================================
+              SWIFT HAUL TRANSPORT — FREIGHT INVOICE
+================================================================================
+Invoice Number : SHT-2026-0388
+Invoice Date   : February 20, 2026
+Due Date       : March 22, 2026
+PO Number      : LST-PO-20260210
+BOL Number     : BOL-2026-0388-A
+DOT Number     : DOT-1847293 | MC: MC-774821
+
+FROM (Issuer):
+  Swift Haul Transport
+  7800 Freight Corridor Drive
+  Fort Worth, TX 76104
+  (817) 555-0300 | billing@swifthaul.com
+
+BILL TO:
+  Lone Star Distribution LLC
+  Attn: David Garza, AP Manager
+  3300 Miller Road, Dallas, TX 75217
+  (214) 555-0411 | dgarza@lonestardist.com
+
+--------------------------------------------------------------------------------
+SHIPMENT DETAILS
+--------------------------------------------------------------------------------
+  Origin     : Fort Worth Distribution Hub, Fort Worth TX 76104
+  Destination: Lone Star Distribution Center, Dallas TX 75217
+  Pickup     : February 10, 2026
+  Delivery   : February 12, 2026
+  Pallets    : 22
+  Driver     : James Ortega (Truck #SHT-TRK-047)
+  Signed By  : Maria Castillo, Receiving Supervisor
+  Commodity  : General freight — auto parts (non-hazmat)
+
+--------------------------------------------------------------------------------
+LINE ITEMS
+--------------------------------------------------------------------------------
+  Ln  Description                              Qty    Unit    Unit $   Extended
+  --  ---------------------------------------  -----  ------  -------  --------
+   1  LTL Freight – Ft Worth to Dallas          22    pallets $138.00  $3,036.00
+   2  Fuel Surcharge (11.5%)                     —       —       —      $349.14
+   3  Limited Access Delivery Fee                1    stop    $175.00    $175.00
+   4  Pallet Exchange (Tariff §3.4)             22    pallets  $12.00    $264.00
+   5  Liftgate Service *DISPUTED*                1    stop     $95.00     $95.00
+   6  Detention – Driver Wait (1.5 hrs) *DISP*  1.5  hours    $75.00    $112.50
+   7  Insurance – Declared Value $85,000         —       —       —       $68.00
+                                                                       --------
+                                                          SUBTOTAL   $4,099.64
+
+  Early Payment Discount (2% — EXPIRED 3/2/2026)                      -$82.00
+  Subtotal After Discount                                            $4,017.64
+  Sales Tax (8.25%)                                                    $331.46
+                                                                       --------
+  TOTAL AMOUNT DUE                                                   $4,349.10
+
+  *** DUE DATE: March 22, 2026 ***
+  *** Late penalty: 1.5% per month on overdue balance ***
+
+--------------------------------------------------------------------------------
+CUSTOMER DISPUTES
+--------------------------------------------------------------------------------
+  DISPUTE 1 — Liftgate Service ($95.00)
+    Customer claim: Liftgate was not requested. Standard dock was available.
+    Our position: Day-of request confirmed by driver James Ortega in dispatch log.
+    STATUS: Pending verification — driver log review required.
+
+  DISPUTE 2 — Detention Time ($112.50)
+    Customer claim: Gate was open at arrival — driver may have arrived early.
+    Our position: Gate closed timestamp on facility log from 2/12 at 07:15 AM.
+    STATUS: Pending verification — cross-reference driver ELD + facility logs.
+
+  TOTAL DISPUTED: $207.50
+  UNDISPUTED AMOUNT CUSTOMER AGREES TO PAY: $4,141.60
+
+--------------------------------------------------------------------------------
+PAYMENT OPTIONS
+--------------------------------------------------------------------------------
+  ACH / Wire Transfer : Bank details on remittance page 2
+  Check               : Mail to Swift Haul Transport, PO Box 7844, Fort Worth TX 76113
+  Credit Card         : 3.5% processing fee applies
+
+--------------------------------------------------------------------------------
+QUESTIONS / DISPUTES:
+  Billing Dept: (817) 555-0301 | billing@swifthaul.com
+  Account Mgr : Rachel Torres | (817) 555-0315
+
+================================================================================
+  PREPARED BY : Jennifer Hale, Billing Specialist
+  APPROVED BY : Rachel Torres, Account Manager
+  STATUS      : UNPAID — MINOR DISPUTE PENDING
+  GENERATED   : 2026-02-20
+================================================================================

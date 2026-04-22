@@ -1,0 +1,8 @@
+Copyright (c) 2026 Douglas Mitchell. All rights reserved.
+
+No permission is granted to use, copy, modify, merge, publish, distribute,
+sublicense, sell, or create derivative works of this software or its source
+code, in whole or in part, without prior written permission from the copyright
+holder.
+
+For licensing inquiries, contact: DouglasMitchell@ReliantAI.org

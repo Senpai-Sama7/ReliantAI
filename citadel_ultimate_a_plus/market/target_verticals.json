@@ -1,0 +1,40 @@
+{
+  "_comment": "Harris County, TX (state_fips=48, county_fips=201) CBP configuration. NAICS 238220 covers both Plumbing and HVAC — split_ratio distributes the shared establishment count. Ratios derived from GBP category prevalence across the Houston metro (observed ~45% plumbing / 55% HVAC in the 238220 pool).",
+  "county_fips": "201",
+  "state_fips": "48",
+  "cbp_year": "2022",
+  "verticals": [
+    {
+      "slug": "plumbing",
+      "naics": "238220",
+      "split_ratio": 0.45,
+      "_note": "NAICS 238220 is shared with hvac. split_ratio distributes the total."
+    },
+    {
+      "slug": "hvac",
+      "naics": "238220",
+      "split_ratio": 0.55,
+      "_note": "NAICS 238220 is shared with plumbing. split_ratio distributes the total."
+    },
+    {
+      "slug": "roofing",
+      "naics": "238160",
+      "split_ratio": 1.0
+    },
+    {
+      "slug": "landscaping",
+      "naics": "561730",
+      "split_ratio": 1.0
+    },
+    {
+      "slug": "electrical",
+      "naics": "238210",
+      "split_ratio": 1.0
+    },
+    {
+      "slug": "painting",
+      "naics": "238320",
+      "split_ratio": 1.0
+    }
+  ]
+}

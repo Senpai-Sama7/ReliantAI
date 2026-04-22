@@ -1,0 +1,80 @@
+================================================================================
+         SWIFT HAUL TRANSPORT — ACCOUNTS RECEIVABLE STATEMENT
+================================================================================
+Statement Date : March 2, 2026
+Account Number : AR-2026-1142
+Prepared By    : Lisa Nguyen, AR Specialist
+
+REMIT TO:
+  Swift Haul Transport
+  7800 Freight Corridor Drive
+  Fort Worth, TX 76104
+  ar@swifthaul.com | (817) 555-0300
+
+--------------------------------------------------------------------------------
+CUSTOMER ACCOUNT
+--------------------------------------------------------------------------------
+  Account Name : Lone Star Distribution LLC
+  Contact      : David Garza, AP Manager
+  Address      : 3300 Miller Road, Dallas, TX 75217
+  Phone        : (214) 555-0411
+  Email        : dgarza@lonestardist.com
+
+--------------------------------------------------------------------------------
+ACCOUNT SUMMARY
+--------------------------------------------------------------------------------
+  Current (0-30 Days)       $12,400.00
+  30 Days Past Due          $18,750.00
+  60 Days Past Due           $9,325.50
+  90+ Days Past Due         $34,820.00
+                           -----------
+  TOTAL OUTSTANDING         $75,295.50
+  Late Fee Assessed          $1,103.64
+  Credit Hold Status        ACTIVE (since 2026-02-20)
+
+--------------------------------------------------------------------------------
+INVOICE AGING DETAIL
+--------------------------------------------------------------------------------
+  Invoice #        Date        Due Date    Amount      Paid    Balance    Days  Status
+  SHT-2025-4401   09/15/2025  10/15/2025  $34,820.00  $0.00  $34,820.00  138  OVERDUE
+  SHT-2025-4887   11/20/2025  12/20/2025   $9,325.50  $0.00   $9,325.50   72  OVERDUE
+  SHT-2026-0091   01/10/2026  02/09/2026  $18,750.00  $0.00  $18,750.00   21  OVERDUE
+  SHT-2026-0204   02/01/2026  03/03/2026  $12,400.00  $0.00  $12,400.00    0  CURRENT
+
+--------------------------------------------------------------------------------
+COMMUNICATIONS LOG
+--------------------------------------------------------------------------------
+  02/14/2026 – David Garza (Customer):
+    Disputes invoice SHT-2025-4401. Claims freight arrived 4 days late causing
+    $12,000 in downstream warehouse losses. Requesting credit memo before any
+    payment is made.
+
+  02/22/2026 – Tom Willis (AR Manager):
+    Customer provided signed delivery receipts confirming 4-day delay. Reviewing
+    SLA contract terms — late delivery penalty clause may apply in either direction.
+
+  03/01/2026 – David Garza (Customer):
+    Confirming they will not pay any invoices until oldest dispute is resolved.
+    Requesting in-person meeting with account manager this week.
+
+--------------------------------------------------------------------------------
+URGENT NOTICES
+--------------------------------------------------------------------------------
+  *** CREDIT HOLD ACTIVE — No new shipments authorized ***
+  *** PAYMENT DEADLINE: March 15, 2026 ***
+  *** No payment plan = referral to external collections ***
+
+--------------------------------------------------------------------------------
+NEXT ACTIONS REQUIRED
+--------------------------------------------------------------------------------
+  1. Schedule dispute resolution meeting with David Garza re: SHT-2025-4401
+  2. Pull GPS/delivery logs to verify late delivery date
+  3. Legal review of SLA contract Section 4.2 (delivery penalty clause)
+  4. If partial credit approved — issue credit memo and reissue aging statement
+  5. Escalate to Collections Manager if no resolution by March 10
+
+================================================================================
+  PREPARED BY: Lisa Nguyen, AR Specialist
+  APPROVED BY: [PENDING REVIEW]
+  GENERATED  : 2026-03-02 06:00 PM CST
+================================================================================

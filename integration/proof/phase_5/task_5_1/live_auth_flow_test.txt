@@ -1,0 +1,8 @@
+.                                                                        [100%]
+=============================== warnings summary ===============================
+tests/test_auth_integration.py::test_live_shared_auth_flow
+  /home/donovan/.cache/pypoetry/virtualenvs/ai-analytics-platform-xj3SKm2U-py3.13/lib/python3.13/site-packages/httpx/_client.py:1437: DeprecationWarning: The 'app' shortcut is now deprecated. Use the explicit style 'transport=ASGITransport(app=...)' instead.
+    warnings.warn(message, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+1 passed, 8 deselected, 1 warning in 0.61s

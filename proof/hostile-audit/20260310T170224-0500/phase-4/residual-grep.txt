@@ -1,0 +1,2 @@
+ClearDesk/AGENTS.md:21:- Keep cross-device sync behind signed browser sessions and short-lived share codes; do not reintroduce raw UUID-based KV access.
+Gen-H/AGENTS.md:54:- Fail closed when shared auth validation is unavailable; `DEV_MODE` must not silently bypass protected routes.

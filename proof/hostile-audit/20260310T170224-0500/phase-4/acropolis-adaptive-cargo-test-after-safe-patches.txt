@@ -1,0 +1,245 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling tracing-core v0.1.36
+   Compiling serde_derive v1.0.228
+   Compiling tracing-attributes v0.1.31
+   Compiling num-conv v0.2.0
+   Compiling time-core v0.1.8
+   Compiling deranged v0.5.8
+   Compiling regex-automata v0.4.9
+   Compiling nu-ansi-term v0.50.3
+   Compiling time-macros v0.2.27
+   Compiling tracing-log v0.2.0
+   Compiling tracing v0.1.44
+   Compiling h2 v0.3.27
+   Compiling axum-core v0.4.5
+   Compiling tower v0.5.2
+   Compiling tower v0.4.13
+   Compiling time v0.3.47
+   Compiling simple_asn1 v0.6.3
+   Compiling cookie v0.18.1
+   Compiling matchers v0.2.0
+   Compiling regex v1.11.1
+   Compiling bitflags v2.9.1
+   Compiling serde_json v1.0.142
+   Compiling serde_urlencoded v0.7.1
+   Compiling serde_spanned v0.6.9
+   Compiling toml_datetime v0.6.11
+   Compiling tracing-serde v0.2.0
+   Compiling serde_path_to_error v0.1.17
+   Compiling openssl v0.10.73
+   Compiling rustix v1.0.8
+   Compiling toml_edit v0.22.27
+   Compiling raw-cpuid v11.5.0
+   Compiling ron v0.8.1
+   Compiling json5 v0.4.1
+   Compiling tower-http v0.5.2
+   Compiling bincode v1.3.3
+   Compiling uuid v1.17.0
+   Compiling tracing-subscriber v0.3.22
+   Compiling axum v0.7.9
+   Compiling jsonwebtoken v9.3.1
+   Compiling chrono v0.4.41
+   Compiling hyper v0.14.32
+   Compiling tempfile v3.20.0
+   Compiling toml v0.8.23
+   Compiling quanta v0.12.6
+   Compiling config v0.14.1
+   Compiling governor v0.6.3
+   Compiling rusty-fork v0.3.0
+   Compiling tinytemplate v1.2.1
+   Compiling native-tls v0.2.14
+   Compiling ciborium v0.2.2
+   Compiling proptest v1.7.0
+   Compiling tokio-native-tls v0.3.1
+   Compiling tracing-test v0.2.5
+   Compiling criterion v0.5.1
+   Compiling hyper-tls v0.5.0
+   Compiling reqwest v0.11.27
+   Compiling axum-extra v0.9.6
+   Compiling adaptive_expert_platform v0.1.0 (/home/donovan/Projects/ReliantAI/Acropolis/adaptive_expert_platform)
+warning: field `load_balancer` is never read
+   --> adaptive_expert_platform/src/mesh.rs:140:5
+    |
+134 | pub struct AgentMesh {
+    |            --------- field in this struct
+...
+140 |     load_balancer: Arc<LoadBalancer>,
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `strategy` is never read
+   --> adaptive_expert_platform/src/mesh.rs:458:5
+    |
+457 | pub struct LoadBalancer {
+    |            ------------ field in this struct
+458 |     strategy: LoadBalancingStrategy,
+    |     ^^^^^^^^
+
+warning: fields `config` and `task_results` are never read
+   --> adaptive_expert_platform/src/mesh.rs:469:5
+    |
+468 | pub struct NetworkTransport {
+    |            ---------------- fields in this struct
+469 |     config: MeshConfig,
+    |     ^^^^^^
+470 |     message_sender: Arc<RwLock<Option<mpsc::Sender<MeshMessage>>>>,
+471 |     task_results: Arc<DashMap<Uuid, oneshot::Sender<TaskResult>>>,
+    |     ^^^^^^^^^^^^
+
+warning: field `max_concurrent` is never read
+   --> adaptive_expert_platform/src/mesh.rs:527:5
+    |
+526 | pub struct TaskExecutor {
+    |            ------------ field in this struct
+527 |     max_concurrent: usize,
+    |     ^^^^^^^^^^^^^^
+
+warning: fields `cache_system`, `websocket_server`, and `agent_mesh` are never read
+  --> adaptive_expert_platform/src/orchestrator.rs:37:5
+   |
+25 | pub struct Orchestrator {
+   |            ------------ fields in this struct
+...
+37 |     cache_system: Arc<MultiTierCache>,
+   |     ^^^^^^^^^^^^
+38 |     websocket_server: Arc<WebSocketServer>,
+   |     ^^^^^^^^^^^^^^^^
+39 |     agent_mesh: Option<Arc<AgentMesh>>,
+   |     ^^^^^^^^^^
+
+warning: field `timeout_seconds` is never read
+  --> adaptive_expert_platform/src/server.rs:67:5
+   |
+64 | struct ExecuteTaskRequest {
+   |        ------------------ field in this struct
+...
+67 |     timeout_seconds: Option<u64>,
+   |     ^^^^^^^^^^^^^^^
+   |
+   = note: `ExecuteTaskRequest` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: function `create_dummy_memory` is never used
+   --> adaptive_expert_platform/src/server.rs:447:4
+    |
+447 | fn create_dummy_memory() -> Memory {
+    |    ^^^^^^^^^^^^^^^^^^^
+
+warning: `extern` fn uses type `dyn Agent`, which is not FFI-safe
+  --> adaptive_expert_platform/src/plugin.rs:17:18
+   |
+17 | type FactoryFn = unsafe extern "C" fn() -> *mut dyn Agent;
+   |                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ not FFI-safe
+   |
+   = note: trait objects have no C equivalent
+   = note: `#[warn(improper_ctypes_definitions)]` on by default
+
+warning: `adaptive_expert_platform` (lib) generated 8 warnings
+warning: unexpected `cfg` condition value: `proptest`
+   --> adaptive_expert_platform/tests/basic_agent_test.rs:363:7
+    |
+363 | #[cfg(feature = "proptest")]
+    |       ^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: expected values for `feature` are: `default`, `with-distributed`, `with-faiss`, `with-julia`, `with-llama`, `with-metrics`, `with-observability`, `with-redis`, `with-vector-search`, `with-wasm`, and `with-zig`
+    = help: consider adding `proptest` as a feature in `Cargo.toml`
+    = note: see <https://doc.rust-lang.org/nightly/rustc/check-cfg/cargo-specifics.html> for more information about checking conditional configuration
+    = note: `#[warn(unexpected_cfgs)]` on by default
+
+warning: unused imports: `collections::HashSet` and `path::PathBuf`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:16:11
+   |
+16 | use std::{path::PathBuf, sync::Arc, time::Duration, collections::HashSet};
+   |           ^^^^^^^^^^^^^                             ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `tokio::time::timeout`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:17:5
+   |
+17 | use tokio::time::timeout;
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: unused import: `Value`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:18:24
+   |
+18 | use serde_json::{json, Value};
+   |                        ^^^^^
+
+warning: unused import: `NamedTempFile`
+  --> adaptive_expert_platform/tests/basic_agent_test.rs:19:25
+   |
+19 | use tempfile::{tempdir, NamedTempFile};
+   |                         ^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+   --> adaptive_expert_platform/tests/basic_agent_test.rs:294:18
+    |
+294 |         let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+    |                  ----^^
+    |                  |
+    |                  help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: `adaptive_expert_platform` (lib test) generated 8 warnings (8 duplicates)
+warning: `adaptive_expert_platform` (test "basic_agent_test") generated 6 warnings (run `cargo fix --test "basic_agent_test" -p adaptive_expert_platform` to apply 5 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 30.13s
+     Running unittests src/lib.rs (target/debug/deps/adaptive_expert_platform-2362c5f82288b18d)
+
+running 19 tests
+test batch::tests::test_batch_config_validation ... ok
+test memory::tests::test_cosine_similarity ... ok
+test memory::tests::test_cache_key_generation ... ok
+test memory::redis_store::tests::test_in_memory_cache ... ok
+test memory::tests::test_memory_kv_operations ... ok
+test memory::tests::test_memory_clear ... ok
+test middleware::tests::test_cors_configuration ... ok
+test memory::tests::test_memory_stats ... ok
+test batch::tests::test_batch_config_loading ... ok
+test plugin::tests::test_plugin_security_config_default ... ok
+test middleware::tests::test_rate_limiter ... ok
+test memory::redis_store::tests::test_cache_concurrent_access ... ok
+test plugin::tests::test_validate_plugin_path ... ok
+test plugin::tests::test_file_hash_calculation ... ok
+test orchestrator::tests::test_orchestrator_agent_registration ... ok
+test orchestrator::tests::test_orchestrator_dispatch_timeout ... ok
+test auth::tests::test_admin_initialization ... ok
+test auth::tests::test_user_management ... ok
+test auth::tests::test_password_hashing ... ok
+
+test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.68s
+
+     Running unittests src/main.rs (target/debug/deps/acropolis_cli-505fadb10b70962d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/basic_agent_test.rs (target/debug/deps/basic_agent_test-c9206bc9aa756470)
+
+running 14 tests
+test test_memory_system_basic ... ok
+test test_json_input_validation ... ok
+test test_plugin_size_limits ... ok
+test test_plugin_security_validation ... ok
+test test_settings_validation ... ok
+test test_echo_agent_basic_functionality ... ok
+test test_orchestrator_timeout_handling ... ok
+test test_orchestrator_agent_management ... ok
+test test_error_propagation ... ok
+test test_orchestrator_concurrent_dispatch ... ok
+test test_orchestrator_performance_basic ... ok
+test benchmarks::bench_orchestrator_throughput ... ok
+test test_python_tool_agent ... ok
+test test_python_tool_agent_error_handling ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+   Doc-tests adaptive_expert_platform
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

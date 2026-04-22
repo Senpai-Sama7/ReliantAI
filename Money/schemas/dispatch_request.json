@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HVAC Dispatch Request",
+  "description": "Validates incoming dispatch requests from customers",
+  "type": "object",
+  "required": ["customer_phone", "issue_summary"],
+  "additionalProperties": false,
+  "properties": {
+    "customer_name": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Customer's full name"
+    },
+    "customer_phone": {
+      "type": "string",
+      "pattern": "^\\+1[0-9]{10}$",
+      "description": "US phone number in E.164 format (+1XXXXXXXXXX)"
+    },
+    "issue_summary": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 1000,
+      "description": "Description of the HVAC issue"
+    },
+    "address": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Service address"
+    },
+    "urgency": {
+      "type": "string",
+      "enum": ["emergency", "high", "standard", "low"],
+      "description": "Explicit urgency override (optional)"
+    },
+    "outdoor_temp_f": {
+      "type": "number",
+      "minimum": -50,
+      "maximum": 150,
+      "description": "Current outdoor temperature in Fahrenheit"
+    },
+    "preferred_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 preferred service time"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["sms", "whatsapp", "web", "phone", "sales_intel"],
+      "default": "web",
+      "description": "Lead source channel"
+    }
+  }
+}

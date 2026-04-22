@@ -1,0 +1,3 @@
+    Updating crates.io index
+    Updating slab v0.4.10 -> v0.4.11
+note: pass `--verbose` to see 254 unchanged dependencies behind latest

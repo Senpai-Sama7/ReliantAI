@@ -1,0 +1,10 @@
+HTTP/1.1 200 OK
+date: Fri, 06 Mar 2026 08:00:11 GMT
+server: uvicorn
+content-length: 451
+content-type: application/json
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: DENY
+
+{"run_id":"c114eb20-846b-4cdf-ac9a-9a4c7e6da12a","status":"complete","result":{"raw_output":"Mock engine dispatched: URGENT","confidence":0.99,"metadata":{"urgency_level":"URGENT","recommended_action":"SAME_DAY_DISPATCH","safety_flag":false,"outdoor_temp_f":95.0,"timestamp":"2026-03-06T08:00:12.491955+00:00"},"event_bus_event_id":"evt_1772784012.511476_f84b3c53","event_bus_channel":"events:dispatch"},"timestamp":"2026-03-06T08:00:12.485809+00:00"}

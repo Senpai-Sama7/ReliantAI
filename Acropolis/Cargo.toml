@@ -1,0 +1,8 @@
+# app/Cargo.toml   ← only file that changes
+[workspace]
+members = [
+    "adaptive_expert_platform", # <— NOT "orchestrator"
+    "plugins/*",
+    "gui",
+]
+resolver = "2"

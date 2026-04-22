@@ -1,0 +1,4 @@
+age,drug_dose,recovery_rate
+30,1,0.9
+40,0,0.8
+35,1,0.95

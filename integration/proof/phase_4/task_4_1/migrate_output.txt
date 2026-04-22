@@ -1,0 +1,5 @@
+database=/home/donovan/Projects/ReliantAI/integration/proof/phase_4/task_4_1/runtime/auth.db
+journal_mode=wal
+user_count=0
+applied_now=001_create_users.sql
+applied_versions=001_create_users.sql

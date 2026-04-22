@@ -1,0 +1,20 @@
+[run]
+omit =
+    tests/*
+    event_subscriber.py
+    hvac_dispatch_crew.py
+    integrations/*
+    openclaw_integration.py
+    rate_limiter.py
+    schema_validation.py
+
+[report]
+omit =
+    tests/*
+    event_subscriber.py
+    hvac_dispatch_crew.py
+    integrations/*
+    openclaw_integration.py
+    rate_limiter.py
+    schema_validation.py
+skip_covered = False

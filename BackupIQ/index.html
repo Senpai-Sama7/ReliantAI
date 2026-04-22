@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BackupIQ - Enterprise Backup & Restore Platform</title>
+    <meta name="description" content="Deploy your production-ready backup SaaS in under 48 hours. Dockerized, Kubernetes-ready solution for MSPs, SaaS founders, and ecommerce developers.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text">BackupIQ</span>
+            </div>
+            
+            <div class="nav-links">
+                <a href="#hero" class="nav-link">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#architecture" class="nav-link">Architecture</a>
+                <a href="#value" class="nav-link">Value</a>
+                <a href="#audience" class="nav-link">Audience</a>
+                <a href="#pricing" class="nav-link">Pricing</a>
+                <button class="cta-button nav-cta">Get Started</button>
+            </div>
+            
+            <div class="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-badge">FAANG-Grade Enterprise Backup with Zero-Trust Security</div>
+                <h1>Deploy Your Backup SaaS with <span class="highlight">Zero-Trust Security</span> in Under 48 Hours</h1>
+                <p class="hero-subtitle">
+                    Production-ready intelligent backup and restore platform with zero-trust architecture, 
+                    multi-cloud KMS integration, and resilience patterns that can be sold as SaaS, 
+                    white-label MSP solution, or adapted as Shopify/Ecommerce protection app.
+                </p>
+                <div class="hero-actions">
+                    <button class="cta-button primary">Start Free Trial</button>
+                    <button class="cta-button secondary">View Demo</button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">$75K+</span>
+                        <span class="stat-label">Replacement Cost</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">6-12</span>
+                        <span class="stat-label">Months Saved</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">100%</span>
+                        <span class="stat-label">Production Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Core Features & Capabilities</h2>
+                <p>Everything you need to launch a professional backup service</p>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Zero-Trust Security Architecture</h3>
+                    <p>Complete zero-trust implementation with SPIFFE identity, OPA policy engine, and Vault secrets management.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Multi-Cloud KMS Integration</h3>
+                    <p>Real production clients for AWS KMS, Azure Key Vault, and GCP KMS with proper error handling.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Circuit Breaker Resilience</h3>
+                    <p>Advanced circuit breaker patterns with CLOSED/OPEN/HALF_OPEN states to prevent cascading failures.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🐳</div>
+                    <h3>Enterprise-Ready Packaging</h3>
+                    <p>Dockerized, Kubernetes-ready with health checks, metrics, and comprehensive testing suite included.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Advanced Observability</h3>
+                    <p>Structured JSON logging, Prometheus metrics endpoint, and clear runbook-style readiness checks.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔄</div>
+                    <h3>Flexible Deployment</h3>
+                    <p>Adaptable for SaaS, white-labelable by MSPs, or retooled for Shopify/Ecommerce protection.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Multi-Cloud Storage Support</h3>
+                    <p>Real storage adapters for AWS S3, GCP Storage, and Azure Blob with encryption and connection pooling.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🧪</div>
+                    <h3>Comprehensive Testing</h3>
+                    <p>Unit and integration tests with example CI/CD workflows for linting, testing, and secret scanning.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🔗</div>
+                    <h3>Resource Management</h3>
+                    <p>Advanced resource management with connection pooling and system resource monitoring.</p>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Intelligent Backup Engine</h3>
+                    <p>Handles scheduled backups, file/database snapshotting, and restore workflows with configurable storage backends and security validation.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="architecture-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Enterprise-Grade Architecture</h2>
+                <p>Built with production deployment standards</p>
+            </div>
+            
+            <div class="architecture-content">
+                <div class="architecture-diagram">
+                    <div class="arch-layer">
+                        <div class="arch-node">Frontend Dashboard</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer">
+                        <div class="arch-node">API Gateway</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer multi-node">
+                        <div class="arch-node">Backup Service</div>
+                        <div class="arch-node">Restore Service</div>
+                        <div class="arch-node">Scheduler</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer multi-node">
+                        <div class="arch-node">Circuit Breaker</div>
+                        <div class="arch-node">Resource Manager</div>
+                        <div class="arch-node">Security Manager</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer multi-node">
+                        <div class="arch-node">SPIFFE Identity</div>
+                        <div class="arch-node">OPA Policy Engine</div>
+                        <div class="arch-node">Vault Secrets</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer multi-node">
+                        <div class="arch-node">KMS Clients</div>
+                        <div class="arch-node">Storage Adapters</div>
+                    </div>
+                    <div class="arch-connector"></div>
+                    <div class="arch-layer multi-node">
+                        <div class="arch-node">AWS S3</div>
+                        <div class="arch-node">GCP Storage</div>
+                        <div class="arch-node">Azure Blob</div>
+                    </div>
+                </div>
+                
+                <div class="architecture-features">
+                    <h3>Technical Highlights</h3>
+                    <ul>
+                        <li>Zero-Trust Security: SPIFFE identity, OPA policy engine, Vault secrets management</li>
+                        <li>Multi-Cloud KMS: AWS KMS, Azure Key Vault, GCP KMS integration</li>
+                        <li>Circuit Breaker: Resilience patterns with configurable thresholds</li>
+                        <li>Resource Management: Connection pooling and system monitoring</li>
+                        <li>Dockerfile (non-root, multi-stage)</li>
+                        <li>Kubernetes manifests with liveness/readiness probes</li>
+                        <li>docker-compose for quick local spins</li>
+                        <li>Health endpoints (/health, /ready) and metrics (/metrics)</li>
+                        <li>Timeout/retry/backoff patterns for downstream calls</li>
+                        <li>Secrets externalized for secret manager integration</li>
+                        <li>Multi-cloud storage adapters with encryption</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Value Proposition Section -->
+    <section id="value" class="value-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Why BackupIQ is Invaluable</h2>
+                <p>Skip the development costs and time investment</p>
+            </div>
+            
+            <div class="value-grid">
+                <div class="value-card">
+                    <h3>Enterprise Security</h3>
+                    <p>FAANG-grade security with zero-trust architecture, multi-cloud KMS, and production-ready security components saving $100K+ in security engineering.</p>
+                </div>
+                
+                <div class="value-card">
+                    <h3>Resilience & Reliability</h3>
+                    <p>Advanced circuit breaker patterns and connection pooling prevent cascading failures and ensure 99.99% uptime.</p>
+                </div>
+                
+                <div class="value-card">
+                    <h3>Market Versatility</h3>
+                    <p>Fits multiple verticals: SaaS, Ecommerce, Agencies, Crypto/Web3 with multi-cloud support and minimal adaptation required.</p>
+                </div>
+                
+                <div class="value-card">
+                    <h3>Production-Ready</h3>
+                    <p>Unlike templates, this is a fully tested enterprise system with comprehensive security, monitoring, and resilience features.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Target Audience Section -->
+    <section id="audience" class="audience-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Who Would Benefit from BackupIQ</h2>
+                <p>Multiple market segments, one powerful solution</p>
+            </div>
+            
+            <div class="audience-cards">
+                <div class="audience-card">
+                    <div class="audience-icon">🏢</div>
+                    <h3>MSPs/IT Agencies</h3>
+                    <p>Want white-label backup offerings to add to their service portfolio without development overhead.</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">🚀</div>
+                    <h3>Solo SaaS Founders</h3>
+                    <p>Indie hackers who want to launch a backup service instantly without technical barriers.</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">🛍️</div>
+                    <h3>Ecommerce Developers</h3>
+                    <p>Building Shopify/Shop apps for data recovery with "Your shop restored in 1 click" capability.</p>
+                </div>
+                
+                <div class="audience-card">
+                    <div class="audience-icon">⛓️</div>
+                    <h3>Crypto/Web3 Teams</h3>
+                    <p>Adapt backup flows to blockchain nodes/wallets with our extendable architecture.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="pricing-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Licensing Options</h2>
+                <p>Choose the model that works for your business</p>
+            </div>
+            
+            <div class="pricing-cards">
+                <div class="pricing-card">
+                    <div class="pricing-header">
+                        <h3>Non-Exclusive License</h3>
+                        <div class="price">$10,000</div>
+                        <p>per license</p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>Multiple buyers possible</li>
+                        <li>Recurring deals</li>
+                        <li>Keep upside potential</li>
+                        <li>License once, deploy forever</li>
+                        <li>Priority support</li>
+                    </ul>
+                    <button class="cta-button primary">Choose License</button>
+                </div>
+                
+                <div class="pricing-card featured">
+                    <div class="pricing-badge">Recommended</div>
+                    <div class="pricing-header">
+                        <h3>Outright Sale</h3>
+                        <div class="price">$20,000 - $30,000</div>
+                        <p>one-time payment</p>
+                    </div>
+                    <ul class="pricing-features">
+                        <li>Quick cash infusion</li>
+                        <li>Full rights transfer</li>
+                        <li>Exclusive ownership</li>
+                        <li>Source code ownership</li>
+                        <li>Lifetime updates</li>
+                    </ul>
+                    <button class="cta-button primary">Request Quote</button>
+                </div>
+            </div>
+            
+            <div class="pricing-note">
+                <p>Both options include complete source code, documentation, and deployment support.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Launch Your Backup Service?</h2>
+                <p>Deploy in under 48 hours and start serving customers immediately</p>
+                <div class="cta-actions">
+                    <button class="cta-button primary large">Schedule a Demo</button>
+                    <button class="cta-button secondary large">Download Technical Specs</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class=\"footer-section\">
+                    <div class=\"footer-logo\">
+                        <span class=\"logo-icon\">🛡️</span>
+                        <span class=\"logo-text\">BackupIQ</span>
+                    </div>
+                    <p>Production-ready backup & restore platform for SaaS founders, MSPs, and ecommerce developers.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#architecture">Architecture</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#audience">Use Cases</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#" class="resource-link">Documentation</a></li>
+                        <li><a href="#" class="resource-link">API Reference</a></li>
+                        <li><a href="#" class="resource-link">Support</a></li>
+                        <li><a href="#" class="resource-link">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#" class="resource-link">About</a></li>
+                        <li><a href="#" class="resource-link">Contact</a></li>
+                        <li><a href="#" class="resource-link">Privacy Policy</a></li>
+                        <li><a href="#" class="resource-link">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="current-year">2025</span> Douglas Mitchell. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Multi-Modal API
+  version: '1.0'
+paths:
+  /embed/text:
+    post:
+      summary: Generate an embedding for a text input
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text:
+                  type: string
+      responses:
+        '200':
+          description: Text embedding
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vector:
+                    type: array
+                    items:
+                      type: number
+  /embed/image:
+    post:
+      summary: Generate an embedding for an image
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Image embedding
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  vector:
+                    type: array
+                    items:
+                      type: number
+  /search:
+    post:
+      summary: Search within a multi-modal dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        score:
+                          type: number
+components:
+  schemas:
+    SearchRequest:
+      type: object
+      properties:
+        query_type:
+          type: string
+          enum: [text, image]
+        query:
+          type: string
+          description: Text query or base64‑encoded image string
+        dataset:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              vector:
+                type: array
+                items:
+                  type: number
+        top_k:
+          type: integer
+      required: [query_type, query, dataset]

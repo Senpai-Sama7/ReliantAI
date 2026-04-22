@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0A0A0F;
+  --color-surface: #111118;
+  --color-surface-hover: #16161F;
+  --color-border: #1E1E2E;
+  --color-border-hover: #2A2A3E;
+  --color-text-primary: #F0F0F5;
+  --color-text-secondary: #8E8EA0;
+  --color-accent: #00FF94;
+  --color-accent-text: #4DFFB4;
+  --color-danger: #FF4444;
+  --color-warning: #FFB800;
+
+  --color-status-pending: #8E8EA0;
+  --color-status-processing: #3B82F6;
+  --color-status-review: #8B5CF6;
+  --color-status-completed: #00FF94;
+  --color-status-escalated: #FF4444;
+
+  --color-priority-critical: #FF4444;
+  --color-priority-high: #FF8C00;
+  --color-priority-medium: #FFB800;
+  --color-priority-low: #8E8EA0;
+
+  --font-heading: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --animate-fade-up: fade-up 0.4s ease-out both;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 100% 50%; }
+  50% { background-position: 0% 50%; }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-bg: #F5F5F7;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F0F0F2;
+  --color-border: #E0E0E6;
+  --color-border-hover: #C8C8D0;
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #555566;
+  --color-accent: #00B368;
+  --color-accent-text: #008F53;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-bg, #0A0A0F);
+  color: var(--color-text-primary, #F0F0F5);
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border, #1E1E2E) transparent;
+}
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--color-border, #1E1E2E); border-radius: 3px; }
+
+/* Line clamp */
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }

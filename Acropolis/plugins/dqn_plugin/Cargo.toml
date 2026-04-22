@@ -1,0 +1,28 @@
+# plugins/dqn_plugin/Cargo.toml
+[package]
+name = "dqn_plugin"
+version = "0.1.0"
+edition = "2021"
+description = "Deep-Q-Network agent plugin for the Adaptive Expert Platform."
+
+[lib] # builds both .rlib (tests) and .so/.dylib/.dll (plugin)
+crate-type = ["cdylib", "rlib"]
+
+# ───── Dependencies ──────────────────────────────────────────────────────────
+[dependencies]
+adaptive_expert_platform = { path = "../../adaptive_expert_platform" } # local crate
+# Note: Removed tch dependency for compatibility - using simple Q-learning implementation
+rand = "0.8"
+priority-queue = "1.2"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+async-trait = "0.1"
+anyhow = "1.0"
+tracing = "0.1"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.8"
+
+[features]
+default = []
