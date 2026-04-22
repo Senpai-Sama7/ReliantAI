@@ -1,0 +1,85 @@
+global:
+  smtp_smarthost: 'localhost:587'
+  smtp_from: 'alerts@reliantai.io'
+  smtp_auth_username: 'alerts@reliantai.io'
+  smtp_auth_password: 'your-smtp-password'
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing tree
+route:
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  receiver: 'default'
+  routes:
+    # Critical alerts
+    - match:
+        severity: critical
+      receiver: 'pagerduty-critical'
+      continue: true
+    
+    # Warning alerts
+    - match:
+        severity: warning
+      receiver: 'slack-warnings'
+      continue: true
+    
+    # Service-specific routing
+    - match_re:
+        service: money|complianceone|finops360
+      receiver: 'team-platform'
+
+# Inhibition rules
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+
+# Receivers
+receivers:
+  - name: 'default'
+    email_configs:
+      - to: 'team@reliantai.io'
+        send_resolved: true
+        headers:
+          Subject: 'ReliantAI Alert: {{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <h3>{{ .Annotations.summary }}</h3>
+          <p>{{ .Annotations.description }}</p>
+          <p>Labels: {{ .Labels }}</p>
+          {{ end }}
+
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: 'your-pagerduty-service-key'
+        description: '{{ .GroupLabels.alertname }}: {{ .GroupLabels.service }}'
+        severity: 'critical'
+        details:
+          firing: '{{ template "pagerduty.default.description" . }}'
+          resolved: '{{ template "pagerduty.default.instances" . }}'
+
+  - name: 'slack-warnings'
+    slack_configs:
+      - api_url: 'your-slack-webhook-url'
+        channel: '#alerts'
+        title: 'ReliantAI Platform Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+        send_resolved: true
+
+  - name: 'team-platform'
+    email_configs:
+      - to: 'platform-team@reliantai.io'
+        send_resolved: true

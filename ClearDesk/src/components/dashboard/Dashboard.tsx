@@ -7,7 +7,6 @@ import { DocumentCard } from './DocumentCard';
 import { DocumentDetail } from './DocumentDetail';
 import { ExportPanel } from './ExportPanel';
 import { FileUpload } from '../upload/FileUpload';
-import { SampleDocuments } from './SampleDocuments';
 import { SettingsPanel } from './SettingsPanel';
 import { HelpPanel } from './HelpPanel';
 import { AboutPanel } from './AboutPanel';
@@ -45,12 +44,11 @@ export function Dashboard() {
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
             <h1 className="font-heading text-2xl font-bold text-text-primary">Upload &amp; Process</h1>
-            <p className="text-sm text-text-secondary mt-1">Drop files or pick a sample — AI analysis starts immediately.</p>
+            <p className="text-sm text-text-secondary mt-1">Drop files for instant AI analysis.</p>
           </div>
 
           <div className="bg-surface border border-border rounded-lg p-6 mb-6">
             <FileUpload onHandleFiles={(h) => { handleFilesRef.current = h; }} />
-            <SampleDocuments onProcessFile={(file) => handleFilesRef.current?.([file])} />
           </div>
 
           {/* Recently processed — upload confirmation */}

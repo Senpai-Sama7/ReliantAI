@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+  ops-intelligence-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: reliantai-ops-backend
+    ports:
+      - "8095:8095"
+    environment:
+      AUTH_SERVICE_URL: ${AUTH_SERVICE_URL:-http://reliantai-auth:8080}
+      EVENT_BUS_URL: ${EVENT_BUS_URL:-http://reliantai-event-bus:8081}
+      EVENT_BUS_API_KEY: ${EVENT_BUS_API_KEY:-change-me-event-bus-api-key}
+      JWT_SECRET: ${JWT_SECRET:-change-in-production}
+      OPS_DB_PATH: /data/ops_intelligence.db
+      PORT: "8095"
+      CORS_ORIGINS: "http://localhost:5173,http://ops-intelligence-frontend:80"
+    volumes:
+      - ops-data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8095/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - reliantai-network
+
+  ops-intelligence-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: reliantai-ops-frontend
+    ports:
+      - "5174:80"
+    depends_on:
+      ops-intelligence-backend:
+        condition: service_healthy
+    networks:
+      - reliantai-network
+
+volumes:
+  ops-data:
+
+networks:
+  reliantai-network:
+    external: true
+    name: reliantai-network

@@ -2,10 +2,12 @@
 Shared event types for ReliantAI integration layer.
 Defines central schemas for all cross-service communication.
 """
+
 from datetime import datetime, UTC
 from enum import Enum
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, Field
+
 
 class EventType(str, Enum):
     LEAD_CREATED = "lead.created"
@@ -24,32 +26,44 @@ class EventType(str, Enum):
     USER_DELETED = "user.deleted"
     AUDIT_LOG_RECORDED = "audit.log.recorded"
 
+
 class EventMetadata(BaseModel):
-    event_id: str = Field(..., description="Unique event identifier")
+    # SECURITY FIX: Added max_length constraints to prevent memory exhaustion attacks.
+    # Previously all strings were unbounded, allowing very long strings to be sent.
+    event_id: str = Field(..., max_length=64, description="Unique event identifier")
     event_type: EventType
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    correlation_id: str = Field(..., description="Request correlation ID")
-    tenant_id: str
-    source_service: str
-    version: str = "1.0"
+    correlation_id: str = Field(
+        ..., max_length=128, description="Request correlation ID"
+    )
+    tenant_id: str = Field(..., max_length=64)
+    source_service: str = Field(..., max_length=64)
+    version: str = Field(default="1.0", max_length=16)
+
 
 class Event(BaseModel):
     metadata: EventMetadata
-    payload: Dict[str, Any]
+    payload: Dict[str, Any] = Field(default_factory=dict)
+
 
 class EventPublishRequest(BaseModel):
+    # SECURITY FIX: Added max_length constraints to prevent memory exhaustion.
     event_type: EventType
-    payload: Dict[str, Any]
-    correlation_id: str
-    tenant_id: str
-    source_service: str
+    payload: Dict[str, Any] = Field(
+        default_factory=dict, max_length=65536
+    )  # 64KB max payload
+    correlation_id: str = Field(..., max_length=128)
+    tenant_id: str = Field(..., max_length=64)
+    source_service: str = Field(..., max_length=64)
+
 
 class EventResponse(BaseModel):
-    event_id: str
-    status: str
-    channel: str
+    event_id: str = Field(..., max_length=64)
+    status: str = Field(..., max_length=32)
+    channel: str = Field(..., max_length=128)
+
 
 class SubscriptionRequest(BaseModel):
-    channel: str
-    event_types: Optional[List[EventType]] = None
+    channel: str = Field(..., max_length=128)
+    event_types: Optional[List[EventType]] = Field(default_factory=list, max_length=100)

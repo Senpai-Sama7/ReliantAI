@@ -1,7 +1,0 @@
-HTTP/1.1 201 Created
-date: Fri, 06 Mar 2026 07:52:47 GMT
-server: uvicorn
-content-length: 78
-content-type: application/json
-
-{"message":"User registered successfully","username":"phase5_user_1772783567"}

@@ -37,27 +37,27 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info("Starting up AI Analytics Platform...")
     try:
         # Initialize database
-        await db_manager.create_tables()  # type: ignore[no-untyped-call]
+        await db_manager.create_tables()
         logger.info("Database initialized")
-        
+
         # Initialize cache
         await cache_manager.connect()
         logger.info("Cache connected")
-        
+
         logger.info("AI Analytics Platform started successfully")
     except Exception as e:
         logger.error(f"Failed to start application: {e}")
         raise
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down AI Analytics Platform...")
     try:
-        await cache_manager.close()  # type: ignore[no-untyped-call]
+        await cache_manager.close()
         logger.info("Cache disconnected")
-        
-        await db_manager.close()  # type: ignore[no-untyped-call]
+
+        await db_manager.close()
         logger.info("Database disconnected")
         
         logger.info("AI Analytics Platform shut down successfully")
@@ -94,7 +94,7 @@ app.include_router(data_router, prefix="/api/data", tags=["Data"])
 app.include_router(pipeline_router, prefix="/api/pipeline", tags=["Pipeline"])
 
 # Register global exception handlers
-app.add_exception_handler(AppException, app_exception_handler)  # type: ignore[arg-type]
+app.add_exception_handler(AppException, app_exception_handler)
 app.add_exception_handler(Exception, generic_exception_handler)
 
 # Health, readiness, and metrics endpoints

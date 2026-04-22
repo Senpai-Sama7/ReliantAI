@@ -9,10 +9,13 @@ services:
     image: redis:7-alpine
     container_name: reliantai-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis-data:/data
-    command: redis-server --appendonly yes
+    # SECURITY FIX: Require Redis authentication in production
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -24,10 +27,10 @@ services:
     container_name: reliantai-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-reliantai}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
-      POSTGRES_DB: ${POSTGRES_DB:-reliantai_integration}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set}
     ports:
-      - "5432:5432"
+      - "5435:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -36,36 +39,29 @@ services:
       timeout: 3s
       retries: 3
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.5.0
-    container_name: reliantai-zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    ports:
-      - "2181:2181"
-    volumes:
-      - zookeeper-data:/var/lib/zookeeper/data
-      - zookeeper-logs:/var/lib/zookeeper/log
-
   kafka:
     image: confluentinc/cp-kafka:7.5.0
     container_name: reliantai-kafka
-    depends_on:
-      - zookeeper
     ports:
       - "9092:9092"
+      - "9093:9093"
     environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_LOG_RETENTION_HOURS: 24
-      KAFKA_NUM_PARTITIONS: 10
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
     volumes:
-      - kafka-data:/var/lib/kafka/data
+      - kafka-data:/tmp/kraft-combined-logs
     healthcheck:
       test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
       interval: 10s
@@ -101,7 +97,7 @@ services:
       - "3000:3000"
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?GRAFANA_ADMIN_PASSWORD must be set}
       GF_INSTALL_PLUGINS: grafana-piechart-panel
     volumes:
       - ./observability/dashboards:/etc/grafana/provisioning/dashboards
@@ -124,7 +120,7 @@ services:
     container_name: reliantai-kong-db
     environment:
       POSTGRES_USER: kong
-      POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:-kongpassword}
+      POSTGRES_PASSWORD: ${KONG_PG_PASSWORD:?KONG_PG_PASSWORD must be set}
       POSTGRES_DB: kong
     volumes:
       - kong-db-data:/var/lib/postgresql/data
@@ -143,13 +139,15 @@ services:
       KONG_PG_HOST: kong-database
       KONG_PG_PORT: 5432
       KONG_PG_USER: kong
-      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kongpassword}
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:?KONG_PG_PASSWORD must be set}
       KONG_PG_DATABASE: kong
     depends_on:
       - kong-database
     restart: on-failure
 
   kong:
+    # NOTE: For High Availability, use docker-compose.ha.yml instead
+    # which provides nginx load balancer + 2+ Kong instances
     image: kong:3.5
     container_name: reliantai-kong
     environment:
@@ -157,7 +155,7 @@ services:
       KONG_PG_HOST: kong-database
       KONG_PG_PORT: 5432
       KONG_PG_USER: kong
-      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:-kongpassword}
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:?KONG_PG_PASSWORD must be set}
       KONG_PG_DATABASE: kong
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
@@ -165,10 +163,13 @@ services:
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
       KONG_PROXY_LISTEN: 0.0.0.0:8000, 0.0.0.0:8443 ssl
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
     ports:
       - "8000:8000"
       - "8443:8443"
       - "8001:8001"
+    volumes:
+      - ./gateway:/kong/declarative
     depends_on:
       - kong-database
       - kong-migrations
@@ -184,40 +185,46 @@ services:
 
   auth-service:
     build:
-      context: ./auth
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: auth/Dockerfile
     container_name: reliantai-auth
     ports:
       - "8080:8080"
     environment:
       AUTH_SECRET_KEY: ${AUTH_SECRET_KEY}
+      JWT_SECRET: ${AUTH_SECRET_KEY}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       AUTH_PORT: 8080
     depends_on:
       - redis
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD-SHELL", "python -c 'import httpx; exit(0 if httpx.get(\"http://localhost:8080/health\").status_code == 200 else 1)'"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 3
 
   event-bus:
     build:
-      context: ./event-bus
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: event-bus/Dockerfile
     container_name: reliantai-event-bus
     ports:
       - "8081:8081"
     environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      EVENT_BUS_API_KEY: ${EVENT_BUS_API_KEY:-test-api-key-123}
+      EVENT_BUS_HOST: 0.0.0.0
       EVENT_BUS_PORT: 8081
     depends_on:
+      - redis
       - kafka
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      test: ["CMD-SHELL", "python -c 'import httpx; exit(0 if httpx.get(\"http://localhost:8081/health\").status_code == 200 else 1)'"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 3
 
   saga-orchestrator:
@@ -236,9 +243,9 @@ services:
       - redis
       - kafka
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      test: ["CMD-SHELL", "python -c 'import urllib.request; r = urllib.request.urlopen(\"http://localhost:8090/health\"); exit(0 if r.status == 200 else 1)' || exit 1"]
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 3
 
 volumes:

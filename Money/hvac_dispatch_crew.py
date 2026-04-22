@@ -20,30 +20,14 @@ from config import (
     SAFETY_KEYWORDS, URGENT_KEYWORDS,
     EMERGENCY_HEAT_THRESHOLD_F, EMERGENCY_COLD_THRESHOLD_F,
     HEAT_KEYWORDS, COLD_KEYWORDS,
-    ENV, setup_logging,
+    setup_logging,
 )
-import os
-STUB_TWILIO = os.environ.get("STUB_TWILIO", "false").lower() == "true"
-
 # ── Third-party ─────────────────────────────────────────────
+from crewai import Agent, Task, Crew, Process
+from crewai.tools import tool as crewai_tool
 from langsmith import traceable
 from tenacity import retry, stop_after_attempt, wait_fixed
 from twilio.rest import Client as TwilioClient
-
-Agent = None
-Task = None
-Crew = None
-Process = None
-
-
-# NOTE: This is an identity decorator used as a placeholder at module level.
-# The real CrewAI @tool decorator is applied lazily inside _ensure_agents()
-# when agents are first initialized. This pattern allows the module to import
-# quickly without loading heavy CrewAI dependencies at startup.
-
-def tool(func):
-    """Identity decorator; CrewAI wraps these lazily in _ensure_agents()."""
-    return func
 
 # ── Database ─────────────────────────────────────────────────
 from database import save_dispatch, log_message
@@ -56,9 +40,6 @@ logger = setup_logging("hvac_dispatch")
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 def _twilio_send(to: str, body: str) -> str:
     """Send SMS via Twilio with automatic retry on transient failure."""
-    if STUB_TWILIO or to.startswith("+1555"):
-        logger.info("[STUB_TWILIO] Skipping real SMS to %s: %s", to, body[:50])
-        return f"stub_sid_{datetime.now().microsecond}"
     client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
     msg = client.messages.create(body=body, from_=TWILIO_FROM_PHONE, to=to)
     logger.info("SMS sent to %s: SID=%s", to, msg.sid)
@@ -70,7 +51,7 @@ def _twilio_send(to: str, body: str) -> str:
 # TOOLS
 # ════════════════════════════════════════════════════════════
 
-@tool
+@crewai_tool
 def triage_urgency(description: str, outdoor_temp_f: float = 80.0) -> str:
     """
     Houston-specific urgency classifier.
@@ -123,12 +104,12 @@ def triage_urgency(description: str, outdoor_temp_f: float = 80.0) -> str:
     return json.dumps(result)
 
 
-@tool
+@crewai_tool
 def check_tech_availability(requested_date: str, skill_needed: str = "general") -> str:
     """
     Check Google Calendar via Composio for available technicians.
     Returns JSON list of available slots and technician names.
-    Falls back to stub data ONLY in non-production environments.
+    Raises RuntimeError if the Composio calendar integration is unavailable.
     """
     import urllib.request
     import urllib.error
@@ -159,23 +140,11 @@ def check_tech_availability(requested_date: str, skill_needed: str = "general") 
             data = json.loads(resp.read())
             return json.dumps({"status": "live", "calendar_data": data})
     except Exception as exc:
-        logger.warning("Calendar API unavailable: %s", exc)
-        if ENV == "production":
-            return json.dumps({"status": "unavailable", "error": str(exc),
-                               "requested_date": requested_date})
-        return json.dumps({
-            "status": "stub",
-            "available_techs": [
-                {"name": "Tech_Alex",  "zone": "Katy/West Houston",    "start": "09:00", "end": "12:00"},
-                {"name": "Tech_Maria", "zone": "Sugar Land/SW Houston", "start": "13:00", "end": "17:00"},
-                {"name": "Tech_James", "zone": "The Woodlands/North",   "start": "08:00", "end": "16:00"},
-            ],
-            "requested_date": requested_date,
-            "skill_needed": skill_needed,
-        })
+        logger.error("Calendar API unavailable: %s", exc)
+        raise RuntimeError(f"Composio calendar integration failed: {exc}") from exc
 
 
-@tool
+@crewai_tool
 def dispatch_to_tech(
     tech_name: str,
     customer_name: str,
@@ -228,7 +197,7 @@ def dispatch_to_tech(
     return json.dumps(result)
 
 
-@tool
+@crewai_tool
 def send_customer_update(
     customer_phone: str,
     customer_name: str,
@@ -271,7 +240,7 @@ def send_customer_update(
     return json.dumps({"status": "sent", "sms_sid": sid, "message_type": message_type})
 
 
-@tool
+@crewai_tool
 def escalate_to_owner(customer_details: str, urgency_level: str, reason: str) -> str:
     """
     LIFE_SAFETY or ambiguous emergency: immediately SMS owner for human decision.
@@ -297,37 +266,19 @@ def escalate_to_owner(customer_details: str, urgency_level: str, reason: str) ->
 # AGENTS
 # ════════════════════════════════════════════════════════════
 
-triage_agent = None
-intake_agent = None
-scheduler_agent = None
-dispatch_agent = None
-followup_agent = None
+# Module-level agent variables - initialized by _ensure_agents()
+triage_agent: Optional[Agent] = None
+intake_agent: Optional[Agent] = None
+scheduler_agent: Optional[Agent] = None
+dispatch_agent: Optional[Agent] = None
+followup_agent: Optional[Agent] = None
 
 
-def _ensure_agents() -> None:
-    """Create CrewAI agents lazily so importing this module stays cheap."""
-    global Agent, Task, Crew, Process
+def _ensure_agents(outdoor_temp_f: float = 80.0) -> list[Agent]:
+    """Initialize agents at module level if not already done."""
     global triage_agent, intake_agent, scheduler_agent, dispatch_agent, followup_agent
-
-    if triage_agent is not None:
-        return
-
-    logger.info("Initializing Neural Engine (CrewAI-70B Logic)...")
-
-    from crewai import Agent as CrewAgent, Task as CrewTask, Crew as CrewRuntime, Process as CrewProcess
-    from crewai.tools import tool as crewai_tool
-
-    Agent = CrewAgent
-    Task = CrewTask
-    Crew = CrewRuntime
-    Process = CrewProcess
-
-    triage_urgency_tool = crewai_tool(triage_urgency)
-    escalate_to_owner_tool = crewai_tool(escalate_to_owner)
-    check_tech_availability_tool = crewai_tool(check_tech_availability)
-    dispatch_to_tech_tool = crewai_tool(dispatch_to_tech)
-    send_customer_update_tool = crewai_tool(send_customer_update)
-
+    
+    # Tools are already decorated with @crewai_tool, use them directly
     triage_agent = Agent(
         role="Houston Emergency Triage Specialist",
         goal=(
@@ -342,7 +293,7 @@ def _ensure_agents() -> None:
         verbose=True,
         allow_delegation=False,
         max_iter=5,
-        tools=[triage_urgency_tool, escalate_to_owner_tool],
+        tools=[triage_urgency, escalate_to_owner],
         llm=LLM_MODEL,
     )
 
@@ -379,7 +330,7 @@ def _ensure_agents() -> None:
         verbose=True,
         allow_delegation=False,
         max_iter=5,
-        tools=[check_tech_availability_tool],
+        tools=[check_tech_availability],
         llm=LLM_MODEL,
     )
 
@@ -396,7 +347,7 @@ def _ensure_agents() -> None:
         verbose=True,
         allow_delegation=False,
         max_iter=5,
-        tools=[dispatch_to_tech_tool, send_customer_update_tool],
+        tools=[dispatch_to_tech, send_customer_update],
         llm=LLM_MODEL,
     )
 
@@ -415,18 +366,17 @@ def _ensure_agents() -> None:
         verbose=True,
         allow_delegation=False,
         max_iter=5,
-        tools=[send_customer_update_tool],
+        tools=[send_customer_update],
         llm=LLM_MODEL,
     )
+    
+    return [triage_agent, intake_agent, scheduler_agent, dispatch_agent, followup_agent]
 
-
-# ════════════════════════════════════════════════════════════
-# TASKS
-# ════════════════════════════════════════════════════════════
 
 def build_tasks(outdoor_temp_f: float = 80.0):
     """Build task chain — inject outdoor temp for Houston weather-aware triage."""
-    _ensure_agents()
+    agents = _ensure_agents(outdoor_temp_f)
+    ta, ia, sa, da, fa = agents
 
     task_triage = Task(
         description=(
@@ -438,7 +388,7 @@ def build_tasks(outdoor_temp_f: float = 80.0):
             '{"urgency_level":"EMERGENCY","recommended_action":"DISPATCH_NEXT_AVAILABLE_WITH_OWNER_APPROVAL",'
             '"safety_flag":false,"reasoning":"AC failure in 102F heat wave"}'
         ),
-        agent=triage_agent,
+        agent=ta,
     )
 
     task_intake = Task(
@@ -452,7 +402,7 @@ def build_tasks(outdoor_temp_f: float = 80.0):
             '{"customer_name":"John Smith","address":"555 Main St, Houston TX 77002",'
             '"phone":"+15551234567","issue":"AC not cooling","equipment":"AC unit","age_years":8}'
         ),
-        agent=intake_agent,
+        agent=ia,
         context=[task_triage],
     )
 
@@ -467,7 +417,7 @@ def build_tasks(outdoor_temp_f: float = 80.0):
             '{"option_1":{"tech":"Tech_Alex","zone":"Katy","available":"14:00","match_reason":"zone+skill"},'
             '"option_2":{"tech":"Tech_Maria","zone":"Sugar Land","available":"15:30","match_reason":"skill"}}'
         ),
-        agent=scheduler_agent,
+        agent=sa,
         context=[task_intake],
     )
 
@@ -482,7 +432,7 @@ def build_tasks(outdoor_temp_f: float = 80.0):
             '{"dispatch_id":"DSP-20260301-140000","tech_dispatched":"Tech_Alex",'
             '"customer_confirmed":true,"owner_notified":true}'
         ),
-        agent=dispatch_agent,
+        agent=da,
         context=[task_schedule],
     )
 
@@ -498,7 +448,7 @@ def build_tasks(outdoor_temp_f: float = 80.0):
             '{"safety_tip_sent":true,"completion_msg_scheduled":true,'
             '"upsell_flag":true,"followup_48hr_scheduled":true}'
         ),
-        agent=followup_agent,
+        agent=fa,
         context=[task_dispatch],
     )
 
@@ -520,7 +470,7 @@ def run_hvac_crew(customer_message: str, outdoor_temp_f: float = 80.0) -> dict:
     """
     logger.info("Incoming: '%s' | Temp: %s°F", customer_message, outdoor_temp_f)
 
-    _ensure_agents()
+    _ensure_agents(outdoor_temp_f)
     tasks = build_tasks(outdoor_temp_f=outdoor_temp_f)
 
     crew = Crew(
@@ -547,9 +497,9 @@ def run_hvac_crew(customer_message: str, outdoor_temp_f: float = 80.0) -> dict:
 
 
 def warmup_node():
-    """Trigger lazy initialization of agents and LLM connection."""
+    """Trigger initialization of agents and LLM connection."""
     logger.info("🚀 HVAC Node Warmup Sequence Initiated...")
-    _ensure_agents()
+    build_tasks(outdoor_temp_f=80.0)
     logger.info("✅ Node Warmup Complete: Agents Ready.")
 
 
@@ -564,7 +514,8 @@ if __name__ == "__main__":
     parser.add_argument(
         "--message",
         type=str,
-        default="My AC stopped working, 102 degrees, 555 Main St Houston 77002",
+        required=True,
+        help="Customer HVAC service request message",
     )
     parser.add_argument("--temp", type=float, default=102.0)
     args = parser.parse_args()

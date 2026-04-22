@@ -7,7 +7,7 @@ const path = require("path");
 const JWTValidator = require("../integration/shared/jwt_validator");
 
 // Configuration
-const JWT_SECRET = process.env.AUTH_SECRET_KEY || process.env.JWT_SECRET_KEY || "";
+const JWT_SECRET = process.env.AUTH_SECRET_KEY || process.env.JWT_SECRET_KEY;
 const AUTH_ALGORITHM = "HS256";
 
 // Initialize global validator

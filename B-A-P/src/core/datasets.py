@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import polars as pl
-from openpyxl import load_workbook  # type: ignore[import-untyped]
+from openpyxl import load_workbook
 
 
 @dataclass(frozen=True)

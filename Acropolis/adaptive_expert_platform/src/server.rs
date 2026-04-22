@@ -443,16 +443,6 @@ struct ChangePasswordRequest {
     new_password: String,
 }
 
-/// Create a dummy memory instance for testing
-fn create_dummy_memory() -> Memory {
-    use crate::agent::{HashEmbeddingAgent, LengthRerankAgent};
-
-    let cache = Arc::new(InMemoryEmbeddingCache::new());
-    let embed = Arc::new(HashEmbeddingAgent::new(384));
-    let rerank = Arc::new(LengthRerankAgent::new());
-    Memory::new(embed, rerank, cache)
-}
-
 /// Start the HTTP server and wait for shutdown signal
 pub async fn serve(settings: &Settings) -> Result<()> {
     info!("Starting HTTP server on port {}", settings.server.port);

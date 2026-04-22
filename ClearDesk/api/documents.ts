@@ -92,8 +92,12 @@ const verifyToken = (token: string | undefined, expectedType: SyncClaims['type']
   }
 };
 
-const serializeSessionCookie = (token: string) =>
-  `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}`;
+// SECURITY FIX: Added Secure flag for production HTTPS
+const serializeSessionCookie = (token: string) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  const secureFlag = isProduction ? '; Secure' : '';
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESSION_TTL_SECONDS}${secureFlag}`;
+};
 
 const getSessionClaims = (req: VercelRequest) => {
   const cookies = parseCookies(req.headers.cookie);

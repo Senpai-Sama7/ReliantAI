@@ -18,14 +18,11 @@ load_dotenv(_ENV_PATH)
 
 # ── Validation helper ─────────────────────────────────────────
 def _require(name: str) -> str:
-    """Return env var or a placeholder if missing."""
+    """Return env var or fail fast if missing."""
     val = os.environ.get(name)
     if not val:
-        # If we're just doing triage tests or local dev, don't crash
-        if os.environ.get("ENV") == "test":
-            return f"MOCK_{name}"
-        print(f"[FATAL] Missing required environment variable: {name}", file=sys.stderr)
-        print("        Copy .env.example → .env and fill in your keys.", file=sys.stderr)
+        sys.stderr.write(f"[FATAL] Missing required environment variable: {name}\n")
+        sys.stderr.write("        Copy .env.example → .env and fill in your keys.\n")
         sys.exit(1)
     return val
 
@@ -41,8 +38,7 @@ OWNER_PHONE: str = _require("OWNER_PHONE")
 TECH_PHONE_NUMBER: str = _require("TECH_PHONE_NUMBER")
 
 # ── Optional / defaulted config ──────────────────────────────
-DISPATCH_API_KEY: str = os.environ.get("DISPATCH_API_KEY", "change-me-in-env")
-DATABASE_PATH: str = os.environ.get("DATABASE_PATH", "dispatch.db")
+DISPATCH_API_KEY: str = os.environ.get("DISPATCH_API_KEY", "")
 LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 ENV: str = os.environ.get("ENV", "dev").lower()
 
@@ -52,8 +48,8 @@ ENV: str = os.environ.get("ENV", "dev").lower()
 os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ.pop("LANGCHAIN_API_KEY", None)
 
-if DISPATCH_API_KEY == "change-me-in-env" and ENV != "test":
-    print("[FATAL] DISPATCH_API_KEY must be set to a real value in production.", file=sys.stderr)
+if not DISPATCH_API_KEY and ENV != "test":
+    sys.stderr.write("[FATAL] DISPATCH_API_KEY must be set to a real value.\n")
     sys.exit(1)
 
 # ── LLM config ────────────────────────────────────────────────

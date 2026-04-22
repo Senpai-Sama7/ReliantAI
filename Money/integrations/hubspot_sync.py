@@ -171,6 +171,3 @@ class HubSpotSync:
         except requests.exceptions.RequestException as e:
             logger.error(f"HubSpot note creation failed: {e}")
             return {"status": "error", "error": str(e)}
-
-
-from datetime import datetime

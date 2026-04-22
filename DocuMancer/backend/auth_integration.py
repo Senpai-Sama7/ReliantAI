@@ -21,7 +21,7 @@ except ImportError:
     JWT_AVAILABLE = False
 
 # Configuration
-JWT_SECRET = os.environ.get("AUTH_SECRET_KEY") or os.environ.get("JWT_SECRET_KEY", "")
+JWT_SECRET = os.environ.get("AUTH_SECRET_KEY") or os.environ.get("JWT_SECRET_KEY")
 AUTH_ALGORITHM = "HS256"
 
 # Initialize global validator

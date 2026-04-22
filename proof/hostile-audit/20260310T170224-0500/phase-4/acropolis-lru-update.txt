@@ -1,5 +1,0 @@
-    Updating crates.io index
-      Adding foldhash v0.2.0
-      Adding hashbrown v0.16.1
-    Updating lru v0.12.5 -> v0.16.3
-note: pass `--verbose` to see 256 unchanged dependencies behind latest

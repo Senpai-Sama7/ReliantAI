@@ -237,20 +237,25 @@ def get_rate_limiter(
     return _rate_limiter
 
 
+def _check_rate_by_scope(key: str, scope: str, default_limit: int) -> RateLimitResult:
+    """Generic rate limit check by scope"""
+    return get_rate_limiter().check(key, scope=scope, limit=default_limit)
+
+
 # Convenience functions for common use cases
 def check_sms_rate(phone: str, limit: int = 5) -> RateLimitResult:
     """Check SMS rate limit for a phone number"""
-    return get_rate_limiter().check(phone, scope="sms", limit=limit)
+    return _check_rate_by_scope(phone, "sms", limit)
 
 
 def check_api_rate(client_id: str, limit: int = 60) -> RateLimitResult:
     """Check API rate limit for a client (IP or API key)"""
-    return get_rate_limiter().check(client_id, scope="api", limit=limit)
+    return _check_rate_by_scope(client_id, "api", limit)
 
 
 def check_webhook_rate(source: str, limit: int = 30) -> RateLimitResult:
     """Check webhook rate limit for a source"""
-    return get_rate_limiter().check(source, scope="webhook", limit=limit)
+    return _check_rate_by_scope(source, "webhook", limit)
 
 
 def require_rate_limit(

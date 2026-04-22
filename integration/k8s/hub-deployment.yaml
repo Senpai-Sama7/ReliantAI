@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reliantai-auth
+  namespace: integration
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth
+        image: reliantai-auth:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: AUTH_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: integration-secrets
+              key: auth-secret
+        - name: REDIS_HOST
+          value: "reliantai-redis.integration.svc.cluster.local"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: integration
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reliantai-kong
+  namespace: integration
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: kong-gateway
+  template:
+    metadata:
+      labels:
+        app: kong-gateway
+    spec:
+      containers:
+      - name: kong
+        image: kong:3.5
+        ports:
+        - containerPort: 8000
+        - containerPort: 8001
+        env:
+        - name: KONG_DATABASE
+          value: "postgres"
+        - name: KONG_PG_HOST
+          value: "kong-db.integration.svc"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+  namespace: integration
+spec:
+  type: LoadBalancer
+  selector:
+    app: kong-gateway
+  ports:
+    - name: proxy
+      protocol: TCP
+      port: 8000
+      targetPort: 8000

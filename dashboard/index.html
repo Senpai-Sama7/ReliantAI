@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReliantAI Platform Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header .status {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.healthy {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+        
+        .status-badge.warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .status-badge.critical {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+        
+        .container {
+            padding: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.1);
+        }
+        
+        .metric-card h3 {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-change {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .metric-change.positive {
+            color: #00ff88;
+        }
+        
+        .metric-change.negative {
+            color: #ff4757;
+        }
+        
+        .section {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section h2 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .services-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .service-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        
+        .service-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .service-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .service-info p {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.healthy {
+            background: #00ff88;
+        }
+        
+        .status-dot.warning {
+            background: #ffc107;
+        }
+        
+        .status-dot.critical {
+            background: #ff4757;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .metric-bar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .metric-bar label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        .progress-fill.low {
+            background: #00ff88;
+        }
+        
+        .progress-fill.medium {
+            background: #ffc107;
+        }
+        
+        .progress-fill.high {
+            background: #ff4757;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .log-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .log-entry {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .log-time {
+            color: rgba(255, 255, 255, 0.4);
+            min-width: 80px;
+        }
+        
+        .log-level {
+            min-width: 60px;
+            font-weight: 600;
+        }
+        
+        .log-level.info {
+            color: #00d4ff;
+        }
+        
+        .log-level.success {
+            color: #00ff88;
+        }
+        
+        .log-level.warning {
+            color: #ffc107;
+        }
+        
+        .log-level.error {
+            color: #ff4757;
+        }
+        
+        .log-message {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+        
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle.active {
+            background: #00ff88;
+        }
+        
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle.active::after {
+            transform: translateX(24px);
+        }
+        
+        .auth-input input {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            width: 200px;
+            transition: all 0.2s;
+        }
+        
+        .auth-input input:focus {
+            outline: none;
+            border-color: #00d4ff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .service-card {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🚀 ReliantAI Platform</h1>
+        <div class="status">
+            <div class="auth-input">
+                <input type="password" id="api-key" placeholder="Orchestrator API Key" onchange="saveApiKey()">
+            </div>
+            <span class="status-badge healthy" id="platform-status">HEALTHY</span>
+            <span id="connection-status">● Connected</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <!-- Top Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>Platform Health</h3>
+                <div class="metric-value" id="health-score">98%</div>
+                <div class="metric-change positive">
+                    <span>↑</span> 2% from last hour
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <h3>Active Services</h3>
+                <div class="metric-value" id="active-services">20/20</div>
+                <div class="metric-change positive">
+                    <span>✓</span> All operational
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <h3>Total Instances</h3>
+                <div class="metric-value" id="total-instances">24</div>
+                <div class="metric-change positive">
+                    <span>↑</span> Auto-scaled
+                </div>
+            </div>
+            
+            <div class="metric-card">
+                <h3>AI Predictions</h3>
+                <div class="metric-value" id="ai-predictions">Enabled</div>
+                <div class="metric-change positive">
+                    <span>🤖</span> Active learning
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <div class="toggle active" id="auto-scale-toggle"></div>
+                <label>Auto-Scaling</label>
+            </div>
+            <div class="control-group">
+                <div class="toggle active" id="auto-heal-toggle"></div>
+                <label>Auto-Healing</label>
+            </div>
+            <div class="control-group">
+                <div class="toggle active" id="ai-toggle"></div>
+                <label>AI Predictions</label>
+            </div>
+        </div>
+        
+        <!-- Services Section -->
+        <div class="section">
+            <h2>🔧 Platform Services</h2>
+            <div class="services-grid" id="services-list">
+                <!-- Services will be populated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Platform Logs -->
+        <div class="section">
+            <h2>📋 Platform Events</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry">
+                    <span class="log-time">Loading...</span>
+                    <span class="log-level info">INFO</span>
+                    <span class="log-message">Connecting to orchestrator...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const ORCHESTRATOR_URL = 'http://localhost:9000';
+        let ws = null;
+        let reconnectAttempts = 0;
+
+        function getApiKey() {
+            return document.getElementById('api-key').value || localStorage.getItem('orchestrator_api_key') || '';
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key').value;
+            localStorage.setItem('orchestrator_api_key', key);
+            addLog('info', 'API Key updated');
+            
+            // Reconnect websocket with new key
+            if (ws) {
+                ws.onclose = null; // Prevent reconnection loop during intentional reset
+                ws.close();
+            }
+            connectWebSocket();
+            
+            // Reload data
+            loadStatus();
+            loadServices();
+        }
+
+        async function authenticatedFetch(url, options = {}) {
+            const key = getApiKey();
+            const headers = {
+                ...options.headers,
+                'X-API-Key': key
+            };
+            return fetch(url, { ...options, headers });
+        }
+
+        // Initialize dashboard
+        async function init() {
+            const savedKey = localStorage.getItem('orchestrator_api_key');
+            if (savedKey) {
+                document.getElementById('api-key').value = savedKey;
+            }
+            
+            await loadStatus();
+            await loadServices();
+            connectWebSocket();
+        }
+        
+        // Load platform status
+        async function loadStatus() {
+            try {
+                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/dashboard`);
+                if (!response.ok) throw new Error('Unauthorized');
+                const data = await response.json();
+                
+                document.getElementById('health-score').textContent = `${data.health_score}%`;
+                document.getElementById('active-services').textContent = `${data.services_healthy}/${data.services_total}`;
+                document.getElementById('total-instances').textContent = data.active_instances;
+                document.getElementById('ai-predictions').textContent = data.ai_enabled ? 'Enabled' : 'Disabled';
+                
+                const statusBadge = document.getElementById('platform-status');
+                statusBadge.className = 'status-badge ' + (data.health_score > 90 ? 'healthy' : data.health_score > 70 ? 'warning' : 'critical');
+                statusBadge.textContent = data.health_score > 90 ? 'HEALTHY' : data.health_score > 70 ? 'DEGRADED' : 'CRITICAL';
+            } catch (error) {
+                addLog('error', 'Failed to load platform status: ' + error.message);
+            }
+        }
+        
+        // Load services
+        async function loadServices() {
+            try {
+                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services`);
+                if (!response.ok) throw new Error('Unauthorized');
+                const data = await response.json();
+                
+                const container = document.getElementById('services-list');
+                container.innerHTML = data.services.map(service => `
+                    <div class="service-card">
+                        <div class="service-info">
+                            <h4>${service.name}</h4>
+                            <p>${service.url}</p>
+                        </div>
+                        <div class="service-status">
+                            <div class="status-dot ${service.status}"></div>
+                            <span>${service.status}</span>
+                        </div>
+                        <div class="metric-bar">
+                            <label>Instances</label>
+                            <div class="progress-bar">
+                                <div class="progress-fill low" style="width: ${(service.instances / 10) * 100}%"></div>
+                            </div>
+                            <small>${service.instances} running</small>
+                        </div>
+                        <div>
+                            <label>Auto-scale: ${service.auto_scale ? '✓' : '✗'}</label><br>
+                            <label>Auto-heal: ${service.auto_heal ? '✓' : '✗'}</label>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" onclick="restartService('${service.name}')">Restart</button>
+                            <button class="btn btn-primary" onclick="scaleService('${service.name}')">Scale</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                addLog('error', 'Failed to load services: ' + error.message);
+            }
+        }
+        
+        // WebSocket connection
+        function connectWebSocket() {
+            const key = getApiKey();
+            ws = new WebSocket(`${ORCHESTRATOR_URL.replace('http', 'ws')}/ws?token=${key}`);
+            
+            ws.onopen = () => {
+                addLog('success', 'Connected to orchestrator');
+                document.getElementById('connection-status').textContent = '● Connected';
+                reconnectAttempts = 0;
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                handleWebSocketMessage(data);
+            };
+            
+            ws.onclose = () => {
+                document.getElementById('connection-status').textContent = '● Disconnected';
+                addLog('warning', 'Connection lost, reconnecting...');
+                
+                // Exponential backoff
+                const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts));
+                reconnectAttempts++;
+                setTimeout(connectWebSocket, delay);
+            };
+            
+            ws.onerror = (error) => {
+                addLog('error', 'WebSocket error');
+            };
+        }
+        
+        // Handle WebSocket messages
+        function handleWebSocketMessage(data) {
+            switch(data.type) {
+                case 'status_update':
+                    updateServiceStatus(data.service, data.status);
+                    break;
+                case 'event':
+                    handleEvent(data.event, data.data);
+                    break;
+                case 'ai_prediction':
+                    addLog('info', `AI Prediction: ${data.data.predictions.length} services analyzed`);
+                    break;
+            }
+        }
+        
+        // Handle events
+        function handleEvent(eventType, data) {
+            switch(eventType) {
+                case 'scale':
+                    addLog('info', `${data.service} scaled to ${data.instances} instances: ${data.reason}`);
+                    loadServices();
+                    break;
+                case 'heal':
+                    addLog('success', `${data.service} healed: ${data.action}`);
+                    loadServices();
+                    break;
+                case 'optimization_report':
+                    addLog('info', `Optimization report generated: ${data.recommendations?.length || 0} recommendations`);
+                    break;
+            }
+        }
+        
+        // Update service status in UI
+        function updateServiceStatus(serviceName, status) {
+            const cards = document.querySelectorAll('.service-card');
+            cards.forEach(card => {
+                if (card.querySelector('h4').textContent === serviceName) {
+                    const dot = card.querySelector('.status-dot');
+                    dot.className = `status-dot ${status}`;
+                    card.querySelector('.service-status span:last-child').textContent = status;
+                }
+            });
+        }
+        
+        // Add log entry
+        function addLog(level, message) {
+            const container = document.getElementById('log-container');
+            const time = new Date().toLocaleTimeString();
+            
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="log-time">${time}</span>
+                <span class="log-level ${level}">${level.toUpperCase()}</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            container.insertBefore(entry, container.firstChild);
+            
+            // Keep only last 100 entries
+            while (container.children.length > 100) {
+                container.removeChild(container.lastChild);
+            }
+        }
+        
+        // Service actions
+        async function restartService(serviceName) {
+            try {
+                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services/${serviceName}/restart`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('Unauthorized');
+                const data = await response.json();
+                addLog('success', `${serviceName} restarted successfully`);
+            } catch (error) {
+                addLog('error', `Failed to restart ${serviceName}: ${error.message}`);
+            }
+        }
+        
+        async function scaleService(serviceName) {
+            const instances = prompt(`Enter target instances for ${serviceName}:`, '1');
+            if (!instances) return;
+            
+            try {
+                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services/${serviceName}/scale?target_instances=${instances}`, {
+                    method: 'POST'
+                });
+                if (!response.ok) throw new Error('Unauthorized');
+                const data = await response.json();
+                addLog('success', `${serviceName} scaled to ${instances} instances`);
+                loadServices();
+            } catch (error) {
+                addLog('error', `Failed to scale ${serviceName}: ${error.message}`);
+            }
+        }
+        
+        // Toggle controls
+        document.querySelectorAll('.toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+        
+        // Start dashboard
+        init();
+        
+        // Refresh every 30 seconds
+        setInterval(() => {
+            loadStatus();
+            loadServices();
+        }, 30000);
+    </script>
+</body>
+</html>

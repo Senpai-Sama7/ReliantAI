@@ -3,15 +3,25 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install dependencies
-COPY requirements.txt .
+COPY auth/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application
-COPY auth_server.py .
+# Copy shared module
+COPY shared/ ./shared/
 
-# Health check
+# Copy auth module files
+COPY auth/rate_limiter.py .
+COPY auth/user_store.py .
+COPY auth/auth_server.py .
+COPY auth/migrate.py .
+COPY auth/migrations/ ./migrations/
+
+# Create entrypoint script
+RUN echo '#!/bin/sh\npython -c "import asyncio; from user_store import SQLiteUserStore; asyncio.run(SQLiteUserStore(\"/app/auth.db\").initialize())" || true\nexec python auth_server.py' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
+# Health check using httpx (installed dependency)
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8080/health')"
+  CMD python -c "import httpx; r = httpx.get('http://localhost:8080/health'); exit(0 if r.status_code == 200 else 1)"
 
 # Run
-CMD ["python", "auth_server.py"]
+CMD ["/app/entrypoint.sh"]

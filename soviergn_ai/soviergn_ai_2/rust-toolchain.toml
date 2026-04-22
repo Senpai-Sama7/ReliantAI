@@ -1,7 +1,0 @@
-# Pins Rust nightly for the doc-viz build.
-# Required for -Z build-std, which rebuilds std with +atomics support.
-# The production engine crate does not require nightly.
-[toolchain]
-channel  = "nightly-2025-01-01"
-targets  = ["wasm32-unknown-unknown"]
-components = ["rust-src"]

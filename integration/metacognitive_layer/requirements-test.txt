@@ -1,0 +1,20 @@
+# Test dependencies for Metacognitive Autonomy Layer
+# Install: pip install -r requirements-test.txt
+
+# Test framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# Type checking (dev only)
+mypy>=1.5.0
+
+# Linting (dev only)
+black>=23.0.0
+ruff>=0.1.0
+
+# Core dependencies (should match main requirements)
+asyncpg>=0.28.0
+
+# Optional: Prometheus client for metrics testing
+prometheus-client>=0.17.0

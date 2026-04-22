@@ -1,12 +1,0 @@
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
-HTTP/1.1 200 OK
-Vary: Origin
-Content-Type: text/html
-Cache-Control: no-cache
-Etag: W/"891-fOxYki/K8YxqgQjR6QqjbcUPCdc"
-Date: Tue, 10 Mar 2026 22:35:26 GMT
-Connection: keep-alive
-Keep-Alive: timeout=5
-

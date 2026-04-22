@@ -1,0 +1,188 @@
+# High Availability Configuration for ReliantAI Integration Layer
+# This extends docker-compose.yml with HA components
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.ha.yml up -d
+
+version: '3.9'
+
+services:
+  # ============================================================================
+  # NGINX LOAD BALANCER (New - Replaces direct Kong exposure)
+  # ============================================================================
+  
+  nginx-lb:
+    image: nginx:alpine
+    container_name: reliantai-nginx-lb
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8443:8443"
+    volumes:
+      - ./gateway/nginx-lb.conf:/etc/nginx/nginx.conf:ro
+      - ./gateway/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - kong1
+      - kong2
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost/nginx-health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - reliantai-network
+
+  # ============================================================================
+  # KONG GATEWAY - INSTANCE 1 (Modified for HA)
+  # ============================================================================
+  
+  kong1:
+    image: kong:3.5
+    container_name: reliantai-kong-1
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PORT: 5432
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:?KONG_PG_PASSWORD must be set}
+      KONG_PG_DATABASE: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      # Note: No port binding here - accessed via nginx-lb
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      # Clustering for HA
+      KONG_CLUSTER_LISTEN: 0.0.0.0:7946
+      KONG_CLUSTER_ADVERTISE: kong1:7946
+    expose:
+      - "8000"
+      - "8001"
+      - "7946"
+    volumes:
+      - ./gateway:/kong/declarative
+    depends_on:
+      - kong-database
+      - kong-migrations
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - reliantai-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # ============================================================================
+  # KONG GATEWAY - INSTANCE 2 (New - Second Kong instance)
+  # ============================================================================
+  
+  kong2:
+    image: kong:3.5
+    container_name: reliantai-kong-2
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PORT: 5432
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: ${KONG_PG_PASSWORD:?KONG_PG_PASSWORD must be set}
+      KONG_PG_DATABASE: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      # Clustering for HA
+      KONG_CLUSTER_LISTEN: 0.0.0.0:7946
+      KONG_CLUSTER_ADVERTISE: kong2:7946
+    expose:
+      - "8000"
+      - "8001"
+      - "7946"
+    volumes:
+      - ./gateway:/kong/declarative
+    depends_on:
+      - kong-database
+      - kong-migrations
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - reliantai-network
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+
+  # ============================================================================
+  # POSTGRESQL - PRIMARY (Modified for HA setup)
+  # ============================================================================
+  
+  postgres-primary:
+    extends:
+      file: docker-compose.yml
+      service: postgres
+    container_name: reliantai-postgres-primary
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB must be set}
+      # Replication settings
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --data-checksums"
+    volumes:
+      - postgres-primary-data:/var/lib/postgresql/data
+      - ./postgres/primary/init:/docker-entrypoint-initdb.d
+    command: |
+      postgres
+      -c wal_level=replica
+      -c hot_standby=on
+      -c max_wal_senders=10
+      -c max_replication_slots=10
+      -c wal_keep_size=1GB
+    networks:
+      - reliantai-network
+
+  # ============================================================================
+  # POSTGRESQL - REPLICA (New for HA)
+  # ============================================================================
+  
+  postgres-replica:
+    image: postgres:16-alpine
+    container_name: reliantai-postgres-replica
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - postgres-replica-data:/var/lib/postgresql/data
+    command: |
+      postgres
+      -c hot_standby=on
+    depends_on:
+      - postgres-primary
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - reliantai-network
+    # This starts as a standby and connects to primary for replication
+    # Full replication setup requires pg_basebackup in entrypoint script
+
+volumes:
+  postgres-primary-data:
+  postgres-replica-data:
+
+networks:
+  reliantai-network:
+    name: reliantai-network
+    external: true

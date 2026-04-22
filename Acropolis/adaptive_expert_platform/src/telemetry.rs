@@ -5,13 +5,17 @@ use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 
 #[cfg(feature = "with-observability")]
 use {
-    opentelemetry::{sdk::Resource, global as otel_global},
+    opentelemetry::{global as otel_global, KeyValue},
     opentelemetry_otlp::{self as otlp, WithExportConfig},
+    opentelemetry_sdk::{propagation::TraceContextPropagator, trace, Resource},
     tracing_opentelemetry,
 };
 
 /// Initialize logging and telemetry based on configuration
-pub fn init(_otlp_endpoint: Option<&str>) -> Result<()> {
+pub fn init(otlp_endpoint: Option<&str>) -> Result<()> {
+    #[cfg(not(feature = "with-observability"))]
+    let _ = otlp_endpoint;
+
     let filter = EnvFilter::try_from_default_env()
         .or_else(|_| EnvFilter::try_new("info"))?;
 
@@ -31,10 +35,10 @@ fn init_with_otlp(endpoint: &str, filter: EnvFilter) -> Result<()> {
     let tracer = otlp::new_pipeline()
         .tracing()
         .with_exporter(otlp::new_exporter().tonic().with_endpoint(endpoint))
-        .with_trace_config(opentelemetry::sdk::trace::config().with_resource(
-            Resource::new(vec![opentelemetry::KeyValue::new("service.name", "adaptive_expert_platform")])
+        .with_trace_config(trace::config().with_resource(
+            Resource::new(vec![KeyValue::new("service.name", "adaptive_expert_platform")])
         ))
-        .install_batch(opentelemetry::runtime::Tokio)?;
+        .install_batch(opentelemetry_sdk::runtime::Tokio)?;
 
     let telemetry = tracing_opentelemetry::layer().with_tracer(tracer);
 
@@ -46,7 +50,7 @@ fn init_with_otlp(endpoint: &str, filter: EnvFilter) -> Result<()> {
     tracing::subscriber::set_global_default(subscriber)?;
 
     // Set up global text map propagator
-    otel_global::set_text_map_propagator(opentelemetry::sdk::propagation::TraceContextPropagator::new());
+    otel_global::set_text_map_propagator(TraceContextPropagator::new());
 
     tracing::info!("Telemetry initialized with OTLP endpoint: {}", endpoint);
     Ok(())

@@ -1,7 +1,7 @@
 """
 Celery application configuration for asynchronous ETL execution.
 """
-from celery import Celery  # type: ignore[import-untyped]
+from celery import Celery
 
 from src.config import get_settings
 

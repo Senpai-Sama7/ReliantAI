@@ -1,7 +1,52 @@
 _format_version: "3.0"
 
-# Services - All 13 ReliantAI projects
+# Services - All 15 ReliantAI projects
 services:
+  - name: event-bus
+    url: http://event-bus:8081
+    routes:
+      - name: event-bus-publish
+        paths:
+          - /publish
+        strip_path: false
+      - name: event-bus-event
+        paths:
+          - /event
+        strip_path: false
+      - name: event-bus-dlq
+        paths:
+          - /dlq
+        strip_path: false
+      - name: event-bus-health
+        paths:
+          - /event-bus/health
+        strip_path: false
+        plugins:
+          - name: request-transformer
+            config:
+              replace:
+                uri: /health
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          # Allow health checks without auth
+          anonymous: anonymous-consumer
+      - name: rate-limiting
+        config:
+          minute: 2000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+      - name: correlation-id
+        config:
+          header_name: X-Correlation-ID
+          generator: uuid
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-event-bus.log
+
   - name: auth-service
     url: http://auth-service:8080
     routes:
@@ -9,7 +54,33 @@ services:
         paths:
           - /auth
         strip_path: true
+      - name: auth-health
+        paths:
+          - /health
+        strip_path: false
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 100
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+      - name: correlation-id
+        config:
+          header_name: X-Correlation-ID
+          generator: uuid
       - name: prometheus
       - name: file-log
         config:
@@ -22,14 +93,29 @@ services:
         paths:
           - /apex
         strip_path: true
+      - name: apex-health
+        paths:
+          - /apex/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
         config:
           secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
-          policy: local
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
         config:
           header_name: X-Correlation-ID
@@ -52,11 +138,29 @@ services:
         paths:
           - /citadel
         strip_path: true
+      - name: citadel-health
+        paths:
+          - /citadel/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -76,11 +180,29 @@ services:
         paths:
           - /acropolis
         strip_path: true
+      - name: acropolis-health
+        paths:
+          - /acropolis/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -97,11 +219,29 @@ services:
         paths:
           - /bap
         strip_path: true
+      - name: b-a-p-health
+        paths:
+          - /bap/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -118,11 +258,29 @@ services:
         paths:
           - /money
         strip_path: true
+      - name: money-health
+        paths:
+          - /money/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -139,11 +297,29 @@ services:
         paths:
           - /gen-h
         strip_path: true
+      - name: gen-h-health
+        paths:
+          - /gen-h/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -160,11 +336,29 @@ services:
         paths:
           - /cleardesk
         strip_path: true
+      - name: cleardesk-health
+        paths:
+          - /cleardesk/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -181,11 +375,29 @@ services:
         paths:
           - /backupiq
         strip_path: true
+      - name: backupiq-health
+        paths:
+          - /backupiq/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -202,11 +414,29 @@ services:
         paths:
           - /storage
         strip_path: true
+      - name: intelligent-storage-health
+        paths:
+          - /storage/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -223,11 +453,29 @@ services:
         paths:
           - /citadel-ultimate
         strip_path: true
+      - name: citadel-ultimate-health
+        paths:
+          - /citadel-ultimate/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -244,11 +492,29 @@ services:
         paths:
           - /documancer
         strip_path: true
+      - name: documancer-health
+        paths:
+          - /documancer/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -265,11 +531,29 @@ services:
         paths:
           - /regenesis
         strip_path: true
+      - name: regenesis-health
+        paths:
+          - /regenesis/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -286,11 +570,29 @@ services:
         paths:
           - /cyberarchitect
         strip_path: true
+      - name: cyberarchitect-health
+        paths:
+          - /cyberarchitect/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
       - name: rate-limiting
         config:
           minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
       - name: correlation-id
       - name: request-transformer
         config:
@@ -307,7 +609,34 @@ services:
         paths:
           - /nexus
         strip_path: true
+      - name: nexus-health
+        paths:
+          - /nexus/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
     plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 500
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+      - name: correlation-id
+        config:
+          header_name: X-Correlation-ID
+          generator: uuid
+      - name: prometheus
       - name: response-transformer
         config:
           add:
@@ -315,7 +644,90 @@ services:
               - "Cross-Origin-Opener-Policy: same-origin"
               - "Cross-Origin-Embedder-Policy: require-corp"
               - "Cross-Origin-Resource-Policy: same-origin"
+
+  - name: apex-mcp
+    url: http://apex-mcp:4000
+    routes:
+      - name: apex-mcp-route
+        paths:
+          - /mcp
+        strip_path: true
+      - name: apex-mcp-health
+        paths:
+          - /mcp/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
+    plugins:
       - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 1000
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-mcp.log
+
+  - name: skill-service
+    url: http://skill-service:8002
+    routes:
+      - name: skill-service-route
+        paths:
+          - /skills
+        strip_path: true
+      - name: skill-service-health
+        paths:
+          - /skills/health
+        strip_path: true
+        methods:
+          - GET
+        plugins:
+          - name: jwt
+            config:
+              anonymous: anonymous-consumer
+    plugins:
+      - name: jwt
+        config:
+          secret_is_base64: false
+          uri_param_names: []
+          claims_to_verify:
+            - exp
+      - name: rate-limiting
+        config:
+          minute: 500
+          policy: redis
+          redis_host: redis
+          redis_port: 6379
+      - name: correlation-id
+      - name: request-transformer
+        config:
+          add:
+            headers:
+              - X-User-ID:$(jwt_claims.sub)
+              - X-Tenant-ID:$(jwt_claims.tenant_id)
+      - name: prometheus
+      - name: file-log
+        config:
+          path: /tmp/kong-skills.log
 
 # Global plugins
 plugins:
@@ -327,6 +739,17 @@ plugins:
       header_name: X-Correlation-ID
       generator: uuid
       echo_downstream: true
+
+# Consumers
+consumers:
+  - username: anonymous-consumer
+    custom_id: anonymous-health-check
+  - username: auth-service-consumer
+    custom_id: auth-service
+    jwt_secrets:
+      - algorithm: HS256
+        key: auth-service-key
+        secret: H7RCmupa2HVr0c_wbTgEE3YJPAYyEYYYDVefV-7S2Qhq6F5y88tlp8I3zss9Yr7tHuEoDMmqRsD6huMBJmLgpA
 
 # JWT configuration (shared secret with Auth Service)
 # Note: In production, configure via environment variable

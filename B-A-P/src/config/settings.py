@@ -4,11 +4,11 @@ micro-service inside the mono-repo.
 """
 from functools import lru_cache
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import AliasChoices, Field, field_validator
+from pydantic import AliasChoices, Field, field_validator, model_validator
 
 _ROOT = Path(__file__).resolve().parents[2]  # repo root
 
@@ -38,9 +38,23 @@ class Settings(BaseSettings):
     CELERY_TASK_ALWAYS_EAGER: bool = Field(default=False)
 
     # --- Security ---
-    SECRET_KEY: str = Field(default="change-me-in-production")
+    # SECURITY FIX: No default SECRET_KEY - must be set via environment variable
+    # In production, the application will fail to start if SECRET_KEY is not set
+    SECRET_KEY: str = Field(default="")
     JWT_ALGORITHM: str = Field(default="HS256")
     JWT_EXPIRE_MINUTES: int = Field(default=30)
+
+    @field_validator("SECRET_KEY", mode="before")
+    @classmethod
+    def validate_secret_key(cls, v: str) -> str:
+        if not v or v == "change-me-in-production":
+            raise ValueError(
+                "SECURITY ERROR: SECRET_KEY must be set via environment variable. "
+                "Do not use default or placeholder values in production."
+            )
+        if len(v) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 characters for security")
+        return v
 
     # --- AI ---
     # Accept the legacy OpenAI env names during the cutover so existing
@@ -61,7 +75,9 @@ class Settings(BaseSettings):
     BATCH_SIZE: int = Field(default=1000)
     CHUNK_SIZE: int = Field(default=10_000)
 
-    ALLOWED_ORIGINS: List[str] = Field(default=["*"])
+    # SECURITY FIX: Default to empty list - must be explicitly configured
+    # Use Union to allow pydantic_settings to handle string values before conversion
+    ALLOWED_ORIGINS: Union[str, List[str]] = Field(default="")
 
     # --- misc ---
     LOG_LEVEL: str = Field(default="INFO")
@@ -106,17 +122,26 @@ class Settings(BaseSettings):
             raise ValueError("UPLOADS_DIR must not be empty")
         return v
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def validate_allowed_origins(cls, v: str | List[str]) -> List[str]:
-        if isinstance(v, list):
-            return v
-        if isinstance(v, str):
+    @model_validator(mode="after")
+    def validate_allowed_origins(self) -> "Settings":
+        # Handle empty/None values - return empty list as default
+        v = self.ALLOWED_ORIGINS
+        if not v or (isinstance(v, str) and not v.strip()):
+            self.ALLOWED_ORIGINS = []
+        elif isinstance(v, str):
             stripped = v.strip()
             if stripped == "*":
-                return ["*"]
-            return [origin.strip() for origin in stripped.split(",") if origin.strip()]
-        raise ValueError("ALLOWED_ORIGINS must be a list or comma-separated string")
+                self.ALLOWED_ORIGINS = ["*"]
+            # Handle JSON array format
+            elif stripped.startswith("[") and stripped.endswith("]"):
+                import json
+                try:
+                    self.ALLOWED_ORIGINS = json.loads(stripped)
+                except json.JSONDecodeError:
+                    self.ALLOWED_ORIGINS = [origin.strip() for origin in stripped.split(",") if origin.strip()]
+            else:
+                self.ALLOWED_ORIGINS = [origin.strip() for origin in stripped.split(",") if origin.strip()]
+        return self
 
     @staticmethod
     def _normalize_database_url(v: str) -> str:

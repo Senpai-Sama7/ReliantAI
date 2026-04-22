@@ -39,6 +39,7 @@ tracing-subscriber = { version = "0.3", features = [
 ] }
 tracing-opentelemetry = { version = "0.22", optional = true }
 opentelemetry = { version = "0.21", optional = true }
+opentelemetry_sdk = { version = "0.21", optional = true, features = ["rt-tokio", "trace"] }
 opentelemetry-otlp = { version = "0.14", optional = true }
 
 # Security dependencies
@@ -81,7 +82,7 @@ jlrs = { version = "0.21.1", optional = true, features = ["julia-1-10"] }
 
 # Optional engines / back-ends
 llama_cpp = { version = "0.3", optional = true }
-wasmtime = { version = "35.0", optional = true, features = ["component-model"] }
+wasmtime = { version = "36.0.6", optional = true, features = ["component-model"] }
 redis = { version = "0.25", optional = true }
 bb8 = { version = "0.8", optional = true }
 bb8-redis = { version = "0.14", optional = true }
@@ -114,14 +115,9 @@ axum-extra = { version = "0.9.6", features = ["cookie"] }
 
 tower-http = { version = "0.5", features = ["cors", "trace", "limit", "compression-br", "fs"] }
 
-# Configuration enhancements
-etcd-rs = { version = "1.0", optional = true }
-consul = { version = "0.4", optional = true }
-
 [dev-dependencies]
 # Testing infrastructure
 tokio-test = "0.4"
-proptest = "1.4"
 criterion = { version = "0.5", features = ["html_reports"] }
 tracing-test = "0.2"
 # futures already in [dependencies], no need to repeat
@@ -135,13 +131,12 @@ with-llama = ["dep:llama_cpp"]
 with-wasm = ["dep:wasmtime"]
 with-redis = ["dep:redis", "dep:bb8", "dep:bb8-redis"]
 with-julia = ["dep:jlrs"]
-with-zig = []
 with-observability = [
   "dep:opentelemetry",
+  "dep:opentelemetry_sdk",
   "dep:tracing-opentelemetry",
   "dep:opentelemetry-otlp",
 ]
 with-vector-search = ["dep:hnsw_rs", "dep:ndarray", "dep:candle-core", "dep:candle-nn"]
 with-faiss = ["dep:faiss"]
 with-metrics = ["dep:prometheus", "dep:metrics", "dep:metrics-exporter-prometheus"]
-with-distributed = ["dep:etcd-rs", "dep:consul"]

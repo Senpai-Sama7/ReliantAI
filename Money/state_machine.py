@@ -12,16 +12,14 @@ Provides:
 from __future__ import annotations
 
 import json
-import sqlite3
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Optional, Iterator, Set
-from pathlib import Path
 
 from config import setup_logging
-from database import get_database_path, open_sqlite_connection
+from database import get_pool
 
 logger = setup_logging("state_machine")
 
@@ -115,14 +113,13 @@ class DispatchStateMachine:
         counts = sm.funnel_counts()
     """
     
-    def __init__(self, db_path: str | None = None):
-        self.db_path = db_path or get_database_path()
-        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+    def __init__(self):
+        self.pool = get_pool()
     
     @contextmanager
-    def tx(self) -> Iterator[sqlite3.Connection]:
-        """Transaction context with WAL mode and proper pragmas"""
-        conn = open_sqlite_connection(self.db_path, check_same_thread=False)
+    def tx(self) -> Iterator:
+        """Transaction context with PostgreSQL connection"""
+        conn = self.pool.getconn()
         try:
             yield conn
             conn.commit()
@@ -130,16 +127,16 @@ class DispatchStateMachine:
             conn.rollback()
             raise
         finally:
-            conn.close()
+            self.pool.putconn(conn)
     
     def init_db(self) -> None:
         """Initialize database schema with events table"""
         with self.tx() as conn:
-            conn.executescript(
+            cursor = conn.cursor()
+            cursor.execute(
                 """
-                -- Dispatch events (event sourcing)
                 CREATE TABLE IF NOT EXISTS dispatch_events (
-                    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                    id              SERIAL PRIMARY KEY,
                     dispatch_id     TEXT    NOT NULL,
                     event_type      TEXT    NOT NULL,
                     from_state      TEXT,
@@ -147,28 +144,35 @@ class DispatchStateMachine:
                     actor           TEXT    NOT NULL,
                     run_id          TEXT,
                     payload_json    TEXT    NOT NULL DEFAULT '{}',
-                    created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+                    created_at      TEXT    NOT NULL DEFAULT NOW()
                 );
-                
-                CREATE INDEX IF NOT EXISTS idx_events_dispatch 
-                    ON dispatch_events(dispatch_id);
-                CREATE INDEX IF NOT EXISTS idx_events_created 
-                    ON dispatch_events(created_at);
-                
-                -- Current state cache (can be rebuilt from events)
+                """
+            )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_events_dispatch ON dispatch_events(dispatch_id);"
+            )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_events_created ON dispatch_events(created_at);"
+            )
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS dispatch_current_state (
                     dispatch_id     TEXT    PRIMARY KEY,
                     current_state   TEXT    NOT NULL,
                     last_event_id   INTEGER,
-                    updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+                    updated_at      TEXT    NOT NULL DEFAULT NOW()
                 );
-                
-                -- DB version for migrations
+                """
+            )
+            cursor.execute(
+                """
                 CREATE TABLE IF NOT EXISTS db_version (
                     version INTEGER PRIMARY KEY
                 );
-                INSERT OR IGNORE INTO db_version (version) VALUES (1);
                 """
+            )
+            cursor.execute(
+                "INSERT INTO db_version (version) VALUES (1) ON CONFLICT (version) DO NOTHING;"
             )
         logger.info("State machine database initialized")
     
@@ -196,11 +200,13 @@ class DispatchStateMachine:
             ValueError: If transition is invalid
         """
         with self.tx() as conn:
+            cursor = conn.cursor()
             # Get current state
-            row = conn.execute(
-                "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = ?",
+            cursor.execute(
+                "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = %s",
                 (dispatch_id,)
-            ).fetchone()
+            )
+            row = cursor.fetchone()
             
             from_state = row["current_state"] if row else None
             
@@ -223,27 +229,29 @@ class DispatchStateMachine:
             )
             
             # Insert event
-            cursor = conn.execute(
+            cursor.execute(
                 """
                 INSERT INTO dispatch_events 
                 (dispatch_id, event_type, from_state, to_state, actor, run_id, payload_json, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
                 """,
                 (event.dispatch_id, event.event_type, event.from_state, event.to_state,
                  event.actor, event.run_id, event.payload_json, event.created_at)
             )
+            event_id = cursor.fetchone()["id"]
             
             # Update current state cache
-            conn.execute(
+            cursor.execute(
                 """
                 INSERT INTO dispatch_current_state (dispatch_id, current_state, last_event_id, updated_at)
-                VALUES (?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s)
                 ON CONFLICT(dispatch_id) DO UPDATE SET
                     current_state = excluded.current_state,
                     last_event_id = excluded.last_event_id,
                     updated_at = excluded.updated_at
                 """,
-                (dispatch_id, to_state.value, cursor.lastrowid, datetime.now().isoformat())
+                (dispatch_id, to_state.value, event_id, datetime.now().isoformat())
             )
             
             logger.info(
@@ -271,11 +279,12 @@ class DispatchStateMachine:
         )
         
         with self.tx() as conn:
-            conn.execute(
+            cursor = conn.cursor()
+            cursor.execute(
                 """
                 INSERT INTO dispatch_events 
                 (dispatch_id, event_type, actor, run_id, payload_json, created_at)
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (%s, %s, %s, %s, %s, %s)
                 """,
                 (event.dispatch_id, event.event_type, event.actor,
                  event.run_id, event.payload_json, event.created_at)
@@ -287,37 +296,43 @@ class DispatchStateMachine:
     def get_current_state(self, dispatch_id: str) -> Optional[str]:
         """Get current state of a dispatch"""
         with self.tx() as conn:
-            row = conn.execute(
-                "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = ?",
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = %s",
                 (dispatch_id,)
-            ).fetchone()
+            )
+            row = cursor.fetchone()
             return row["current_state"] if row else None
     
     def get_timeline(self, dispatch_id: str) -> List[Dict]:
         """Get full event timeline for a dispatch"""
         with self.tx() as conn:
-            rows = conn.execute(
+            cursor = conn.cursor()
+            cursor.execute(
                 """
                 SELECT * FROM dispatch_events 
-                WHERE dispatch_id = ? 
+                WHERE dispatch_id = %s 
                 ORDER BY created_at ASC, id ASC
                 """,
                 (dispatch_id,)
-            ).fetchall()
+            )
+            rows = cursor.fetchall()
             
             return [dict(row) for row in rows]
     
     def funnel_counts(self) -> Dict[str, int]:
         """Get count of dispatches in each state"""
         with self.tx() as conn:
+            cursor = conn.cursor()
             # Current states
-            rows = conn.execute(
+            cursor.execute(
                 """
                 SELECT current_state, COUNT(*) as count 
                 FROM dispatch_current_state 
                 GROUP BY current_state
                 """
-            ).fetchall()
+            )
+            rows = cursor.fetchall()
             
             counts = {row["current_state"]: row["count"] for row in rows}
             
@@ -349,11 +364,12 @@ class DispatchStateMachine:
     def rebuild_state_cache(self) -> None:
         """Rebuild current_state cache from events (recovery)"""
         with self.tx() as conn:
+            cursor = conn.cursor()
             # Clear cache
-            conn.execute("DELETE FROM dispatch_current_state")
+            cursor.execute("DELETE FROM dispatch_current_state")
             
             # Get latest state for each dispatch
-            rows = conn.execute(
+            cursor.execute(
                 """
                 SELECT 
                     dispatch_id,
@@ -363,14 +379,15 @@ class DispatchStateMachine:
                 WHERE event_type = 'state_transition'
                 GROUP BY dispatch_id
                 """
-            ).fetchall()
+            )
+            rows = cursor.fetchall()
             
             for row in rows:
-                conn.execute(
+                cursor.execute(
                     """
                     INSERT INTO dispatch_current_state 
                     (dispatch_id, current_state, last_event_id, updated_at)
-                    VALUES (?, ?, ?, ?)
+                    VALUES (%s, %s, %s, %s)
                     """,
                     (row["dispatch_id"], row["to_state"], row["last_event_id"], datetime.now().isoformat())
                 )
@@ -379,8 +396,8 @@ class DispatchStateMachine:
 
 
 # Convenience functions
-def get_state_machine(db_path: str | None = None) -> DispatchStateMachine:
+def get_state_machine() -> DispatchStateMachine:
     """Get initialized state machine"""
-    sm = DispatchStateMachine(db_path)
+    sm = DispatchStateMachine()
     sm.init_db()
     return sm

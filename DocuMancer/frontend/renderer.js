@@ -13,7 +13,7 @@ const AppState = {
     outputDir: null,
     appInfo: null,
     theme: 'dark'
-};
+}
 
 /**
  * DOM Element References
@@ -37,43 +37,30 @@ const DOM = {
     outputSection: null,
     resultsList: null,
     openOutputBtn: null
-};
+}
 
 /**
  * Initialize DOM references
  */
 function initializeDOMReferences() {
-    DOM.titleBar = document.querySelector('.title-bar');
-    DOM.closeBtn = document.querySelector('.btn.close');
-    DOM.minimizeBtn = document.querySelector('.btn.minimize');
-    DOM.maximizeBtn = document.querySelector('.btn.maximize');
-    DOM.glassPanel = document.querySelector('.glass-panel');
-    DOM.selectBtn = document.querySelector('.action');
-    DOM.dropZone = document.querySelector('.drop-zone');
-    DOM.fileList = document.querySelector('.file-list');
-    DOM.progressContainer = document.querySelector('.progress-container');
-    DOM.progressBar = document.querySelector('.progress-bar');
-    DOM.progressFill = document.querySelector('.progress-fill');
-    DOM.progressText = document.querySelector('.progress-text');
-    DOM.statusMessage = document.querySelector('.status-message');
-    DOM.convertBtn = document.querySelector('.convert-btn');
-    DOM.cancelBtn = document.querySelector('.cancel-btn');
-    DOM.outputSection = document.querySelector('.output-section');
-    DOM.resultsList = document.querySelector('.results-list');
-    DOM.openOutputBtn = document.querySelector('.open-output-btn');
-}
-
-/**
- * Format file size for display
- * @param {number} bytes - File size in bytes
- * @returns {string} Formatted file size
- */
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    DOM.titleBar = document.querySelector('.title-bar')
+    DOM.closeBtn = document.querySelector('.btn.close')
+    DOM.minimizeBtn = document.querySelector('.btn.minimize')
+    DOM.maximizeBtn = document.querySelector('.btn.maximize')
+    DOM.glassPanel = document.querySelector('.glass-panel')
+    DOM.selectBtn = document.querySelector('.action')
+    DOM.dropZone = document.querySelector('.drop-zone')
+    DOM.fileList = document.querySelector('.file-list')
+    DOM.progressContainer = document.querySelector('.progress-container')
+    DOM.progressBar = document.querySelector('.progress-bar')
+    DOM.progressFill = document.querySelector('.progress-fill')
+    DOM.progressText = document.querySelector('.progress-text')
+    DOM.statusMessage = document.querySelector('.status-message')
+    DOM.convertBtn = document.querySelector('.convert-btn')
+    DOM.cancelBtn = document.querySelector('.cancel-btn')
+    DOM.outputSection = document.querySelector('.output-section')
+    DOM.resultsList = document.querySelector('.results-list')
+    DOM.openOutputBtn = document.querySelector('.open-output-btn')
 }
 
 /**
@@ -82,7 +69,7 @@ function formatFileSize(bytes) {
  * @returns {string} Icon character
  */
 function getFileIcon(filename) {
-    const ext = filename.split('.').pop().toLowerCase();
+    const ext = filename.split('.').pop().toLowerCase()
     const icons = {
         'pdf': '\uD83D\uDCC4',
         'docx': '\uD83D\uDCC3',
@@ -95,8 +82,8 @@ function getFileIcon(filename) {
         'tiff': '\uD83D\uDDBC',
         'bmp': '\uD83D\uDDBC',
         'gif': '\uD83D\uDDBC'
-    };
-    return icons[ext] || '\uD83D\uDCC1';
+    }
+    return icons[ext] || '\uD83D\uDCC1'
 }
 
 /**
@@ -105,7 +92,7 @@ function getFileIcon(filename) {
  * @returns {string} File name
  */
 function getFileName(filePath) {
-    return filePath.split(/[/\\]/).pop();
+    return filePath.split(/[/\\]/).pop()
 }
 
 function escapeHtml(value) {
@@ -114,23 +101,23 @@ function escapeHtml(value) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+        .replace(/'/g, '&#39;')
 }
 
 function sanitizeStatusClass(value) {
-    return String(value).replace(/[^a-z0-9_-]/gi, '');
+    return String(value).replace(/[^a-z0-9_-]/gi, '')
 }
 
 /**
  * Update the file list display
  */
 function updateFileList() {
-    if (!DOM.fileList) return;
+    if (!DOM.fileList) return
 
     if (AppState.files.length === 0) {
-        DOM.fileList.innerHTML = '<div class="empty-state">No files selected</div>';
-        if (DOM.convertBtn) DOM.convertBtn.disabled = true;
-        return;
+        DOM.fileList.innerHTML = '<div class="empty-state">No files selected</div>'
+        if (DOM.convertBtn) DOM.convertBtn.disabled = true
+        return
     }
 
     DOM.fileList.innerHTML = AppState.files.map((file, index) => `
@@ -140,18 +127,18 @@ function updateFileList() {
             <span class="file-status ${sanitizeStatusClass(file.status || 'pending')}">${escapeHtml(file.statusText || 'Pending')}</span>
             <button class="file-remove" data-index="${index}" title="Remove file">x</button>
         </div>
-    `).join('');
+    `).join('')
 
     // Add remove handlers
     DOM.fileList.querySelectorAll('.file-remove').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.index);
-            removeFile(index);
-        });
-    });
+            e.stopPropagation()
+            const index = parseInt(btn.dataset.index)
+            removeFile(index)
+        })
+    })
 
-    if (DOM.convertBtn) DOM.convertBtn.disabled = false;
+    if (DOM.convertBtn) DOM.convertBtn.disabled = false
 }
 
 /**
@@ -164,15 +151,15 @@ function addFiles(filePaths) {
         name: getFileName(path),
         status: 'pending',
         statusText: 'Pending'
-    }));
+    }))
 
     // Filter duplicates
-    const existingPaths = new Set(AppState.files.map(f => f.path));
-    const uniqueNewFiles = newFiles.filter(f => !existingPaths.has(f.path));
+    const existingPaths = new Set(AppState.files.map(f => f.path))
+    const uniqueNewFiles = newFiles.filter(f => !existingPaths.has(f.path))
 
-    AppState.files = [...AppState.files, ...uniqueNewFiles];
-    updateFileList();
-    showStatus(`Added ${uniqueNewFiles.length} file(s)`, 'info');
+    AppState.files = [...AppState.files, ...uniqueNewFiles]
+    updateFileList()
+    showStatus(`Added ${uniqueNewFiles.length} file(s)`, 'info')
 }
 
 /**
@@ -180,19 +167,19 @@ function addFiles(filePaths) {
  * @param {number} index - File index
  */
 function removeFile(index) {
-    AppState.files.splice(index, 1);
-    updateFileList();
+    AppState.files.splice(index, 1)
+    updateFileList()
 }
 
 /**
  * Clear all files
  */
 function clearFiles() {
-    AppState.files = [];
-    AppState.convertedFiles = [];
-    updateFileList();
-    hideProgress();
-    hideOutput();
+    AppState.files = []
+    AppState.convertedFiles = []
+    updateFileList()
+    hideProgress()
+    hideOutput()
 }
 
 /**
@@ -201,19 +188,19 @@ function clearFiles() {
  * @param {string} type - Message type (info, success, warning, error)
  */
 function showStatus(message, type = 'info') {
-    if (!DOM.statusMessage) return;
+    if (!DOM.statusMessage) return
 
-    DOM.statusMessage.textContent = message;
-    DOM.statusMessage.className = `status-message ${type}`;
-    DOM.statusMessage.style.display = 'block';
+    DOM.statusMessage.textContent = message
+    DOM.statusMessage.className = `status-message ${type}`
+    DOM.statusMessage.style.display = 'block'
 
     // Auto-hide for info messages
     if (type === 'info' || type === 'success') {
         setTimeout(() => {
             if (DOM.statusMessage.textContent === message) {
-                DOM.statusMessage.style.display = 'none';
+                DOM.statusMessage.style.display = 'none'
             }
-        }, 5000);
+        }, 5000)
     }
 }
 
@@ -222,13 +209,13 @@ function showStatus(message, type = 'info') {
  */
 function showProgress() {
     if (DOM.progressContainer) {
-        DOM.progressContainer.style.display = 'block';
+        DOM.progressContainer.style.display = 'block'
     }
     if (DOM.convertBtn) {
-        DOM.convertBtn.style.display = 'none';
+        DOM.convertBtn.style.display = 'none'
     }
     if (DOM.cancelBtn) {
-        DOM.cancelBtn.style.display = 'inline-block';
+        DOM.cancelBtn.style.display = 'inline-block'
     }
 }
 
@@ -237,15 +224,15 @@ function showProgress() {
  */
 function hideProgress() {
     if (DOM.progressContainer) {
-        DOM.progressContainer.style.display = 'none';
+        DOM.progressContainer.style.display = 'none'
     }
     if (DOM.convertBtn) {
-        DOM.convertBtn.style.display = 'inline-block';
+        DOM.convertBtn.style.display = 'inline-block'
     }
     if (DOM.cancelBtn) {
-        DOM.cancelBtn.style.display = 'none';
+        DOM.cancelBtn.style.display = 'none'
     }
-    updateProgress(0, 'Ready');
+    updateProgress(0, 'Ready')
 }
 
 /**
@@ -254,13 +241,13 @@ function hideProgress() {
  * @param {string} message - Progress message
  */
 function updateProgress(percentage, message = '') {
-    AppState.progress = percentage;
+    AppState.progress = percentage
 
     if (DOM.progressFill) {
-        DOM.progressFill.style.width = `${percentage}%`;
+        DOM.progressFill.style.width = `${percentage}%`
     }
     if (DOM.progressText) {
-        DOM.progressText.textContent = message || `${percentage}%`;
+        DOM.progressText.textContent = message || `${percentage}%`
     }
 }
 
@@ -269,7 +256,7 @@ function updateProgress(percentage, message = '') {
  */
 function showOutput() {
     if (DOM.outputSection) {
-        DOM.outputSection.style.display = 'block';
+        DOM.outputSection.style.display = 'block'
     }
 }
 
@@ -278,10 +265,10 @@ function showOutput() {
  */
 function hideOutput() {
     if (DOM.outputSection) {
-        DOM.outputSection.style.display = 'none';
+        DOM.outputSection.style.display = 'none'
     }
     if (DOM.resultsList) {
-        DOM.resultsList.innerHTML = '';
+        DOM.resultsList.innerHTML = ''
     }
 }
 
@@ -289,7 +276,7 @@ function hideOutput() {
  * Update results list
  */
 function updateResultsList() {
-    if (!DOM.resultsList) return;
+    if (!DOM.resultsList) return
 
     DOM.resultsList.innerHTML = AppState.convertedFiles.map(file => `
         <div class="result-item">
@@ -298,14 +285,14 @@ function updateResultsList() {
             <span class="result-arrow">\u2192</span>
             <span class="result-output" data-path="${encodeURIComponent(file.output)}" title="Click to reveal">${escapeHtml(getFileName(file.output))}</span>
         </div>
-    `).join('');
+    `).join('')
 
     // Add click handlers for output files
     DOM.resultsList.querySelectorAll('.result-output').forEach(el => {
         el.addEventListener('click', () => {
-            window.fileOps.revealFile(decodeURIComponent(el.dataset.path));
-        });
-    });
+            window.fileOps.revealFile(decodeURIComponent(el.dataset.path))
+        })
+    })
 }
 
 /**
@@ -313,42 +300,42 @@ function updateResultsList() {
  */
 async function startConversion() {
     if (AppState.files.length === 0) {
-        showStatus('No files to convert', 'warning');
-        return;
+        showStatus('No files to convert', 'warning')
+        return
     }
 
     if (AppState.isConverting) {
-        showStatus('Conversion already in progress', 'warning');
-        return;
+        showStatus('Conversion already in progress', 'warning')
+        return
     }
 
-    AppState.isConverting = true;
-    AppState.convertedFiles = [];
-    showProgress();
-    showStatus('Starting conversion...', 'info');
+    AppState.isConverting = true
+    AppState.convertedFiles = []
+    showProgress()
+    showStatus('Starting conversion...', 'info')
 
     // Update file statuses
     AppState.files.forEach(file => {
-        file.status = 'pending';
-        file.statusText = 'Queued';
-    });
-    updateFileList();
+        file.status = 'pending'
+        file.statusText = 'Queued'
+    })
+    updateFileList()
 
     // Get file paths
-    const filePaths = AppState.files.map(f => f.path);
+    const filePaths = AppState.files.map(f => f.path)
 
     // Start conversion via IPC
-    window.fileOps.convert(filePaths);
+    window.fileOps.convert(filePaths)
 }
 
 /**
  * Cancel ongoing conversion
  */
 function cancelConversion() {
-    if (!AppState.isConverting) return;
+    if (!AppState.isConverting) return
 
-    window.fileOps.cancelConversion();
-    showStatus('Cancelling...', 'warning');
+    window.fileOps.cancelConversion()
+    showStatus('Cancelling...', 'warning')
 }
 
 /**
@@ -356,12 +343,12 @@ function cancelConversion() {
  */
 async function selectFiles() {
     try {
-        const files = await window.fileOps.openDialog();
+        const files = await window.fileOps.openDialog()
         if (files && files.length > 0) {
-            addFiles(files);
+            addFiles(files)
         }
     } catch (error) {
-        showStatus(`Error selecting files: ${error.message}`, 'error');
+        showStatus(`Error selecting files: ${error.message}`, 'error')
     }
 }
 
@@ -369,45 +356,45 @@ async function selectFiles() {
  * Setup drag and drop handlers
  */
 function setupDragAndDrop() {
-    const dropTarget = DOM.dropZone || DOM.glassPanel;
+    const dropTarget = DOM.dropZone || DOM.glassPanel
     if (!dropTarget) return;
 
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropTarget.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+            e.preventDefault()
+            e.stopPropagation()
+        })
         document.body.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-        });
+            e.preventDefault()
+            e.stopPropagation()
+        })
     });
 
     // Highlight drop zone on drag
     ['dragenter', 'dragover'].forEach(eventName => {
         dropTarget.addEventListener(eventName, () => {
-            dropTarget.classList.add('drag-over');
-        });
+            dropTarget.classList.add('drag-over')
+        })
     });
 
     ['dragleave', 'drop'].forEach(eventName => {
         dropTarget.addEventListener(eventName, () => {
-            dropTarget.classList.remove('drag-over');
-        });
-    });
+            dropTarget.classList.remove('drag-over')
+        })
+    })
 
     // Handle dropped files
     dropTarget.addEventListener('drop', (e) => {
-        const files = Array.from(e.dataTransfer.files);
-        const filePaths = files.map(f => f.path).filter(Boolean);
+        const files = Array.from(e.dataTransfer.files)
+        const filePaths = files.map(f => f.path).filter(Boolean)
 
         if (filePaths.length > 0) {
-            addFiles(filePaths);
+            addFiles(filePaths)
         } else {
-            showStatus('Unable to read dropped files', 'warning');
+            showStatus('Unable to read dropped files', 'warning')
         }
-    });
+    })
 }
 
 /**
@@ -416,20 +403,20 @@ function setupDragAndDrop() {
 function setupWindowControls() {
     if (DOM.closeBtn) {
         DOM.closeBtn.addEventListener('click', () => {
-            window.windowControls.close();
-        });
+            window.windowControls.close()
+        })
     }
 
     if (DOM.minimizeBtn) {
         DOM.minimizeBtn.addEventListener('click', () => {
-            window.windowControls.minimize();
-        });
+            window.windowControls.minimize()
+        })
     }
 
     if (DOM.maximizeBtn) {
         DOM.maximizeBtn.addEventListener('click', () => {
-            window.windowControls.maximize();
-        });
+            window.windowControls.maximize()
+        })
     }
 }
 
@@ -439,97 +426,97 @@ function setupWindowControls() {
 function setupIPCListeners() {
     // Conversion started
     window.api.on('conversion-started', (data) => {
-        AppState.isConverting = true;
-        AppState.outputDir = data.outputDir;
-        showStatus(`Converting ${data.total} file(s)...`, 'info');
-        updateProgress(0, 'Starting...');
-    });
+        AppState.isConverting = true
+        AppState.outputDir = data.outputDir
+        showStatus(`Converting ${data.total} file(s)...`, 'info')
+        updateProgress(0, 'Starting...')
+    })
 
     // Progress updates
     window.api.on('conversion-progress', (data) => {
         if (data.percentage !== undefined) {
-            updateProgress(data.percentage, `${data.percentage}% (${data.current}/${data.total})`);
+            updateProgress(data.percentage, `${data.percentage}% (${data.current}/${data.total})`)
         }
         if (data.message) {
-            showStatus(data.message, 'info');
+            showStatus(data.message, 'info')
         }
-    });
+    })
 
     // File converted
     window.api.on('file-converted', (data) => {
-        AppState.convertedFiles.push(data);
+        AppState.convertedFiles.push(data)
 
         // Update file status
-        const fileIndex = AppState.files.findIndex(f => f.path === data.input || f.name === getFileName(data.input));
+        const fileIndex = AppState.files.findIndex(f => f.path === data.input || f.name === getFileName(data.input))
         if (fileIndex !== -1) {
-            AppState.files[fileIndex].status = 'completed';
-            AppState.files[fileIndex].statusText = 'Done';
-            updateFileList();
+            AppState.files[fileIndex].status = 'completed'
+            AppState.files[fileIndex].statusText = 'Done'
+            updateFileList()
         }
 
-        updateResultsList();
-    });
+        updateResultsList()
+    })
 
     // Conversion complete
     window.api.on('conversion-complete', (data) => {
-        AppState.isConverting = false;
-        hideProgress();
-        showOutput();
-        showStatus(data.message, 'success');
-        updateProgress(100, 'Complete!');
+        AppState.isConverting = false
+        hideProgress()
+        showOutput()
+        showStatus(data.message, 'success')
+        updateProgress(100, 'Complete!')
 
         // Mark all remaining files as complete
         AppState.files.forEach(file => {
             if (file.status !== 'completed') {
-                file.status = 'completed';
-                file.statusText = 'Done';
+                file.status = 'completed'
+                file.statusText = 'Done'
             }
-        });
-        updateFileList();
-    });
+        })
+        updateFileList()
+    })
 
     // Conversion error
     window.api.on('conversion-error', (data) => {
-        AppState.isConverting = false;
-        hideProgress();
-        showStatus(`Error: ${data.message}`, 'error');
-        console.error('Conversion error:', data);
+        AppState.isConverting = false
+        hideProgress()
+        showStatus(`Error: ${data.message}`, 'error')
+        console.error('Conversion error:', data)
 
         // Mark files as failed
         AppState.files.forEach(file => {
             if (file.status !== 'completed') {
-                file.status = 'error';
-                file.statusText = 'Failed';
+                file.status = 'error'
+                file.statusText = 'Failed'
             }
-        });
-        updateFileList();
-    });
+        })
+        updateFileList()
+    })
 
     // Conversion warning
     window.api.on('conversion-warning', (data) => {
-        console.warn('Conversion warning:', data.message);
-    });
+        console.warn('Conversion warning:', data.message)
+    })
 
     // Conversion cancelled
     window.api.on('conversion-cancelled', (data) => {
-        AppState.isConverting = false;
-        hideProgress();
-        showStatus('Conversion cancelled', 'warning');
+        AppState.isConverting = false
+        hideProgress()
+        showStatus('Conversion cancelled', 'warning')
 
         // Mark pending files as cancelled
         AppState.files.forEach(file => {
             if (file.status === 'pending' || file.status === 'processing') {
-                file.status = 'cancelled';
-                file.statusText = 'Cancelled';
+                file.status = 'cancelled'
+                file.statusText = 'Cancelled'
             }
-        });
-        updateFileList();
-    });
+        })
+        updateFileList()
+    })
 
     // Files selected (from menu or other sources)
     window.api.on('files-selected', (files) => {
-        addFiles(files);
-    });
+        addFiles(files)
+    })
 }
 
 /**
@@ -538,24 +525,24 @@ function setupIPCListeners() {
 function setupButtonListeners() {
     // Select files button
     if (DOM.selectBtn) {
-        DOM.selectBtn.addEventListener('click', selectFiles);
+        DOM.selectBtn.addEventListener('click', selectFiles)
     }
 
     // Convert button
     if (DOM.convertBtn) {
-        DOM.convertBtn.addEventListener('click', startConversion);
+        DOM.convertBtn.addEventListener('click', startConversion)
     }
 
     // Cancel button
     if (DOM.cancelBtn) {
-        DOM.cancelBtn.addEventListener('click', cancelConversion);
+        DOM.cancelBtn.addEventListener('click', cancelConversion)
     }
 
     // Open output folder button
     if (DOM.openOutputBtn) {
         DOM.openOutputBtn.addEventListener('click', () => {
-            window.fileOps.openOutputFolder();
-        });
+            window.fileOps.openOutputFolder()
+        })
     }
 }
 
@@ -566,31 +553,31 @@ function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
         // Cmd/Ctrl + O - Open files
         if ((e.metaKey || e.ctrlKey) && e.key === 'o') {
-            e.preventDefault();
-            selectFiles();
+            e.preventDefault()
+            selectFiles()
         }
 
         // Cmd/Ctrl + Enter - Start conversion
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
-            e.preventDefault();
+            e.preventDefault()
             if (!AppState.isConverting && AppState.files.length > 0) {
-                startConversion();
+                startConversion()
             }
         }
 
         // Escape - Cancel conversion
         if (e.key === 'Escape' && AppState.isConverting) {
-            cancelConversion();
+            cancelConversion()
         }
 
         // Cmd/Ctrl + Backspace - Clear files
         if ((e.metaKey || e.ctrlKey) && e.key === 'Backspace') {
-            e.preventDefault();
+            e.preventDefault()
             if (!AppState.isConverting) {
-                clearFiles();
+                clearFiles()
             }
         }
-    });
+    })
 }
 
 /**
@@ -598,16 +585,16 @@ function setupKeyboardShortcuts() {
  */
 async function loadAppInfo() {
     try {
-        AppState.appInfo = await window.appInfo.get();
-        AppState.outputDir = AppState.appInfo.outputDir;
+        AppState.appInfo = await window.appInfo.get()
+        AppState.outputDir = AppState.appInfo.outputDir
 
         // Update title if element exists
-        const titleEl = document.querySelector('.app-title');
+        const titleEl = document.querySelector('.app-title')
         if (titleEl) {
-            titleEl.textContent = `${AppState.appInfo.name} v${AppState.appInfo.version}`;
+            titleEl.textContent = `${AppState.appInfo.name} v${AppState.appInfo.version}`
         }
     } catch (error) {
-        console.error('Failed to load app info:', error);
+        console.error('Failed to load app info:', error)
     }
 }
 
@@ -616,10 +603,10 @@ async function loadAppInfo() {
  */
 async function applySystemTheme() {
     try {
-        AppState.theme = await window.appInfo.getTheme();
-        document.body.dataset.theme = AppState.theme;
+        AppState.theme = await window.appInfo.getTheme()
+        document.body.dataset.theme = AppState.theme
     } catch (error) {
-        console.error('Failed to get system theme:', error);
+        console.error('Failed to get system theme:', error)
     }
 }
 
@@ -627,35 +614,35 @@ async function applySystemTheme() {
  * Initialize the application
  */
 async function initialize() {
-    console.log('[Renderer] Initializing DocuMancer...');
+    console.log('[Renderer] Initializing DocuMancer...')
 
     // Initialize DOM references
-    initializeDOMReferences();
+    initializeDOMReferences()
 
     // Setup event listeners
-    setupWindowControls();
-    setupDragAndDrop();
-    setupIPCListeners();
-    setupButtonListeners();
-    setupKeyboardShortcuts();
+    setupWindowControls()
+    setupDragAndDrop()
+    setupIPCListeners()
+    setupButtonListeners()
+    setupKeyboardShortcuts()
 
     // Load app info and theme
-    await loadAppInfo();
-    await applySystemTheme();
+    await loadAppInfo()
+    await applySystemTheme()
 
     // Initial UI state
-    hideProgress();
-    hideOutput();
-    updateFileList();
+    hideProgress()
+    hideOutput()
+    updateFileList()
 
-    console.log('[Renderer] DocuMancer initialized successfully');
+    console.log('[Renderer] DocuMancer initialized successfully')
 }
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initialize);
+    document.addEventListener('DOMContentLoaded', initialize)
 } else {
-    initialize();
+    initialize()
 }
 
 // Export for potential testing
@@ -667,5 +654,5 @@ if (typeof module !== 'undefined' && module.exports) {
         clearFiles,
         startConversion,
         cancelConversion
-    };
+    }
 }

@@ -1,7 +1,0 @@
-{
-  "message": "request to https://registry.npmjs.org/-/npm/v1/security/audits/quick failed, reason: ",
-  "error": {
-    "summary": "",
-    "detail": ""
-  }
-}

@@ -17,34 +17,35 @@
 //! interactions (e.g. passing data back and forth or implementing
 //! custom interfaces) can be added by extending this manager.
 
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 use anyhow::{anyhow, Result};
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 use once_cell::sync::Lazy;
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 use wasmtime::{component::Component, Config, Engine, Store};
-#[cfg(feature = "wasm")]
-use wasmtime::component::{Instance, Linker, TypedFunc};
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
+use wasmtime::component::{Linker, TypedFunc};
+#[cfg(feature = "with-wasm")]
 use std::path::Path;
 
 /// The global Wasmtime engine used for all Wasm components.  We
 /// initialize it with the component model and parallel compilation
 /// enabled.  Lazy initialization ensures the engine is created on
 /// first use.  See the blog post referenced above for details【826651234273768†L31-L40】.
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 static ENGINE: Lazy<Engine> = Lazy::new(|| {
     let mut config = Config::default();
+    config.async_support(true);
     config.wasm_component_model(true);
     config.parallel_compilation(true);
     Engine::new(&config).expect("Failed to create Wasmtime engine")
 });
 
 /// Manager responsible for loading Wasm component plugins.
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 pub struct WasmPluginManager;
 
-#[cfg(feature = "wasm")]
+#[cfg(feature = "with-wasm")]
 impl WasmPluginManager {
     /// Load a WebAssembly component from the given file path and call
     /// its `run` function.  The component must define a `run`
@@ -54,11 +55,12 @@ impl WasmPluginManager {
         let path = path.as_ref();
         let component = Component::from_file(&*ENGINE, path)
             .map_err(|e| anyhow!("Failed to compile Wasm component {}: {}", path.display(), e))?;
-        let mut linker: Linker<()> = Linker::new(&*ENGINE);
+        let linker: Linker<()> = Linker::new(&*ENGINE);
         let mut store: Store<()> = Store::new(&*ENGINE, ());
         // Instantiate the component.  Because we don't define any
         // imports the host side has no functions to expose.
-        let (instance, _) = Instance::new_async(&mut store, &component, &linker)
+        let instance = linker
+            .instantiate_async(&mut store, &component)
             .await
             .map_err(|e| anyhow!("Failed to instantiate Wasm component {}: {}", path.display(), e))?;
         // Expect an exported `run` function with no parameters.  If

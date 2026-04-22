@@ -1,6 +1,8 @@
 """
 Prometheus metrics for monitoring the application.
 """
+from typing import Optional
+
 from prometheus_client import Counter, Histogram, Gauge
 
 # Request metrics
@@ -61,13 +63,15 @@ AI_LATENCY = Histogram(
 
 class Metrics:
     """Legacy metrics class for compatibility."""
-    def __init__(self):
-        self.metrics = {}
 
-    def record(self, name: str, value: float):
+    def __init__(self) -> None:
+        self.metrics: dict[str, float] = {}
+
+    def record(self, name: str, value: float) -> None:
         self.metrics[name] = value
 
-    def get(self, name: str):
+    def get(self, name: str) -> Optional[float]:
         return self.metrics.get(name)
+
 
 metrics = Metrics()

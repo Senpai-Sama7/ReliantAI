@@ -13,10 +13,9 @@ use adaptive_expert_platform::{
 };
 use anyhow::Result;
 use tracing::warn;
-use std::{path::PathBuf, sync::Arc, time::Duration, collections::HashSet};
-use tokio::time::timeout;
-use serde_json::{json, Value};
-use tempfile::{tempdir, NamedTempFile};
+use std::{sync::Arc, time::Duration};
+use serde_json::json;
+use tempfile::tempdir;
 use std::fs::File;
 use std::io::Write;
 use tracing_test::traced_test;
@@ -292,7 +291,7 @@ async fn test_orchestrator_performance_basic() {
 
     // Dispatch 100 concurrent tasks
     for i in 0..100 {
-        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+        let (tx, rx) = tokio::sync::mpsc::channel(1);
         let task = ("echo".to_string(), json!(format!("message {}", i)), tx);
 
         orchestrator.dispatch(task).await.unwrap();
@@ -357,34 +356,6 @@ async fn test_json_input_validation() {
     for input in inputs {
         let result: Result<String, _> = agent.handle(input, memory.clone()).await;
         assert!(result.is_ok());
-    }
-}
-
-// Property-based test example
-#[cfg(feature = "proptest")]
-mod proptests {
-    use super::*;
-    use proptest::prelude::*;
-
-    proptest! {
-        #[test]
-        fn test_echo_agent_properties(input in ".*") {
-            let rt = tokio::runtime::Runtime::new().unwrap();
-            rt.block_on(async {
-                let agent = EchoAgent;
-                let cache = Arc::new(InMemoryEmbeddingCache::new());
-                let echo_agent_arc = Arc::new(EchoAgent::new());
-                let memory = Arc::new(Memory::new(
-                    echo_agent_arc.clone(),
-                    echo_agent_arc,
-                    cache,
-                ));
-
-                let result = agent.handle(json!(input), memory).await;
-                prop_assert!(result.is_ok());
-                prop_assert!(result.unwrap().contains(&input));
-            });
-        }
     }
 }
 

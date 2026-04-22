@@ -617,11 +617,6 @@ impl AgentFactory {
                 use crate::ffi_julia::JuliaAgent;
                 Ok(Box::new(JuliaAgent::new(settings)?))
             }
-            #[cfg(feature = "with-zig")]
-            "zig" => {
-                use crate::ffi_zig::ZigAgent;
-                Ok(Box::new(ZigAgent::new()))
-            }
             #[cfg(feature = "with-llama")]
             "llm" => {
                 let name = config.get("name")

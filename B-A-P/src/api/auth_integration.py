@@ -14,7 +14,7 @@ from src.core.event_bus import publish_event
 # Add shared JWT validator to path
 sys.path.insert(0, '/home/donovan/Projects/ReliantAI/integration/shared')
 try:
-    from jwt_validator import JWTValidator  # type: ignore[import-not-found]
+    from jwt_validator import JWTValidator
     JWT_AVAILABLE = True
 except ImportError:
     JWT_AVAILABLE = False

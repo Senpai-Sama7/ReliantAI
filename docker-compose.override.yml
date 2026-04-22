@@ -1,0 +1,89 @@
+# ReliantAI Platform - Docker Compose Override for Local Development
+# This file is automatically loaded by docker-compose alongside docker-compose.yml
+# Use it for local development overrides
+
+version: '3.8'
+
+services:
+  # Override nginx for local development (no SSL)
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - NGINX_MODE=development
+    command: >
+      sh -c "sed -i 's/listen 443 ssl http2;/listen 80;/' /etc/nginx/nginx.conf &&
+             sed -i 's/ssl_certificate.*;//' /etc/nginx/nginx.conf &&
+             sed -i 's/ssl_certificate_key.*;//' /etc/nginx/nginx.conf &&
+             sed -i 's/ssl_protocols.*;//' /etc/nginx/nginx.conf &&
+             sed -i 's/ssl_ciphers.*;//' /etc/nginx/nginx.conf &&
+             nginx -g 'daemon off;'"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development volumes for hot reloading
+  money:
+    volumes:
+      - ./Money:/app
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  complianceone:
+    volumes:
+      - ./ComplianceOne:/app
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+
+  finops360:
+    volumes:
+      - ./FinOps360:/app
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+
+  orchestrator:
+    volumes:
+      - ./orchestrator:/app
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn main:app --host 0.0.0.0 --port 9000 --reload
+
+  integration:
+    volumes:
+      - ./integration:/app
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
+
+  # Vault for secrets management (optional for development)
+  vault:
+    build:
+      context: ./vault
+      dockerfile: Dockerfile
+    container_name: reliantai-vault
+    ports:
+      - "8200:8200"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=dev-root-token
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    volumes:
+      - vault_data:/vault/data
+    cap_add:
+      - IPC_LOCK
+    command: server -dev -dev-root-token-id="dev-root-token"
+
+volumes:
+  vault_data:

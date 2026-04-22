@@ -10,6 +10,9 @@ import { slackPostTool }                       from './slack';
 import { stripeCustomerLookupTool, stripeInvoiceLookupTool } from './stripe';
 import { braveSearchTool }                     from './brave_search';
 import { memorySearchTool, memorySaveTool }    from './memory';
+import { browserTools }                        from './browser';
+import { computerTools }                       from './computer';
+import { codeExecutionTools }                  from './code_execution';
 
 // ── ALL_TOOLS ─────────────────────────────────────────────────────────────────────
 // Add new tools here. They are automatically:
@@ -45,6 +48,15 @@ export const ALL_TOOLS: ToolDefinition[] = [
   // ─ Memory ─
   memorySearchTool,
   memorySaveTool,
+
+  // ─ Browser Automation ─
+  ...browserTools,
+
+  // ─ Computer Use ─
+  ...computerTools,
+
+  // ─ Code Execution ─
+  ...codeExecutionTools,
 ];
 
 export const TOOL_MAP = new Map<string, ToolDefinition>(

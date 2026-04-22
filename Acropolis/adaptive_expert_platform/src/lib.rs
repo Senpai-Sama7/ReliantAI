@@ -10,7 +10,6 @@ pub mod cli;
 pub mod lifecycle;
 pub mod memory;
 pub mod mesh;
-pub mod metrics;
 pub mod middleware;
 pub mod monitoring;
 pub mod orchestrator;
@@ -25,8 +24,5 @@ pub mod wasm_plugin;
 
 #[cfg(feature = "with-julia")]
 pub mod ffi_julia;
-
-#[cfg(feature = "with-zig")]
-pub mod ffi_zig;
 
 pub use agent::Agent;

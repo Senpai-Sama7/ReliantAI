@@ -1,88 +1,65 @@
 """
-APEX Auth Integration
-Integrates APEX agents API with shared JWT authentication.
+Apex Agents Auth Integration.
+
+Provides JWT authentication by validating tokens against the Auth Service.
+Uses the shared JWT validator from integration/shared/jwt_validator.py.
 """
 
 import os
 import sys
-from typing import Dict, Any, Optional
-from fastapi import HTTPException, Depends
+from pathlib import Path
+
+_RELIINTAI_ROOT = Path(__file__).parent.parent.parent.parent
+_SHARED_DIR = _RELIINTAI_ROOT / "integration" / "shared"
+if str(_SHARED_DIR) not in sys.path:
+    sys.path.insert(0, str(_SHARED_DIR))
+
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Dict
 
-security = HTTPBearer(auto_error=False)
-
-# Add shared JWT validator to path
-sys.path.insert(0, '/home/donovan/Projects/ReliantAI/integration/shared')
-
-# Try to import JWT validator
 try:
-    from jwt_validator import JWTValidator, get_current_user as _get_current_user
+    from jwt_validator import JWTValidator
+
+    _secret = os.getenv("AUTH_SECRET_KEY", "")
+    _auth_url = os.getenv("AUTH_SERVICE_URL", "http://127.0.0.1:8080")
+    _validator = JWTValidator(secret_key=_secret, auth_url=_auth_url)
     AUTH_ENABLED = True
-except ImportError as e:
-    print(f"WARNING: JWT validator not available: {e}")
+except Exception:
+    _validator = None
     AUTH_ENABLED = False
 
-# Global validator instance
-_validator = None
-
-def get_validator() -> Optional[JWTValidator]:
-    """Get or create JWT validator instance."""
-    global _validator
-    if _validator is None and AUTH_ENABLED:
-        _validator = JWTValidator()
-    return _validator
+security = HTTPBearer()
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict[str, Any]:
-    """
-    FastAPI dependency to get current user from JWT token.
-    
-    Usage:
-        @app.get("/protected")
-        def protected_route(user: Dict = Depends(get_current_user)):
-            return {"user": user["username"]}
-    """
-    return await require_authenticated_user(credentials)
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
+    """FastAPI dependency — extract and validate JWT, return user payload."""
+    if not AUTH_ENABLED or _validator is None:
+        raise HTTPException(status_code=503, detail="Auth service unavailable")
+    try:
+        return _validator.validate_token(credentials.credentials)
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
-async def require_authenticated_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-) -> Dict[str, Any]:
-    """Require shared-auth-backed authentication and fail closed if unavailable."""
-    if not AUTH_ENABLED:
-        raise HTTPException(status_code=503, detail="Authentication not configured")
-
-    if not credentials:
-        raise HTTPException(status_code=401, detail="Missing authentication credentials")
-
-    validator = get_validator()
-    if validator is None:
-        raise HTTPException(status_code=503, detail="JWT validator not initialized")
-
-    return validator.validate_token(credentials.credentials)
-
-
-async def get_current_user_optional() -> Dict[str, Any]:
-    """Get current user if auth is enabled, otherwise return anonymous."""
-    if not AUTH_ENABLED:
-        return {"username": "anonymous", "roles": []}
-    
-    # For optional auth, we'd need the request context
-    # This is a placeholder for future implementation
-    return {"username": "anonymous", "roles": []}
+def require_authenticated_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> Dict:
+    """Alias for get_current_user — used as FastAPI dependency."""
+    return get_current_user(credentials)
 
 
 class AuthIntegration:
-    """Auth integration helper for APEX."""
-    
+    """Compatibility shim — the auth service is the external JWT issuer."""
+
     def __init__(self):
         self.enabled = AUTH_ENABLED
-        self.validator = get_validator()
-    
-    def require_auth(self):
-        """Get auth dependency if enabled."""
-        return Depends(require_authenticated_user)
 
-
-# Convenience instance
-auth = AuthIntegration()
+    def verify_token(self, token: str) -> Dict:
+        if not AUTH_ENABLED or _validator is None:
+            raise HTTPException(status_code=503, detail="Auth service unavailable")
+        return _validator.validate_token(token)

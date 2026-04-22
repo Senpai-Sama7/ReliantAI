@@ -4,22 +4,23 @@
   "private": true,
   "description": "APEX MCP Tool Bus — dynamic integration layer for all external tools",
   "scripts": {
-    "dev":       "tsx watch src/index.ts",
-    "build":     "tsc",
-    "start":     "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test":      "tsx --test src/**/*.test.ts"
+    "test": "tsx --test src/**/*.test.ts"
   },
   "dependencies": {
-    "express":  "^4.21.0",
-    "zod":      "^3.23.0",
-    "dotenv":   "^16.4.0"
+    "dotenv": "^16.6.1",
+    "express": "^4.21.0",
+    "playwright": "^1.49.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
-    "@types/node":    "^22.0.0",
-    "typescript":     "^5.6.0",
-    "tsx":            "^4.19.0"
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
   },
   "engines": {
     "node": ">=20.0.0"

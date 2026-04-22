@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: reliantai-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER must be set}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRES_DB: ${POSTGRES_DB:-reliantai}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Money Service (HVAC AI Dispatch)
+  money:
+    build:
+      context: ./Money
+      dockerfile: Dockerfile
+    container_name: reliantai-money
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/money
+      - DISPATCH_API_KEY=${DISPATCH_API_KEY:?DISPATCH_API_KEY must be set}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:?GEMINI_API_KEY must be set}
+      - TWILIO_SID=${TWILIO_SID:?TWILIO_SID must be set}
+      - TWILIO_TOKEN=${TWILIO_TOKEN:?TWILIO_TOKEN must be set}
+      - ENV=production
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ComplianceOne Service
+  complianceone:
+    build:
+      context: ./ComplianceOne
+      dockerfile: Dockerfile
+    container_name: reliantai-complianceone
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/complianceone
+      - COMPLIANCEONE_API_KEY=${COMPLIANCEONE_API_KEY:?COMPLIANCEONE_API_KEY must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # FinOps360 Service
+  finops360:
+    build:
+      context: ./FinOps360
+      dockerfile: Dockerfile
+    container_name: reliantai-finops360
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finops360
+      - FINOPS360_API_KEY=${FINOPS360_API_KEY:?FINOPS360_API_KEY must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Integration Layer
+  integration:
+    build:
+      context: ./integration
+      dockerfile: Dockerfile
+    container_name: reliantai-integration
+    ports:
+      - "8080:8080"
+    environment:
+      - MONEY_URL=http://money:8000
+      - COMPLIANCEONE_URL=http://complianceone:8001
+      - FINOPS360_URL=http://finops360:8002
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/integration
+    depends_on:
+      - money
+      - complianceone
+      - finops360
+
+  # Autonomous Orchestrator
+  orchestrator:
+    build:
+      context: ./orchestrator
+      dockerfile: Dockerfile
+    container_name: reliantai-orchestrator
+    ports:
+      - "9000:9000"
+    environment:
+      - MONEY_URL=http://money:8000
+      - COMPLIANCEONE_URL=http://complianceone:8001
+      - FINOPS360_URL=http://finops360:8002
+      - INTEGRATION_URL=http://integration:8080
+      - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
+      - API_KEY=${ORCHESTRATOR_API_KEY:-${API_KEY:?API_KEY must be set}}
+      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    depends_on:
+      - money
+      - complianceone
+      - finops360
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: reliantai-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - reliantai-network
+
+  # Nginx Reverse Proxy & API Gateway
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: reliantai-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NGINX_MODE=production
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./dashboard:/usr/share/nginx/html/dashboard:ro
+    depends_on:
+      money:
+        condition: service_healthy
+      complianceone:
+        condition: service_healthy
+      finops360:
+        condition: service_healthy
+      orchestrator:
+        condition: service_healthy
+    networks:
+      - reliantai-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/nginx-health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  vault_data:
+
+networks:
+  reliantai-network:
+    driver: bridge

@@ -1,27 +1,9 @@
-# =============================================================================
-# ReliantAI .gitignore
-# Comprehensive ignore patterns for all 14 projects
-# =============================================================================
-
-# =============================================================================
-# MISC & ARCHIVED FILES
-# =============================================================================
-
-# Archived/cleaned files (from cleanup on 2026-03-05)
-.misc/
-
-# =============================================================================
-# PYTHON (All Python projects: B-A-P, Money, BackupIQ, etc.)
-# =============================================================================
-
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-
-# Distribution / packaging
 build/
 develop-eggs/
 dist/
@@ -39,319 +21,77 @@ wheels/
 *.egg
 MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Virtual environments
+# Virtual Environment
+.venv/
 venv/
 ENV/
 env/
-.venv
+.ENV/
+
+# IDE
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Docker
+.docker/
 
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# IPython
-profile_default/
-ipython_config.py
+# Documentation
+site/
+docs/_build/
 
-# pyenv
-.python-version
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+.cache/
 
-# Celery
-celerybeat-schedule
-celerybeat.pid
+# OS
+Thumbs.db
+.DS_Store
 
-# SageMath parsed files
-*.sage.py
-
-# Environments
-.env
-.env.local
-.env.*.local
-.venv
-
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# pytype static type analyzer
-.pytype/
-
-# Cython debug symbols
-cython_debug/
-
-# =============================================================================
-# RUST (Acropolis)
-# =============================================================================
-
-# Build artifacts
-target/
-Cargo.lock
-**/*.rs.bk
-*.pdb
-
-# =============================================================================
-# NODEJS / TYPESCRIPT (Gen-H, ClearDesk, CyberArchitect, reGenesis)
-# =============================================================================
-
-# Dependencies
+# Node modules (if any frontend)
 node_modules/
-.pnp
-.pnp.js
-
-# Build outputs
-dist/
-dist-ssr/
-build/
-*.tsbuildinfo
-
-# Environment
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Testing
-coverage/
-
-# IDE
-.vscode/*
-!.vscode/extensions.json
-.idea/
-
-# Logs
-logs
-*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-# Package manager caches
-.npm
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnpm-store/
-
-# =============================================================================
-# DATABASES
-# =============================================================================
-
-*.db
-*.db-shm
-*.db-wal
-*.sqlite
-*.sqlite3
-*.db-journal
-
-# =============================================================================
-# IDE & EDITOR CONFIGS
-# =============================================================================
-
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-.vs/
-*.sublime-project
-*.sublime-workspace
-
-# =============================================================================
-# OS FILES
-# =============================================================================
-
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# =============================================================================
-# BACKUP FILES
-# =============================================================================
-
-*.bak
-*.backup
-*~
-*.orig
-*.rej
-
-# =============================================================================
-# LOGS & TEMP FILES
-# =============================================================================
-
-*.log
-logs/
-tmp/
-temp/
-.tmp/
-*.tmp
-
-# =============================================================================
-# PROJECT-SPECIFIC
-# =============================================================================
-
-# B-A-P
-B-A-P/.coverage
-B-A-P/htmlcov/
-
-# Money
-Money/archive/
-Money/*.db
-
-# BackupIQ
-BackupIQ/*.bak
-
-# Gen-H
-Gen-H/hvac-lead-generator/.env.local
-Gen-H/hvac-lead-generator/dist/
-
-# ClearDesk
-ClearDesk/dist/
-ClearDesk/.env.local
-
-# Acropolis
-Acropolis/target/
-Acropolis/node_modules/
-
-# Apex
-apex/target/
-apex/.env
-
-# DocuMancer
-DocuMancer/dist/
-DocuMancer/build/
-
-# CyberArchitect
-CyberArchitect/node_modules/
-CyberArchitect/dist/
-
-# reGenesis
-reGenesis/node_modules/
-reGenesis/dist/
-
-# intelligent-storage
-intelligent-storage/*.db
-intelligent-storage/__pycache__/
-
-# Citadel
-Citadel/services/*/node_modules/
-Citadel/services/*/__pycache__/
-
-# citadel_ultimate_a_plus
-citadel_ultimate_a_plus/__pycache__/
-citadel_ultimate_a_plus/*.db
-
-# =============================================================================
-# SECURITY - NEVER COMMIT THESE
-# =============================================================================
-
-# Secrets
-*.pem
-*.key
-*.crt
-secrets.yaml
-secrets.json
-secrets.toml
-
-# API Keys (any file with 'key' in name that might contain secrets)
-*apikey*
-*api-key*
-*api_key*
-
-# Private data
-*.private
-*.secret
-
-# =============================================================================
-# LARGE BINARY FILES THAT SHOULD BE IN LFS OR EXTERNAL STORAGE
-# =============================================================================
-
-# Models (should be in model registry, not git)
-*.pt
-*.pth
-*.h5
-*.onnx
-*.pb
-*.ckpt
-*.safetensors
-
-# Large data files
-*.csv.gz
-*.parquet
-*.feather
-*.hdf5
-*.h5
-
-# Large media
-*.mp4
-*.mov
-*.avi
-*.mp3
-*.wav
-
-# =============================================================================
-# EXCEPTIONS - KEEP THESE
-# =============================================================================
-
-# Keep example env files
-!.env.example
-!.env.template
-
-# Keep lock files for reproducibility
-!package-lock.json
-!yarn.lock
-!pnpm-lock.yaml
-!poetry.lock
-!Cargo.lock
-
-# Keep VS Code recommended extensions
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-
-# Keep specific documentation
-!AGENTS.md
-!README.md
-!QUICK_START.md
-!HOSTILE_AUDIT_SUMMARY.md
+# Build artifacts
+dist/
+build/
+out/

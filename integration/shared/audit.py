@@ -8,11 +8,9 @@ import structlog
 from typing import Dict, Any, Optional
 
 from .event_types import EventType, EventPublishRequest
+from .event_bus_client import get_event_bus_url, publish_request_headers
 
 logger = structlog.get_logger()
-
-# By default it will look for EVENT_BUS_URL or default to http://localhost:8000
-EVENT_BUS_URL = os.getenv("EVENT_BUS_URL", "http://localhost:8000")
 
 async def emit_audit(
     action: str,
@@ -51,8 +49,9 @@ async def emit_audit(
         
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.post(
-                f"{EVENT_BUS_URL}/publish",
-                json=event.model_dump()
+                f"{get_event_bus_url()}/publish",
+                json=event.model_dump(),
+                headers=publish_request_headers(),
             )
             response.raise_for_status()
     except Exception as e:

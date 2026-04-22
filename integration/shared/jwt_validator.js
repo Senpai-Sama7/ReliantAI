@@ -11,8 +11,7 @@ class JWTValidator {
    * @param {string} algorithm - The algorithm used for signing (default: HS256).
    */
   constructor(secretKey, algorithm = "HS256") {
-    this.secretKey =
-      secretKey || process.env.AUTH_SECRET_KEY || process.env.JWT_SECRET_KEY || "";
+    this.secretKey = secretKey || process.env.AUTH_SECRET_KEY || process.env.JWT_SECRET_KEY;
     this.algorithm = algorithm;
   }
 

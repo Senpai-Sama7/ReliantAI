@@ -1,7 +1,0 @@
-escapeHtml_defined=True
-sanitizeStatusClass_defined=True
-file_name_escaped=True
-status_text_escaped=True
-output_name_escaped=True
-output_path_encoded=True
-legacy_innerhtml_sink_removed=True

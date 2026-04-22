@@ -16,6 +16,20 @@ import { listTools, callTool, getAllBreakerStatuses } from './registry';
 const app  = express();
 const PORT = parseInt(process.env['PORT'] ?? '4000', 10);
 
+// Security: Disable X-Powered-By header to prevent technology stack disclosure
+app.disable('x-powered-by');
+
+// Security headers middleware (applied to all routes)
+app.use((_req: Request, res: Response, next: NextFunction) => {
+  res.set({
+    'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+    'X-Frame-Options':           'DENY',
+    'X-Content-Type-Options':     'nosniff',
+    'Content-Security-Policy':   "default-src 'none'",
+  });
+  next();
+});
+
 app.use(express.json({ limit: '2mb' }));
 
 // ── Logging middleware ───────────────────────────────────────────────────────────

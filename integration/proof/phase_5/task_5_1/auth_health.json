@@ -1,1 +1,0 @@
-{"status":"healthy","redis":"connected","sqlite":{"status":"connected","journal_mode":"wal","user_count":"0","path":"/home/donovan/Projects/ReliantAI/integration/proof/phase_5/task_5_1/runtime/auth.db"}}

@@ -1,7 +1,7 @@
 // preload.js - DocuMancer Secure Context Bridge
 // Exposes controlled IPC methods to the renderer process
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron')
 
 /**
  * Valid IPC channels for sending messages to main process
@@ -17,7 +17,7 @@ const SEND_CHANNELS = new Set([
     'open-output-folder',
     'open-file',
     'reveal-file'
-]);
+])
 
 /**
  * Valid IPC channels for receiving messages from main process
@@ -32,7 +32,7 @@ const RECEIVE_CHANNELS = new Set([
     'conversion-cancelled',
     'file-converted',
     'files-selected'
-]);
+])
 
 /**
  * Valid IPC channels for invoke (async request-response)
@@ -42,13 +42,13 @@ const INVOKE_CHANNELS = new Set([
     'open-file-dialog',
     'get-app-info',
     'get-system-theme'
-]);
+])
 
 /**
  * Listener cleanup registry to prevent memory leaks
  * @type {Map<string, Map<Function, Function>>}
  */
-const listenerRegistry = new Map();
+const listenerRegistry = new Map()
 
 /**
  * Safely expose protected APIs to the renderer
@@ -62,11 +62,11 @@ contextBridge.exposeInMainWorld('api', {
      */
     send: (channel, data) => {
         if (SEND_CHANNELS.has(channel)) {
-            ipcRenderer.send(channel, data);
-            return true;
+            ipcRenderer.send(channel, data)
+            return true
         }
-        console.warn(`[Preload] Blocked send to invalid channel: ${channel}`);
-        return false;
+        console.warn(`[Preload] Blocked send to invalid channel: ${channel}`)
+        return false
     },
 
     /**
@@ -78,14 +78,14 @@ contextBridge.exposeInMainWorld('api', {
     invoke: async (channel, data) => {
         if (INVOKE_CHANNELS.has(channel)) {
             try {
-                return await ipcRenderer.invoke(channel, data);
+                return await ipcRenderer.invoke(channel, data)
             } catch (error) {
-                console.error(`[Preload] Invoke error on ${channel}:`, error);
-                throw new Error(`IPC invoke failed: ${error.message}`);
+                console.error(`[Preload] Invoke error on ${channel}:`, error)
+                throw new Error(`IPC invoke failed: ${error.message}`)
             }
         }
-        console.warn(`[Preload] Blocked invoke to invalid channel: ${channel}`);
-        return Promise.reject(new Error(`Invalid channel: ${channel}`));
+        console.warn(`[Preload] Blocked invoke to invalid channel: ${channel}`)
+        return Promise.reject(new Error(`Invalid channel: ${channel}`))
     },
 
     /**
@@ -96,37 +96,37 @@ contextBridge.exposeInMainWorld('api', {
      */
     on: (channel, callback) => {
         if (!RECEIVE_CHANNELS.has(channel)) {
-            console.warn(`[Preload] Blocked listener on invalid channel: ${channel}`);
-            return () => {};
+            console.warn(`[Preload] Blocked listener on invalid channel: ${channel}`)
+            return () => {}
         }
 
         // Create wrapper that strips the event object for security
         const wrapper = (event, ...args) => {
             try {
-                callback(...args);
+                callback(...args)
             } catch (error) {
-                console.error(`[Preload] Callback error on ${channel}:`, error);
+                console.error(`[Preload] Callback error on ${channel}:`, error)
             }
-        };
+        }
 
         // Register the wrapper for cleanup
         if (!listenerRegistry.has(channel)) {
-            listenerRegistry.set(channel, new Map());
+            listenerRegistry.set(channel, new Map())
         }
-        listenerRegistry.get(channel).set(callback, wrapper);
+        listenerRegistry.get(channel).set(callback, wrapper)
 
         // Add the listener
-        ipcRenderer.on(channel, wrapper);
+        ipcRenderer.on(channel, wrapper)
 
         // Return unsubscribe function
         return () => {
-            const channelListeners = listenerRegistry.get(channel);
+            const channelListeners = listenerRegistry.get(channel)
             if (channelListeners && channelListeners.has(callback)) {
-                const registeredWrapper = channelListeners.get(callback);
-                ipcRenderer.removeListener(channel, registeredWrapper);
-                channelListeners.delete(callback);
+                const registeredWrapper = channelListeners.get(callback)
+                ipcRenderer.removeListener(channel, registeredWrapper)
+                channelListeners.delete(callback)
             }
-        };
+        }
     },
 
     /**
@@ -136,22 +136,22 @@ contextBridge.exposeInMainWorld('api', {
      */
     once: (channel, callback) => {
         if (!RECEIVE_CHANNELS.has(channel)) {
-            console.warn(`[Preload] Blocked once listener on invalid channel: ${channel}`);
-            return;
+            console.warn(`[Preload] Blocked once listener on invalid channel: ${channel}`)
+            return
         }
 
         // Create wrapper that strips the event object and removes itself
         const wrapper = (event, ...args) => {
             try {
-                callback(...args);
+                callback(...args)
             } catch (error) {
-                console.error(`[Preload] Callback error on ${channel}:`, error);
+                console.error(`[Preload] Callback error on ${channel}:`, error)
             } finally {
-                ipcRenderer.removeListener(channel, wrapper);
+                ipcRenderer.removeListener(channel, wrapper)
             }
-        };
+        }
 
-        ipcRenderer.on(channel, wrapper);
+        ipcRenderer.on(channel, wrapper)
     },
 
     /**
@@ -161,14 +161,14 @@ contextBridge.exposeInMainWorld('api', {
      */
     off: (channel, callback) => {
         if (!RECEIVE_CHANNELS.has(channel)) {
-            return;
+            return
         }
 
-        const channelListeners = listenerRegistry.get(channel);
+        const channelListeners = listenerRegistry.get(channel)
         if (channelListeners && channelListeners.has(callback)) {
-            const wrapper = channelListeners.get(callback);
-            ipcRenderer.removeListener(channel, wrapper);
-            channelListeners.delete(callback);
+            const wrapper = channelListeners.get(callback)
+            ipcRenderer.removeListener(channel, wrapper)
+            channelListeners.delete(callback)
         }
     },
 
@@ -178,13 +178,13 @@ contextBridge.exposeInMainWorld('api', {
      */
     removeAllListeners: (channel) => {
         if (!RECEIVE_CHANNELS.has(channel)) {
-            return;
+            return
         }
 
-        ipcRenderer.removeAllListeners(channel);
-        listenerRegistry.delete(channel);
+        ipcRenderer.removeAllListeners(channel)
+        listenerRegistry.delete(channel)
     }
-});
+})
 
 /**
  * Expose window control APIs
@@ -193,7 +193,7 @@ contextBridge.exposeInMainWorld('windowControls', {
     minimize: () => ipcRenderer.send('window-minimize'),
     maximize: () => ipcRenderer.send('window-maximize'),
     close: () => ipcRenderer.send('window-close')
-});
+})
 
 /**
  * Expose file operation APIs
@@ -232,7 +232,7 @@ contextBridge.exposeInMainWorld('fileOps', {
      * @param {string} filePath
      */
     revealFile: (filePath) => ipcRenderer.send('reveal-file', filePath)
-});
+})
 
 /**
  * Expose application info APIs
@@ -249,7 +249,7 @@ contextBridge.exposeInMainWorld('appInfo', {
      * @returns {Promise<'light'|'dark'>}
      */
     getTheme: () => ipcRenderer.invoke('get-system-theme')
-});
+})
 
 /**
  * Expose platform detection
@@ -259,7 +259,7 @@ contextBridge.exposeInMainWorld('platform', {
     isWindows: process.platform === 'win32',
     isLinux: process.platform === 'linux',
     os: process.platform
-});
+})
 
 // Log preload completion
-console.log('[Preload] Context bridge initialized successfully');
+console.log('[Preload] Context bridge initialized successfully')
