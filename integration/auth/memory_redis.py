@@ -18,7 +18,7 @@ class MemoryRedis:
         return True
     
     async def hgetall(self, key: str) -> Dict[str, str]:
-        self._cleanup_expired()
+        await self._cleanup_expired()
         return dict(self.hashes.get(key, {}))
     
     async def hset(self, key: str, mapping: dict):
@@ -29,11 +29,11 @@ class MemoryRedis:
         self.ttls[key] = time.time() + seconds
     
     async def get(self, key: str) -> Optional[str]:
-        self._cleanup_expired()
+        await self._cleanup_expired()
         return self.data.get(key)
     
     async def exists(self, key: str) -> int:
-        self._cleanup_expired()
+        await self._cleanup_expired()
         return 1 if key in self.data or key in self.hashes or key in self.sorted_sets else 0
     
     async def delete(self, key: str):
@@ -57,11 +57,11 @@ class MemoryRedis:
             self.sorted_sets[key][member] = float(score)
 
     async def zcard(self, key: str) -> int:
-        self._cleanup_expired()
+        await self._cleanup_expired()
         return len(self.sorted_sets.get(key, {}))
 
     async def zremrangebyscore(self, key: str, min_score: float, max_score: float) -> int:
-        self._cleanup_expired()
+        await self._cleanup_expired()
         members = self.sorted_sets.get(key, {})
         to_delete = [
             member
@@ -73,7 +73,7 @@ class MemoryRedis:
         return len(to_delete)
 
     async def zrange(self, key: str, start: int, end: int, withscores: bool = False):
-        self._cleanup_expired()
+        await self._cleanup_expired()
         items = sorted(self.sorted_sets.get(key, {}).items(), key=lambda item: (item[1], item[0]))
         if end == -1:
             selected = items[start:]
@@ -86,14 +86,15 @@ class MemoryRedis:
     async def close(self):
         pass
     
-    def _cleanup_expired(self):
-        now = time.time()
-        expired = [k for k, v in self.ttls.items() if v < now]
-        for k in expired:
-            self.data.pop(k, None)
-            self.hashes.pop(k, None)
-            self.sorted_sets.pop(k, None)
-            self.ttls.pop(k, None)
+    async def _cleanup_expired(self):
+        async with self._lock:
+            now = time.time()
+            expired = [k for k, v in self.ttls.items() if v < now]
+            for k in expired:
+                self.data.pop(k, None)
+                self.hashes.pop(k, None)
+                self.sorted_sets.pop(k, None)
+                self.ttls.pop(k, None)
 
 async def from_url(url: str, **kwargs):
     """Create memory redis instance (URL ignored for local testing)"""

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-from collections import defaultdict
 from dataclasses import dataclass
 import math
 import time
@@ -27,7 +26,14 @@ class SlidingWindowRateLimiter:
     def __init__(self, redis_client: Any, prefix: str = "rate_limit"):
         self.redis_client = redis_client
         self.prefix = prefix
-        self._locks: defaultdict[str, asyncio.Lock] = defaultdict(asyncio.Lock)
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._lock_factory_lock = asyncio.Lock()
+
+    def _get_lock(self, key: str) -> asyncio.Lock:
+        """Get or create lock for key in thread-safe manner."""
+        if key not in self._locks:
+            self._locks[key] = asyncio.Lock()
+        return self._locks[key]
 
     async def check(
         self,
@@ -39,7 +45,11 @@ class SlidingWindowRateLimiter:
         """Allow or reject a request based on the recent request count."""
         key = self._key(scope, identifier)
 
-        async with self._locks[key]:
+        # Get or create lock atomically
+        async with self._lock_factory_lock:
+            lock = self._get_lock(key)
+
+        async with lock:
             now = time.time()
             cutoff = now - window_seconds
 

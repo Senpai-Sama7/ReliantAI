@@ -3,21 +3,25 @@ ReliantAI Saga Orchestrator - Distributed Transaction Coordination
 NO MOCKING - Real Redis for idempotency, real Kafka for events, real compensation
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Any, Optional
 import os
 import json
 import asyncio
 import uuid
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, VERSION as PYDANTIC_VERSION
+import hashlib
 import redis.asyncio as redis
+
 from aiokafka import AIOKafkaProducer
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
 from fastapi.responses import Response
 import structlog
+
+PYDANTIC_V2 = PYDANTIC_VERSION.startswith("2.")
 
 # Configuration
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -129,9 +133,13 @@ async def shutdown():
 # Core Functions
 async def store_saga(saga: Saga):
     """Store saga state in Redis"""
+    if PYDANTIC_V2:
+        data = saga.model_dump_json()
+    else:
+        data = saga.json()
     await redis_client.set(
         f"saga:{saga.saga_id}",
-        saga.json(),
+        data,
         ex=86400,  # 24 hour TTL
     )
 
@@ -140,7 +148,10 @@ async def get_saga(saga_id: str) -> Optional[Saga]:
     """Retrieve saga from Redis"""
     data = await redis_client.get(f"saga:{saga_id}")
     if data:
-        return Saga.parse_raw(data)
+        if PYDANTIC_V2:
+            return Saga.model_validate_json(data)
+        else:
+            return Saga.parse_raw(data)
     return None
 
 
@@ -158,10 +169,16 @@ async def store_idempotency(idempotency_key: str, result: Dict[str, Any]):
     )
 
 
-async def execute_step(step: SagaStep) -> Dict[str, Any]:
+def generate_deterministic_idempotency_key(step: SagaStep, correlation_id: str) -> str:
+    """Generate deterministic idempotency key based on step content and correlation"""
+    content = f"{correlation_id}:{step.step_id}:{step.action}:{step.service}:{hashlib.sha256(str(step.payload).encode()).hexdigest()[:16]}"
+    return hashlib.sha256(content.encode()).hexdigest()[:32]
+
+
+async def execute_step(step: SagaStep, correlation_id: str = "") -> Dict[str, Any]:
     """Execute saga step (calls service via event bus)"""
-    # Generate idempotency key
-    step.idempotency_key = f"{step.step_id}:{uuid.uuid4()}"
+    # Generate deterministic idempotency key
+    step.idempotency_key = generate_deterministic_idempotency_key(step, correlation_id)
 
     # Check idempotency
     if await check_idempotency(step.idempotency_key):
@@ -209,13 +226,13 @@ async def compensate_step(step: SagaStep):
 async def execute_saga(saga: Saga):
     """Execute saga with compensation on failure"""
     saga.status = SagaStatus.RUNNING
-    saga.started_at = datetime.utcnow()
+    saga.started_at = datetime.now(timezone.utc)
     await store_saga(saga)
 
     saga_started.labels(saga_type=saga.saga_type).inc()
     active_sagas.inc()
 
-    start_time = datetime.utcnow()
+    start_time = datetime.now(timezone.utc)
 
     try:
         # Execute steps sequentially
@@ -226,7 +243,7 @@ async def execute_saga(saga: Saga):
 
             try:
                 # Execute step
-                result = await execute_step(step)
+                result = await execute_step(step, saga.correlation_id)
                 step.status = StepStatus.COMPLETED
                 step.result = result
 
@@ -243,15 +260,15 @@ async def execute_saga(saga: Saga):
                     "step_failed", saga_id=saga.saga_id, step=step.name, error=str(e)
                 )
 
-                # Compensate in reverse order
-                for j in range(i, -1, -1):
+                # Compensate in reverse order (only completed steps, not the failed one)
+                for j in range(i - 1, -1, -1):
                     compensate_step_obj = saga.steps[j]
                     if compensate_step_obj.status == StepStatus.COMPLETED:
                         await compensate_step(compensate_step_obj)
                         compensate_step_obj.status = StepStatus.COMPENSATED
 
                 saga.status = SagaStatus.COMPENSATED
-                saga.completed_at = datetime.utcnow()
+                saga.completed_at = datetime.now(timezone.utc)
                 await store_saga(saga)
 
                 saga_compensated.labels(saga_type=saga.saga_type).inc()
@@ -259,7 +276,7 @@ async def execute_saga(saga: Saga):
                     saga_type=saga.saga_type, reason="step_failure"
                 ).inc()
 
-                duration = (datetime.utcnow() - start_time).total_seconds()
+                duration = (datetime.now(timezone.utc) - start_time).total_seconds()
                 saga_duration.labels(saga_type=saga.saga_type).observe(duration)
                 active_sagas.dec()
 
@@ -267,12 +284,12 @@ async def execute_saga(saga: Saga):
 
         # All steps completed
         saga.status = SagaStatus.COMPLETED
-        saga.completed_at = datetime.utcnow()
+        saga.completed_at = datetime.now(timezone.utc)
         await store_saga(saga)
 
         saga_completed.labels(saga_type=saga.saga_type).inc()
 
-        duration = (datetime.utcnow() - start_time).total_seconds()
+        duration = (datetime.now(timezone.utc) - start_time).total_seconds()
         saga_duration.labels(saga_type=saga.saga_type).observe(duration)
         active_sagas.dec()
 
@@ -280,7 +297,7 @@ async def execute_saga(saga: Saga):
 
     except Exception as e:
         saga.status = SagaStatus.FAILED
-        saga.completed_at = datetime.utcnow()
+        saga.completed_at = datetime.now(timezone.utc)
         await store_saga(saga)
 
         saga_failed.labels(saga_type=saga.saga_type, reason="orchestrator_error").inc()

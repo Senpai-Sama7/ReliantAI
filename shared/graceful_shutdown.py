@@ -50,7 +50,8 @@ class GracefulShutdownManager:
         
         def signal_handler(signum, frame):
             logger.info(f"Received signal {signum}, initiating graceful shutdown...")
-            asyncio.create_task(self.shutdown())
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(self.shutdown())
             sys.exit(0)
         
         signal.signal(signal.SIGTERM, signal_handler)

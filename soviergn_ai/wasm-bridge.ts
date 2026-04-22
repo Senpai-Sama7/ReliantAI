@@ -191,6 +191,9 @@ export class WasmMemoryBridge {
   /** Derived layout computed from wasm-bindgen pointer exports. */
   private layout: MemoryLayout;
 
+  /** Lock array for synchronizing access to mutable bridge state (cachedByteLength, layout). */
+  private readonly _lock: Int32Array;
+
   /** Seqlock retry budget before returning an inconsistent sample. */
   static readonly MAX_SEQLOCK_RETRIES = 8;
 
@@ -211,6 +214,9 @@ export class WasmMemoryBridge {
 
     this.sab = exports.memory.buffer as SharedArrayBuffer;
     this.cachedByteLength = this.sab.byteLength;
+
+    // Initialize lock at a fixed offset in the SAB (use last 4 bytes of first page).
+    this._lock = new Int32Array(this.sab, 4092, 1);
 
     // Acquire the control block view.
     // The control block is at a fixed offset (exported by Rust) and is
@@ -270,6 +276,19 @@ export class WasmMemoryBridge {
     return new WasmMemoryBridge(exports);
   }
 
+  /** Acquire the bridge lock using Atomics. */
+  private _acquireLock(): void {
+    while (Atomics.compareExchange(this._lock, 0, 0, 1) !== 0) {
+      Atomics.wait(this._lock, 0, 1);
+    }
+  }
+
+  /** Release the bridge lock. */
+  private _releaseLock(): void {
+    Atomics.store(this._lock, 0, 0);
+    Atomics.notify(this._lock, 0, 1);
+  }
+
   /**
    * Derive the MemoryLayout from live pointer exports.
    *
@@ -308,10 +327,15 @@ export class WasmMemoryBridge {
    * negligible compared to the cost of the visualization render.
    */
   private checkGrowth(): void {
-    const currentBytes = this.exports.memory.buffer.byteLength;
-    if (currentBytes !== this.cachedByteLength) {
-      this.cachedByteLength = currentBytes;
-      this.layout = this.deriveLayout();
+    this._acquireLock();
+    try {
+      const currentBytes = this.exports.memory.buffer.byteLength;
+      if (currentBytes !== this.cachedByteLength) {
+        this.cachedByteLength = currentBytes;
+        this.layout = this.deriveLayout();
+      }
+    } finally {
+      this._releaseLock();
     }
   }
 

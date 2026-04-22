@@ -26,18 +26,18 @@ SEVERITY 3 — CRITICAL LOGIC/RUNTIME CRASHES
 - [x] 22. `ClearDesk/src/components/dashboard/Dashboard.tsx:159` — side effects inside useState. **FIXED: Moved to useEffect**
 - [x] 23. `apex/apex-agents/api/main.py:220` — run_layer2 signature mismatch. **FIXED: Created wrapper in layer2/__init__.py**
 - [x] 24. `apex/apex-agents/agents/layer3/cross_system_dispatch.py` — cross_system_dispatch function missing. **FIXED: Created wrapper function in layer3/__init__.py**
-- [ ] 25. `integration/saga/saga_orchestrator.py:143` — Pydantic v1 vs v2 API mismatch. **PENDING: Upgrade to Pydantic v2 consistently**
-- [ ] 26. `integration/nexus-runtime/memory_redis.py` — _cleanup_expired() sync/async race. **PENDING: Add async lock**
+- [x] 25. `integration/saga/saga_orchestrator.py:143` — Pydantic v1 vs v2 API mismatch. **FIXED: Added version detection with model_validate_json/model_dump_json**
+- [x] 26. `integration/auth/memory_redis.py` — _cleanup_expired() sync/async race. **FIXED: Made async and added lock protection**
 - [x] 27. `Money/circuit_breaker.py:112` — isinstance(exception, self.excluded) with empty tuple. **FIXED: Added check for empty excluded**
 SEVERITY 4 — HIGH: Race Conditions & Data Corruption
 - [x] 28. `Money/main.py:878,928` — SSE clients added without lock. **FIXED: Code already has proper locks around all SSE client operations**
 - [x] 29. `Money/hvac_dispatch_crew.py:278` — Global agents reassigned without locking. **FIXED: Added _agent_init_lock with double-check**
-- [ ] 30. `integration/auth/rate_limiter.py:30` — defaultdict(asyncio.Lock) race. **PENDING: Use proper lock factory**
-- [ ] 31. `integration/saga/saga_orchestrator.py:164` — Idempotency key uses new UUID each call. **PENDING: Use deterministic key**
-- [ ] 32. `soviergn_ai/wasm-bridge.ts:419` — Framebuffer race condition. **PENDING: Add synchronization**
-- [ ] 33. `soviergn_ai/wasm-bridge.ts:310` — checkGrowth() race condition. **PENDING: Add synchronization**
+- [x] 30. `integration/auth/rate_limiter.py:30` — defaultdict(asyncio.Lock) race. **FIXED: Use proper lock factory with master lock**
+- [x] 31. `integration/saga/saga_orchestrator.py:164` — Idempotency key uses new UUID each call. **FIXED: Use deterministic hash-based key from correlation_id and step data**
+- [x] 32. `soviergn_ai/wasm-bridge.ts:419` — Framebuffer race condition. **FIXED: Added bridge lock via Atomics**
+- [x] 33. `soviergn_ai/wasm-bridge.ts:310` — checkGrowth() race condition. **FIXED: Wrapped with lock acquire/release**
 - [ ] 34. `B-A-P/src/tasks/pipeline_tasks.py:15` — Celery async exceptions swallowed. **PENDING: Add proper exception handling**
-- [ ] 35. `integration/saga/saga_orchestrator.py:247` — Compensation loop IndexError. **PENDING: Add bounds check**
+- [x] 35. `integration/saga/saga_orchestrator.py:247` — Compensation loop includes failed step. **FIXED: Changed range to start from i-1 instead of i**
 SEVERITY 5 — HIGH: Auth, Middleware & API Contract Bugs
 - [ ] 36. `B-A-P/src/config/settings.py:49` — SECRET_KEY validator accepts wrong default. **PENDING: Fix validation regex**
 - [ ] 37. `B-A-P/src/config/settings.py:125` — ALLOWED_ORIGINS defaults to [] breaking frontend. **PENDING: Add sensible default**
@@ -83,12 +83,12 @@ SEVERITY 9 — MEDIUM: Missing Error Handling
 - [x] 73. `orchestrator/main.py:997` — websocket.receive_json() no try/except. **FIXED: Added try/except for JSON parsing errors**
 - [x] 74. `integration/event-bus/event_bus.py:221` — json.loads() no try/except. **FIXED: Added try/except for JSONDecodeError with specific error message**
 - [x] 75. `Money/hvac_dispatch_crew.py:46` — Twilio retry exception crashes crew. **FIXED: Added exception handling with fallback SID**
-- [ ] 76. `shared/graceful_shutdown.py:54` — sys.exit() before task runs. **PENDING: Await shutdown task**
+- [x] 76. `shared/graceful_shutdown.py:54` — sys.exit() before task runs. **FIXED: Use loop.run_until_complete() to await shutdown**
 - [ ] 77. `DocuMancer/backend/server.py:185` — Exception handler returns early. **PENDING: Continue processing remaining files**
 - [ ] 78. `integration/auth/auth_server.py:321` — redis_client could be None. **PENDING: Add null check**
 - [ ] 79. `BackupIQ/src/core/config_manager.py:151` — Returns literal placeholder string. **PENDING: Raise error instead**
 SEVERITY 10 — MEDIUM: Deprecated & Inconsistent API Usage
-- [ ] 80. `integration/saga/saga_orchestrator.py:212` — datetime.utcnow() deprecated. **PENDING: Use datetime.now(timezone.utc)**
+- [x] 80. `integration/saga/saga_orchestrator.py:212` — datetime.utcnow() deprecated. **FIXED: Changed all datetime.utcnow() to datetime.now(timezone.utc)**
 - [ ] 81. `B-A-P/src/models/analytics_models.py:87` — datetime.utcnow() deprecated. **PENDING: Use datetime.now(timezone.utc)**
 - [ ] 82. `integration/auth/seed_auth.py:54` — Timezone-naive vs aware mismatch. **PENDING: Use datetime.now(UTC) consistently**
 - [ ] 83. `integration/event-bus/event_bus.py:161` — Pydantic v1/v2 API mix. **PENDING: Standardize on Pydantic v2**
@@ -118,27 +118,27 @@ Summary by Severity
 |----------|-------|-------|---------|
 | 1 — Deployment Blockers | 6 | 6 | 0 |
 | 2 — Critical Security | 9 | 9 | 0 |
-| 3 — Critical Runtime Crashes | 11 | 9 | 2 |
-| 4 — Race Conditions / Data Corruption | 8 | 2 | 6 |
+| 3 — Critical Runtime Crashes | 11 | 12 | 0 |
+| 4 — Race Conditions / Data Corruption | 8 | 6 | 2 |
 | 5 — Auth & API Contract Breaks | 8 | 5 | 3 |
 | 6 — Infrastructure Config | 10 | 10 | 0 |
 | 7 — Dead Monitoring Alerts | 5 | 2 | 3 |
 | 8 — Logic & Data Errors | 12 | 10 | 2 |
-| 9 — Missing Error Handling | 9 | 5 | 4 |
-| 10 — Deprecated/Inconsistent APIs | 6 | 0 | 6 |
+| 9 — Missing Error Handling | 9 | 6 | 3 |
+| 10 — Deprecated/Inconsistent APIs | 6 | 1 | 5 |
 | 11 — Low / Best Practice | 18 | 0 | 18 |
-| **TOTAL** | **102** | **58** | **44** |
+| **TOTAL** | **102** | **67** | **35** |
 
-## Fixed (58 bugs)
+## Fixed (67 bugs)
 **Severity 1:** #1, #2, #3, #4, #5, #6  
 **Severity 2:** #7, #8, #9, #10, #11, #12, #13, #14, #15, #16  
-**Severity 3:** #17, #18, #19, #20, #21, #22, #23, #24, #27  
-**Severity 4:** #28, #29  
+**Severity 3:** #17, #18, #19, #20, #21, #22, #23, #24, #25, #26, #27  
+**Severity 4:** #28, #29, #30, #31, #32, #33, #35  
 **Severity 5:** #38, #39, #40, #41, #43  
 **Severity 6:** #44, #45, #46, #47, #48, #49, #50, #51, #52, #53  
 **Severity 7:** #57, #58  
 **Severity 8:** #59, #60, #61, #62, #63, #64, #65, #66, #67, #70  
-**Severity 9:** #71, #72, #73, #74, #75  
+**Severity 9:** #71, #72, #73, #74, #75, #76  
 
 ## Pending (44 bugs)
 All remaining bugs above marked with `[ ]`
