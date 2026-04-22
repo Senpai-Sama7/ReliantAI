@@ -55,7 +55,7 @@ check_prerequisites() {
     print_success "Docker installed"
     
     # Check Docker Compose
-    if ! command -v docker-compose &> /dev/null; then
+    if ! docker compose version &> /dev/null; then
         print_error "Docker Compose not found. Please install Docker Compose."
         exit 1
     fi
@@ -118,7 +118,7 @@ build_services() {
     cd "$PROJECT_ROOT"
     
     # Build all services
-    docker-compose -f "$COMPOSE_FILE" build --parallel
+    docker compose -f "$COMPOSE_FILE" build --parallel
     
     print_success "All services built"
     echo ""
@@ -131,13 +131,13 @@ start_infrastructure() {
     cd "$PROJECT_ROOT"
     
     # Start Postgres and Redis first
-    docker-compose -f "$COMPOSE_FILE" up -d postgres redis
+    docker compose -f "$COMPOSE_FILE" up -d postgres redis
     
     # Wait for Postgres to be ready
     print_status "Waiting for PostgreSQL to be ready..."
     local RETRIES=30
     local COUNT=0
-    while ! docker-compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do
+    while ! docker compose -f "$COMPOSE_FILE" exec -T postgres pg_isready -U postgres > /dev/null 2>&1; do
         sleep 1
         COUNT=$((COUNT + 1))
         if [ $COUNT -ge $RETRIES ]; then
@@ -153,7 +153,7 @@ start_infrastructure() {
     print_status "Waiting for Redis to be ready..."
     local RETRIES=30
     local COUNT=0
-    while ! docker-compose -f "$COMPOSE_FILE" exec -T redis redis-cli ping > /dev/null 2>&1; do
+    while ! docker compose -f "$COMPOSE_FILE" exec -T redis redis-cli ping > /dev/null 2>&1; do
         sleep 1
         COUNT=$((COUNT + 1))
         if [ $COUNT -ge $RETRIES ]; then
@@ -174,7 +174,7 @@ start_services() {
     cd "$PROJECT_ROOT"
     
     # Start all services
-    docker-compose -f "$COMPOSE_FILE" up -d
+    docker compose -f "$COMPOSE_FILE" up -d
     
     print_success "All services started"
     echo ""
@@ -221,7 +221,7 @@ init_databases() {
     cd "$PROJECT_ROOT"
     
     # Run database migrations for each service
-    docker-compose -f "$COMPOSE_FILE" exec -T money python -c "from database import init_db; init_db()" 2>/dev/null || true
+    docker compose -f "$COMPOSE_FILE" exec -T money python -c "from database import init_db; init_db()" 2>/dev/null || true
     
     print_success "Databases initialized"
     echo ""
@@ -235,7 +235,7 @@ setup_sample_data() {
         cd "$PROJECT_ROOT"
         
         # Setup ComplianceOne with sample frameworks
-        docker-compose -f "$COMPOSE_FILE" exec -T complianceone python -c "
+        docker compose -f "$COMPOSE_FILE" exec -T complianceone python -c "
 import requests
 import os
 
@@ -292,9 +292,9 @@ print_platform_status() {
     echo "  • Redis:                 localhost:6379"
     echo ""
     echo -e "${BLUE}Useful Commands:${NC}"
-    echo "  • View logs:             docker-compose logs -f [service]"
-    echo "  • Stop platform:           docker-compose down"
-    echo "  • Restart service:       docker-compose restart [service]"
+    echo "  • View logs:             docker compose logs -f [service]"
+    echo "  • Stop platform:           docker compose down"
+    echo "  • Restart service:       docker compose restart [service]"
     echo "  • Health check:          ./scripts/health_check.py"
     echo "  • Integration test:      ./scripts/verify_integration.py"
     echo ""
