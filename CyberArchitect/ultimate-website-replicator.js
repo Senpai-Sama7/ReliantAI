@@ -10,6 +10,7 @@ const path = require('path');
 const { URL } = require('url');
 const crypto = require('crypto');
 const { pipeline } = require('stream/promises');
+const { Transform } = require('stream');
 const os = require('os');
 const zlib = require('zlib');
 

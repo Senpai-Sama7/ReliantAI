@@ -156,8 +156,10 @@ class EnterpriseConfigManager:
         secret_value = os.getenv(env_var)
 
         if secret_value is None:
-            logger.warning(f"Secret not found: {secret_path}")
-            return f"<SECRET:{secret_path}>"
+            raise RuntimeError(
+                f"Required secret not found: {secret_path}. "
+                f"Set the environment variable {env_var} to provide this secret."
+            )
 
         return secret_value
 

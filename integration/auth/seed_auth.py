@@ -51,7 +51,7 @@ def seed_users(admin_password: str, service_password: str) -> None:
         },
     ]
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(UTC).isoformat()
 
     for user in users:
         # Check if user exists

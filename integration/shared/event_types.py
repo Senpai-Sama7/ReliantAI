@@ -6,7 +6,7 @@ Defines central schemas for all cross-service communication.
 from datetime import datetime, UTC
 from enum import Enum
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class EventType(str, Enum):
@@ -51,11 +51,26 @@ class EventPublishRequest(BaseModel):
     # SECURITY FIX: Added max_length constraints to prevent memory exhaustion.
     event_type: EventType
     payload: Dict[str, Any] = Field(
-        default_factory=dict, max_length=65536
-    )  # 64KB max payload
+        default_factory=dict
+    )  # 64KB max payload - enforced via custom validator below
     correlation_id: str = Field(..., max_length=128)
     tenant_id: str = Field(..., max_length=64)
     source_service: str = Field(..., max_length=64)
+
+    @field_validator("payload")
+    @classmethod
+    def validate_payload_size(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate payload size (serialized JSON must be under 64KB)."""
+        import json
+        try:
+            serialized = json.dumps(v, separators=(",", ":"))
+            if len(serialized.encode("utf-8")) > 65536:
+                raise ValueError("Payload exceeds 64KB limit")
+        except (TypeError, ValueError) as e:
+            if "Payload exceeds" in str(e):
+                raise
+            raise ValueError(f"Payload cannot be serialized: {e}")
+        return v
 
 
 class EventResponse(BaseModel):

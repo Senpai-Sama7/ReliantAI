@@ -3,7 +3,7 @@ Pydantic models for API requests and responses.
 """
 from pydantic import BaseModel, Field, field_validator
 from typing import Any, List, Optional, Dict
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 class JobStatus(str, Enum):
@@ -84,5 +84,5 @@ class ErrorResponse(BaseModel):
     """Standard error response model."""
     error: str
     detail: Optional[str] = None
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     path: Optional[str] = None

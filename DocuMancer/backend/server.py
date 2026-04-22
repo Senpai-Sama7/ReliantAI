@@ -182,9 +182,9 @@ async def convert(
       results.append(ConversionResult(file=file_path, status="error", message=str(exc)))
     except Exception as exc:  # noqa: BLE001
       logger.exception("Failed to convert file", extra={"request_id": http_request.state.request_id, "file": str(file_path)})
-      return {"request_id": http_request.state.request_id, "results": [item.model_dump() for item in results]}
+      results.append(ConversionResult(file=file_path, status="error", message=str(exc)))
 
-  return {"request_id": http_request.state.request_id, "results": [json.loads(item.json()) for item in results]}
+  return {"request_id": http_request.state.request_id, "results": [item.model_dump() for item in results]}
 
 
 def main():

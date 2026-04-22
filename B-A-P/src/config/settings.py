@@ -47,7 +47,27 @@ class Settings(BaseSettings):
     @field_validator("SECRET_KEY", mode="before")
     @classmethod
     def validate_secret_key(cls, v: str) -> str:
-        if not v or v == "change-me-in-production":
+        # Reject empty and common placeholder values
+        invalid_patterns = [
+            "",
+            "change-me",
+            "change-me-in-production",
+            "changeme",
+            "change_me",
+            "placeholder",
+            "your-secret-key",
+            "your_secret_key",
+            "secret-key-here",
+            "default",
+            "default-secret",
+            "default_secret",
+            "super-secret",
+            "super_secret",
+            "my-secret-key",
+            "my_secret_key",
+        ]
+        v_str = str(v).strip().lower() if v else ""
+        if not v or v_str in [p.lower() for p in invalid_patterns] or v_str.startswith(("change", "placeholder", "your-", "your_", "default", "my-", "my_")):
             raise ValueError(
                 "SECURITY ERROR: SECRET_KEY must be set via environment variable. "
                 "Do not use default or placeholder values in production."
@@ -124,10 +144,17 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_allowed_origins(self) -> "Settings":
-        # Handle empty/None values - return empty list as default
+        # Handle empty/None values - use sensible defaults for local development
         v = self.ALLOWED_ORIGINS
         if not v or (isinstance(v, str) and not v.strip()):
-            self.ALLOWED_ORIGINS = []
+            # SECURITY: Only use defaults in non-production environments
+            import os
+            env = os.getenv("ENVIRONMENT", "development").lower()
+            if env in ("production", "prod", "staging"):
+                self.ALLOWED_ORIGINS = []
+            else:
+                # Sensible defaults for local development
+                self.ALLOWED_ORIGINS = ["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"]
         elif isinstance(v, str):
             stripped = v.strip()
             if stripped == "*":

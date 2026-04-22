@@ -22,15 +22,23 @@ def run_pipeline_task(
     generate_ai: bool = False,
 ) -> dict[str, Any]:
     """Execute the ETL pipeline inside a Celery worker."""
-    request = PipelineRequest(dataset_id=dataset_id, parameters=parameters or {})
-    return _run_pipeline_coroutine(
-        run_etl_pipeline(
-            request,
-            user,
-            job_id=job_id,
-            generate_ai=generate_ai,
+    try:
+        request = PipelineRequest(dataset_id=dataset_id, parameters=parameters or {})
+        return _run_pipeline_coroutine(
+            run_etl_pipeline(
+                request,
+                user,
+                job_id=job_id,
+                generate_ai=generate_ai,
+            )
         )
-    )
+    except Exception as exc:
+        # Explicitly retry on failure - Celery will handle max_retries
+        try:
+            raise self.retry(exc=exc, countdown=60 * (self.request.retries + 1))
+        except Exception:
+            # If retry raises (max retries exceeded), re-raise original exception
+            raise
 
 
 def _run_pipeline_coroutine(coroutine: Any) -> dict[str, Any]:

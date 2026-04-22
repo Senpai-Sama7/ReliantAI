@@ -71,32 +71,8 @@ groups:
           summary: "High CPU usage on {{ $labels.instance }}"
           description: "CPU usage is above 80% on {{ $labels.instance }}"
 
-      # Container Restart Alert
-      - alert: ContainerRestart
-        expr: rate(container_restarts_total[15m]) > 0
-        for: 0m
-        labels:
-          severity: warning
-        annotations:
-          summary: "Container {{ $labels.name }} restarted"
-          description: "Container {{ $labels.name }} has restarted"
-
-      # SSL Certificate Expiry Alert
-      - alert: SSLCertificateExpiring
-        expr: ssl_certificate_expiry_seconds / 86400 < 7
-        for: 0m
-        labels:
-          severity: warning
-        annotations:
-          summary: "SSL certificate expiring soon"
-          description: "SSL certificate expires in {{ $value }} days"
-
-      # Backup Failure Alert
-      - alert: BackupFailure
-        expr: time() - backup_last_success_timestamp > 86400
-        for: 0m
-        labels:
-          severity: critical
-        annotations:
-          summary: "Database backup has failed"
-          description: "Last successful backup was more than 24 hours ago"
+      # NOTE: The following alerts have been removed because they reference
+      # metrics that are not exposed by any configured exporter:
+      # - ContainerRestart: requires cAdvisor or similar container metrics exporter
+      # - SSLCertificateExpiring: requires ssl-exporter for certificate metrics
+      # - BackupFailure: requires custom backup exporter to set backup_last_success_timestamp

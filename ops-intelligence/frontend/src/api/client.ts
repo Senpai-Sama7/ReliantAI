@@ -1,6 +1,44 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: '/api' })
+export const api = axios.create({ baseURL: '/api' })
+
+// Add request interceptor for auth tokens
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// Add response interceptor for consistent error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status
+      if (status === 401) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      } else if (status === 403) {
+        console.error('Access forbidden:', error.response.data)
+      } else if (status >= 500) {
+        console.error('Server error:', error.response.data)
+      }
+    } else if (error.request) {
+      // Request made but no response received
+      console.error('Network error - no response received')
+    } else {
+      // Something else happened
+      console.error('Request error:', error.message)
+    }
+    return Promise.reject(error)
+  }
+)
 
 // ── Incidents ──────────────────────────────────────────────────────────────
 export const incidentsApi = {
@@ -76,5 +114,5 @@ export const apiGovernanceApi = {
 // ── Global ─────────────────────────────────────────────────────────────────
 export const globalApi = {
   summary: () => api.get('/summary'),
-  health: () => axios.get('/health'),
+  health: () => api.get('/health'),
 }

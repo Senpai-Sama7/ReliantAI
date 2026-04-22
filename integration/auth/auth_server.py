@@ -318,11 +318,15 @@ async def store_user(user: User):
 
 async def revoke_token(token: str):
     """Add token to revocation list"""
+    if redis_client is None:
+        raise RuntimeError("Redis client not initialized")
     await redis_client.setex(f"revoked:{token}", 86400 * 7, "1")
 
 
 async def is_token_revoked(token: str) -> bool:
     """Check if token is revoked"""
+    if redis_client is None:
+        return False
     return await redis_client.exists(f"revoked:{token}") > 0
 
 

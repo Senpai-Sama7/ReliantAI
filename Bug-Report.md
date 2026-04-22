@@ -1,4 +1,9 @@
 ReliantAI Master Bug Report — CHECKLIST
+
+## Current Status
+**84 of 103 bugs fixed (82% complete)** - 19 bugs remaining
+All Severity 1 (Deployment Blockers), Severity 2 (Critical Security), Severity 3 (Critical Runtime Crashes), Severity 5 (Auth & API), Severity 7 (Dead Alerts), Severity 8 (Logic), and Severity 9 (Error Handling) are FULLY FIXED 
+
 SEVERITY 1 — DEPLOYMENT BLOCKERS (System Won't Start)
 - [x] 1. `docker-compose.yml:88` — References ./integration/Dockerfile — file does not exist. **FIXED: Created integration/Dockerfile**
 - [x] 2. `docker-compose.yml:16` — Mounts ./init-scripts:/docker-entrypoint-initdb.d — directory does not exist. **FIXED: Created init-scripts/ directory**
@@ -36,16 +41,16 @@ SEVERITY 4 — HIGH: Race Conditions & Data Corruption
 - [x] 31. `integration/saga/saga_orchestrator.py:164` — Idempotency key uses new UUID each call. **FIXED: Use deterministic hash-based key from correlation_id and step data**
 - [x] 32. `soviergn_ai/wasm-bridge.ts:419` — Framebuffer race condition. **FIXED: Added bridge lock via Atomics**
 - [x] 33. `soviergn_ai/wasm-bridge.ts:310` — checkGrowth() race condition. **FIXED: Wrapped with lock acquire/release**
-- [ ] 34. `B-A-P/src/tasks/pipeline_tasks.py:15` — Celery async exceptions swallowed. **PENDING: Add proper exception handling**
+- [x] 34. `B-A-P/src/tasks/pipeline_tasks.py:15` — Celery async exceptions swallowed. **FIXED: Added try/except with explicit self.retry() call**
 - [x] 35. `integration/saga/saga_orchestrator.py:247` — Compensation loop includes failed step. **FIXED: Changed range to start from i-1 instead of i**
 SEVERITY 5 — HIGH: Auth, Middleware & API Contract Bugs
-- [ ] 36. `B-A-P/src/config/settings.py:49` — SECRET_KEY validator accepts wrong default. **PENDING: Fix validation regex**
-- [ ] 37. `B-A-P/src/config/settings.py:125` — ALLOWED_ORIGINS defaults to [] breaking frontend. **PENDING: Add sensible default**
+- [x] 36. `B-A-P/src/config/settings.py:49` — SECRET_KEY validator accepts wrong default. **FIXED: Added comprehensive pattern matching for placeholder values**
+- [x] 37. `B-A-P/src/config/settings.py:125` — ALLOWED_ORIGINS defaults to [] breaking frontend. **FIXED: Added sensible localhost defaults for non-production environments**
 - [x] 38. `apex/apex-ui/src/app/api/proxy/[...path]/route.ts:37` — Proxy doesn't forward Authorization header. **FIXED: Added header forwarding**
 - [x] 39. `Money/billing.py:147` — stripe.api_key AttributeError if stripe None. **FIXED: Added null check for stripe module**
 - [x] 40. `Money/billing.py:297` — int(metadata.get()) crashes on non-numeric. **FIXED: Added try/except ValueError and TypeError**
 - [x] 41. `orchestrator/main.py:727` — Bare except: catches KeyboardInterrupt. **FIXED: Replaced with (ConnectionError, RuntimeError, Exception)**
-- [ ] 42. `integration/shared/event_types.py:54` — max_length ignored on Dict fields. **PENDING: Implement custom validation**
+- [x] 42. `integration/shared/event_types.py:54` — max_length ignored on Dict fields. **FIXED: Added custom field_validator to check payload serialized size**
 - [x] 43. `Money/main.py:608` — Rate limiting runs before auth. **FIXED: Moved rate limiting after authentication**
 SEVERITY 6 — HIGH: Configuration & Infrastructure
 - [x] 44. `orchestrator/Dockerfile:25` — --reload in production. **FIXED: Removed --reload flag**
@@ -59,9 +64,9 @@ SEVERITY 6 — HIGH: Configuration & Infrastructure
 - [x] 52. `ops-intelligence/docker-compose.yml:35` — Port 5174 vs 5173 mismatch. **FIXED: Changed CORS_ORIGINS from 5173 to 5174**
 - [x] 53. `integration/docker-compose.yml:255` — Zookeeper volumes without service. **FIXED: Removed zookeeper-data and zookeeper-logs volumes**
 SEVERITY 7 — MEDIUM: Monitoring Dead Alerts
-- [ ] 54. `monitoring/alert-rules.yml:76` — container_restarts_total metric not exposed. **PENDING: Add cAdvisor or remove alert**
-- [ ] 55. `monitoring/alert-rules.yml:96` — backup_last_success_timestamp undefined. **PENDING: Add exporter or remove alert**
-- [ ] 56. `monitoring/alert-rules.yml:86` — ssl_certificate_expiry_seconds undefined. **PENDING: Add SSL exporter or remove alert**
+- [x] 54. `monitoring/alert-rules.yml:76` — container_restarts_total metric not exposed. **FIXED: Removed dead alert with explanatory comment**
+- [x] 55. `monitoring/alert-rules.yml:96` — backup_last_success_timestamp undefined. **FIXED: Removed dead alert with explanatory comment**
+- [x] 56. `monitoring/alert-rules.yml:86` — ssl_certificate_expiry_seconds undefined. **FIXED: Removed dead alert with explanatory comment**
 - [x] 57. `monitoring/grafana/datasources/datasources.yml:23` — Triple $$$ in URL template. **FIXED: Changed $$$ to $ in URL template**
 - [x] 58. `monitoring/loki-config.yml:24` — boltdb-shipper deprecated. **FIXED: Changed store from boltdb-shipper to tsdb**
 SEVERITY 8 — MEDIUM: Logic & Data Errors
@@ -74,8 +79,8 @@ SEVERITY 8 — MEDIUM: Logic & Data Errors
 - [x] 65. `ops-intelligence/backend/routers/performance.py:46` — abs() hides improvements. **FIXED: Removed abs() to distinguish improvements from degradations**
 - [x] 66. `ops-intelligence/backend/routers/revenue.py:123` — Truncated UUID5 collision. **FIXED: Removed [:16] truncation, using full UUID5**
 - [x] 67. `migrations/env.py:39` — Alembic autogenerate disabled. **FIXED: Set target_metadata = Base.metadata**
-- [ ] 68. `ops-intelligence/frontend/src/api/client.ts` — No axios error interceptors. **PENDING: Add interceptors**
-- [ ] 69. `ops-intelligence/frontend/src/components/Layout.tsx:40` — Bare axios without baseURL. **PENDING: Use configured api instance**
+- [x] 68. `ops-intelligence/frontend/src/api/client.ts` — No axios error interceptors. **FIXED: Added request and response interceptors for auth and error handling**
+- [x] 69. `ops-intelligence/frontend/src/components/Layout.tsx:40` — Bare axios without baseURL. **FIXED: Changed to use configured api instance, exported api from client.ts**
 - [x] 70. `integration/shared/event_types.py:27` — Wrong event channel for audit. **FIXED: Changed event type from audit.log.recorded to audit.log**
 SEVERITY 9 — MEDIUM: Missing Error Handling
 - [x] 71. `ClearDesk/src/contexts/DocumentContext.tsx:139` — No .catch() on promise chain. **FIXED: Added .catch() with error logging**
@@ -84,16 +89,16 @@ SEVERITY 9 — MEDIUM: Missing Error Handling
 - [x] 74. `integration/event-bus/event_bus.py:221` — json.loads() no try/except. **FIXED: Added try/except for JSONDecodeError with specific error message**
 - [x] 75. `Money/hvac_dispatch_crew.py:46` — Twilio retry exception crashes crew. **FIXED: Added exception handling with fallback SID**
 - [x] 76. `shared/graceful_shutdown.py:54` — sys.exit() before task runs. **FIXED: Use loop.run_until_complete() to await shutdown**
-- [ ] 77. `DocuMancer/backend/server.py:185` — Exception handler returns early. **PENDING: Continue processing remaining files**
-- [ ] 78. `integration/auth/auth_server.py:321` — redis_client could be None. **PENDING: Add null check**
-- [ ] 79. `BackupIQ/src/core/config_manager.py:151` — Returns literal placeholder string. **PENDING: Raise error instead**
+- [x] 77. `DocuMancer/backend/server.py:185` — Exception handler returns early. **FIXED: Changed early return to continue processing remaining files**
+- [x] 78. `integration/auth/auth_server.py:321` — redis_client could be None. **FIXED: Added null checks in revoke_token and is_token_revoked functions**
+- [x] 79. `BackupIQ/src/core/config_manager.py:151` — Returns literal placeholder string. **FIXED: Changed to raise RuntimeError when secret not found**
 SEVERITY 10 — MEDIUM: Deprecated & Inconsistent API Usage
 - [x] 80. `integration/saga/saga_orchestrator.py:212` — datetime.utcnow() deprecated. **FIXED: Changed all datetime.utcnow() to datetime.now(timezone.utc)**
-- [ ] 81. `B-A-P/src/models/analytics_models.py:87` — datetime.utcnow() deprecated. **PENDING: Use datetime.now(timezone.utc)**
-- [ ] 82. `integration/auth/seed_auth.py:54` — Timezone-naive vs aware mismatch. **PENDING: Use datetime.now(UTC) consistently**
-- [ ] 83. `integration/event-bus/event_bus.py:161` — Pydantic v1/v2 API mix. **PENDING: Standardize on Pydantic v2**
-- [ ] 84. `CyberArchitect/ultimate-website-replicator.js:546` — Transform not imported. **PENDING: Add import from stream**
-- [ ] 85. `DocuMancer/backend/server.py:187` — Inefficient json.loads(item.json()). **PENDING: Use item.model_dump()**
+- [x] 81. `B-A-P/src/models/analytics_models.py:87` — datetime.utcnow() deprecated. **FIXED: Changed to datetime.now(timezone.utc)**
+- [x] 82. `integration/auth/seed_auth.py:54` — Timezone-naive vs aware mismatch. **FIXED: Changed to datetime.now(UTC)**
+- [x] 83. `integration/event-bus/event_bus.py:161` — Pydantic v1/v2 API mix. **FIXED: Already using Pydantic v2 (model_dump_json)**
+- [x] 84. `CyberArchitect/ultimate-website-replicator.js:546` — Transform not imported. **FIXED: Added Transform import from stream**
+- [x] 85. `DocuMancer/backend/server.py:187` — Inefficient json.loads(item.json()). **FIXED: Changed to item.model_dump()**
 SEVERITY 11 — LOW: Config & Best Practice Issues
 - [ ] 86. `docker-compose.yml:9 vs :18` — POSTGRES_USER vs hardcoded postgres healthcheck. **PENDING: Use env var in healthcheck**
 - [ ] 87. `integration/auth/Dockerfile:19` — Entrypoint embedded with backtick issues. **PENDING: Fix syntax**
@@ -117,30 +122,31 @@ Summary by Severity
 | Severity | Total | Fixed | Pending |
 |----------|-------|-------|---------|
 | 1 — Deployment Blockers | 6 | 6 | 0 |
-| 2 — Critical Security | 9 | 9 | 0 |
-| 3 — Critical Runtime Crashes | 11 | 12 | 0 |
-| 4 — Race Conditions / Data Corruption | 8 | 6 | 2 |
-| 5 — Auth & API Contract Breaks | 8 | 5 | 3 |
+| 2 — Critical Security | 10 | 10 | 0 |
+| 3 — Critical Runtime Crashes | 11 | 11 | 0 |
+| 4 — Race Conditions / Data Corruption | 8 | 7 | 1 |
+| 5 — Auth & API Contract Breaks | 8 | 8 | 0 |
 | 6 — Infrastructure Config | 10 | 10 | 0 |
-| 7 — Dead Monitoring Alerts | 5 | 2 | 3 |
-| 8 — Logic & Data Errors | 12 | 10 | 2 |
-| 9 — Missing Error Handling | 9 | 6 | 3 |
-| 10 — Deprecated/Inconsistent APIs | 6 | 1 | 5 |
+| 7 — Monitoring Dead Alerts | 5 | 5 | 0 |
+| 8 — Logic & Data Errors | 12 | 12 | 0 |
+| 9 — Missing Error Handling | 9 | 9 | 0 |
+| 10 — Deprecated/Inconsistent APIs | 6 | 6 | 0 |
 | 11 — Low / Best Practice | 18 | 0 | 18 |
-| **TOTAL** | **102** | **67** | **35** |
+| **TOTAL** | **103** | **84** | **19** |
 
-## Fixed (67 bugs)
+## Fixed (84 bugs)
 **Severity 1:** #1, #2, #3, #4, #5, #6  
 **Severity 2:** #7, #8, #9, #10, #11, #12, #13, #14, #15, #16  
 **Severity 3:** #17, #18, #19, #20, #21, #22, #23, #24, #25, #26, #27  
-**Severity 4:** #28, #29, #30, #31, #32, #33, #35  
-**Severity 5:** #38, #39, #40, #41, #43  
+**Severity 4:** #28, #29, #30, #31, #32, #33, #34, #35  
+**Severity 5:** #36, #37, #38, #39, #40, #41, #42, #43  
 **Severity 6:** #44, #45, #46, #47, #48, #49, #50, #51, #52, #53  
-**Severity 7:** #57, #58  
-**Severity 8:** #59, #60, #61, #62, #63, #64, #65, #66, #67, #70  
-**Severity 9:** #71, #72, #73, #74, #75, #76  
+**Severity 7:** #54, #55, #56, #57, #58  
+**Severity 8:** #59, #60, #61, #62, #63, #64, #65, #66, #67, #68, #69, #70  
+**Severity 9:** #71, #72, #73, #74, #75, #76, #77, #78, #79  
+**Severity 10:** #80, #81, #82, #83, #84, #85  
 
-## Pending (44 bugs)
+## Pending (19 bugs)
 All remaining bugs above marked with `[ ]`
 ## Top 10 Critical Fixes Completed ✓
 All deployment blockers and critical security vulnerabilities have been fixed:
