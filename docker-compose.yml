@@ -147,6 +147,29 @@ services:
     networks:
       - reliantai-network
 
+  # Actuator Service (Scale/Heal Intent Executor)
+  actuator:
+    build:
+      context: ./actuator
+      dockerfile: Dockerfile
+    container_name: reliantai-actuator
+    environment:
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - COMPOSE_FILE=/workspace/docker-compose.yml
+      - COMPOSE_PROJECT=${COMPOSE_PROJECT:-reliantai}
+      - ACTUATOR_DRY_RUN=${ACTUATOR_DRY_RUN:-true}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - .:/workspace:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      orchestrator:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - reliantai-network
+
   # Nginx Reverse Proxy & API Gateway
   nginx:
     build:

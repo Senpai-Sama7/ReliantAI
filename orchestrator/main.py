@@ -9,6 +9,7 @@ import json
 import time
 import asyncio
 import subprocess
+import uuid
 from typing import Dict, List, Optional, Any, Callable
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
@@ -18,6 +19,9 @@ import threading
 import hashlib
 import secrets
 import aiohttp
+
+import redis.asyncio as aioredis
+from redis.asyncio.client import Redis as AsyncRedis
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends, status
 
@@ -157,6 +161,16 @@ class AutonomousOrchestrator:
         # Holt smoothing states for AI prediction
         self._holt_states: Dict[str, Dict[str, HoltState]] = defaultdict(dict)
         
+        # Redis client for event streaming
+        self._redis: Optional[AsyncRedis] = None
+        self._redis_lock: Optional[asyncio.Lock] = None
+        self._instance_id: str = str(uuid.uuid4())[:8]
+        
+        # Stream names -- single source of truth
+        self.STREAM_SCALE_INTENTS = "reliantai:scale_intents"
+        self.STREAM_HEAL_INTENTS = "reliantai:heal_intents"
+        self.STREAM_PLATFORM_EVENTS = "reliantai:platform_events"
+        
         # Initialize services
         self._init_services()
         
@@ -240,6 +254,56 @@ class AutonomousOrchestrator:
                 )
         return self._http
     
+    async def _get_redis(self) -> Optional[AsyncRedis]:
+        """Lazy-initialize Redis connection with asyncio-safe locking.
+        Returns None if Redis is unavailable -- callers must handle gracefully.
+        Failure to connect is logged but never raises, preserving orchestrator
+        availability in Redis-absent environments."""
+        if self._redis_lock is None:
+            self._redis_lock = asyncio.Lock()
+        async with self._redis_lock:
+            if self._redis is None:
+                redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
+                try:
+                    self._redis = aioredis.from_url(
+                        redis_url,
+                        decode_responses=True,
+                        socket_connect_timeout=2,
+                        socket_timeout=2,
+                        retry_on_timeout=False,
+                        max_connections=10,
+                    )
+                    await self._redis.ping()
+                    print(f"✅ Redis connected: {redis_url}")
+                except Exception as e:
+                    print(f"⚠️  Redis unavailable ({e}) -- scale intents will be local-only")
+                    self._redis = None
+        return self._redis
+    
+    async def _publish_event(self, stream: str, payload: Dict[str, Any]) -> bool:
+        """Publish a structured event to a Redis Stream.
+        Redis Streams (XADD) provide persistent, ordered, consumer-group-capable
+        event delivery. Unlike pub/sub, messages survive consumer restarts.
+        Returns True if published, False if Redis unavailable (non-fatal)."""
+        r = await self._get_redis()
+        if r is None:
+            return False
+        try:
+            # Flatten payload to str:str for Redis Stream compatibility.
+            # Redis Stream field values must be strings.
+            flat = {k: json.dumps(v) if not isinstance(v, str) else v
+                    for k, v in payload.items()}
+            await r.xadd(
+                stream,
+                flat,
+                maxlen=10_000,   # cap stream length -- oldest entries trimmed
+                approximate=True  # ~ operator: O(1) amortized vs O(N) exact trim
+            )
+            return True
+        except Exception as e:
+            print(f"⚠️  Stream publish failed [{stream}]: {e}")
+            return False
+    
     async def start(self):
         """Start autonomous operations"""
         self.running = True
@@ -260,6 +324,12 @@ class AutonomousOrchestrator:
         self.running = False
         if self._http:
             await self._http.close()
+        if self._redis is not None:
+            try:
+                await self._redis.aclose()
+            except Exception:
+                pass
+            self._redis = None
         print("🛑 Autonomous Orchestrator Stopped")
     
     # ─────────────────────────────────────────────────────────────────────────
@@ -438,20 +508,56 @@ class AutonomousOrchestrator:
         return None
     
     async def _execute_scale_action(self, action: ScaleAction):
-        """Execute scaling decision"""
-        service = self.services[action.service]
-        
-        print(f"📈 Scaling {action.service}: {service.current_instances} → {action.target_instances} ({action.reason})")
-        
-        # In production, this would call Kubernetes/Docker API
-        # For now, we simulate the scaling
+        """Execute a scale decision.
+
+        Architecture: intent-event separation.
+          1. Publish a scale_intent event to Redis Stream for external actuators.
+          2. Optimistically update local state immediately -- the dashboard and
+             WebSocket clients see the intent reflected at once.
+          3. External actuators (docker-compose scale, kubectl scale, etc.)
+             consume from reliantai:scale_intents and perform the physical act.
+
+        The optimistic local update is intentional: the orchestrator's instance
+        counter is a desired-state register, not a measured-state register.
+        Reconciliation between desired and measured state is the actuator's
+        responsibility. This is the same model used by Kubernetes controllers."""
+
+        service = self.services.get(action.service)
+        if not service:
+            print(f"⚠️  Scale action for unknown service: {action.service}")
+            return
+
+        prev_instances = service.current_instances
+
+        intent = {
+            "event":            "scale_intent",
+            "orchestrator_id":  self._instance_id,
+            "service":          action.service,
+            "from_instances":   str(prev_instances),
+            "target_instances": str(action.target_instances),
+            "reason":           action.reason,
+            "timestamp":        datetime.now().isoformat(),
+        }
+
+        published = await self._publish_event(self.STREAM_SCALE_INTENTS, intent)
+
+        # Optimistic local state update regardless of publish success.
+        # If Redis is unavailable, the intent is lost but orchestrator
+        # continues operating -- availability over consistency for this path.
         service.current_instances = action.target_instances
-        
-        # Notify clients
+
+        status_indicator = "📡" if published else "📋"
+        print(
+            f"{status_indicator} Scale intent: {action.service} "
+            f"{prev_instances} → {action.target_instances} | {action.reason}"
+            f"{'' if published else ' [Redis unavailable -- local only]'}"
+        )
+
         await self._broadcast_event("scale", {
-            "service": action.service,
+            "service":   action.service,
             "instances": action.target_instances,
-            "reason": action.reason
+            "reason":    action.reason,
+            "published": published,
         })
     
     # ─────────────────────────────────────────────────────────────────────────
@@ -506,28 +612,38 @@ class AutonomousOrchestrator:
         return None
     
     async def _execute_heal_action(self, action: HealAction):
-        """Execute healing action"""
-        print(f"🔧 Healing {action.service}: {action.action} ({action.reason})")
-        
-        # In production, this would:
-        # 1. Remove instance from load balancer
-        # 2. Restart container/pod
-        # 3. Run health checks
-        # 4. Add back to load balancer
-        
-        service = self.services[action.service]
-        
-        if action.action == "restart":
-            # Simulate restart
-            service.status = ServiceStatus.MAINTENANCE
-            await asyncio.sleep(5)  # Simulate restart time
-            service.status = ServiceStatus.HEALTHY
-            
-            await self._broadcast_event("heal", {
-                "service": action.service,
-                "action": action.action,
-                "status": "completed"
-            })
+        service = self.services.get(action.service)
+        if not service:
+            return
+
+        intent = {
+            "event":           "heal_intent",
+            "orchestrator_id": self._instance_id,
+            "service":         action.service,
+            "action":          action.action,
+            "reason":          action.reason,
+            "timestamp":       datetime.now().isoformat(),
+        }
+
+        published = await self._publish_event(self.STREAM_HEAL_INTENTS, intent)
+
+        print(
+            f"🔧 Heal intent: {action.service} → {action.action} | {action.reason}"
+            f"{'' if published else ' [Redis unavailable -- local only]'}"
+        )
+
+        # Optimistic state transition: MAINTENANCE during simulated restart window.
+        # A real actuator confirms completion by writing back to platform_events.
+        service.status = ServiceStatus.MAINTENANCE
+        await asyncio.sleep(5)
+        service.status = ServiceStatus.HEALTHY
+
+        await self._broadcast_event("heal", {
+            "service":   action.service,
+            "action":    action.action,
+            "status":    "intent_published" if published else "local_only",
+            "published": published,
+        })
     
     # ─────────────────────────────────────────────────────────────────────────
     # AI PREDICTIONS
@@ -938,6 +1054,36 @@ async def get_decisions(limit: int = 50):
     return {
         "decisions": orchestrator.decision_history[-limit:]
     }
+
+@app.get("/events", dependencies=[Depends(verify_api_key)])
+async def get_platform_events(limit: int = 100):
+    """Read recent platform events from Redis Stream.
+    Shows actuator execution results, confirmation of scale/heal operations."""
+    limit = min(limit, 1000)
+    r = await orchestrator._get_redis()
+    if r is None:
+        return {"events": [], "redis_available": False}
+    try:
+        # XREVRANGE reads newest-first
+        raw = await r.xrevrange(
+            orchestrator.STREAM_PLATFORM_EVENTS,
+            count=limit
+        )
+        events = []
+        for message_id, fields in raw:
+            event = {k: v for k, v in fields.items()}
+            event["message_id"] = message_id
+            # Deserialize JSON-encoded boolean fields
+            for bool_field in ("success", "published"):
+                if bool_field in event:
+                    try:
+                        event[bool_field] = json.loads(event[bool_field])
+                    except (ValueError, TypeError):
+                        pass
+            events.append(event)
+        return {"events": events, "redis_available": True}
+    except Exception as e:
+        return {"events": [], "redis_available": False, "error": str(e)}
 
 @app.get("/dashboard", dependencies=[Depends(verify_api_key)])
 async def dashboard():

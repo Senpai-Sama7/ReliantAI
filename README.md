@@ -2,451 +2,273 @@
 
 **Autonomous, Self-Managing, AI-Powered Enterprise Platform**
 
----
-
-## 🎯 Overview
-
-The ReliantAI Platform is a comprehensive, production-ready enterprise platform with **20 real, working microservices** built for scalability, resilience, and intelligent automation. It features an autonomous orchestrator with AI-powered decision making, self-healing capabilities, and one-click deployment.
+A federated multi-service platform built around a central integration nervous system. Combines a real-money HVAC dispatch business (Money), enterprise SaaS analytics (B-A-P), compliance and cost management, a multi-tier agent framework (APEX), and a full observability stack — all wired through shared auth, event bus, and saga coordination.
 
 ---
 
-## ✨ Key Features
-
-### 🤖 Autonomous Intelligence
-- **AI-Powered Predictions**: Predicts resource needs 30 minutes ahead
-- **Auto-Scaling**: Automatically scales services based on demand (2-10 instances)
-- **Auto-Healing**: Detects failures and automatically restarts services
-- **Smart Optimization**: Continuously optimizes resource allocation
-- **Self-Learning**: Learns from patterns to make better decisions
-
-### 🚀 One-Click Deployment
-Deploy the entire platform with a single command:
-```bash
-./scripts/deploy.sh local
-```
-
-### 🎛️ Unified Dashboard
-Real-time web interface for monitoring and control:
-- Platform health score
-- Live service status
-- Manual scaling controls
-- Event logs
-- AI predictions
-
-### 💪 Production Ready
-- 20 fully functional microservices
-- PostgreSQL + Redis infrastructure
-- Docker containerization
-- Health checks on all services
-- API authentication
-- Integration testing
-
----
-
-## 🏗️ Platform Architecture
+## Platform Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    RELIANTAI PLATFORM                        │
-├─────────────────────────────────────────────────────────────┤
-│  🤖 AUTONOMOUS ORCHESTRATOR (Port 9000)                      │
-│  • AI Predictions  • Auto-Scaling  • Auto-Healing          │
-│  • Health Checks   • Optimization    • WebSocket API         │
-├─────────────────────────────────────────────────────────────┤
-│  CORE SERVICES                                                │
-│  • Money (8000)           - HVAC AI Dispatch                  │
-│  • ComplianceOne (8001)   - Compliance Management             │
-│  • FinOps360 (8002)       - Cloud Cost Management           │
-│  • Integration (8080)      - Service Mesh                      │
-├─────────────────────────────────────────────────────────────┤
-│  INFRASTRUCTURE                                               │
-│  • PostgreSQL (5432)      - Primary Database                  │
-│  • Redis (6379)           - Cache & Sessions                  │
-└─────────────────────────────────────────────────────────────┘
+                        ┌──────────────────────────────────┐
+                        │         nginx :80/:443            │
+                        │   TLS termination, rate limiting  │
+                        └──────┬──────┬──────┬──────┬───────┘
+                               │      │      │      │
+              ┌────────────────┘      │      │      └──────────────────┐
+              ▼                       ▼      ▼                         ▼
+  ┌────────────────────┐  ┌─────────────────────┐         ┌────────────────────┐
+  │   money :8000      │  │  complianceone :8001 │         │  orchestrator :9000│
+  │  HVAC AI Dispatch  │  │  FinOps360 :8002     │         │  AI predictions    │
+  │  CrewAI + Gemini   │  │  SOC2/GDPR/AWS costs │         │  auto-scaling      │
+  │  Twilio + Stripe   │  │  PostgreSQL          │         │  self-healing      │
+  └────────┬───────────┘  └──────────┬──────────┘         │  WebSocket API     │
+           │                         │                      └────────┬───────────┘
+           │                         │                               │
+           └─────────────────────────┼───────────────────────────────┘
+                                     │ all services authenticate + publish events through
+                                     ▼
+              ┌──────────────────────────────────────────────────────┐
+              │              integration/ (Central Nervous System)    │
+              │  auth :8080      event-bus :8081     saga :8090       │
+              │  OAuth2/JWT/RBAC  Redis pub/sub      Kafka + Redis    │
+              │  SQLite users     16 event types     distributed tx   │
+              │  rate limiting    DLQ (10k cap)      compensation     │
+              ├──────────────────────────────────────────────────────┤
+              │  metacognitive_layer  ← Layer 5 of APEX agent system  │
+              │  nexus-runtime        ← mmap shared memory (C++20)    │
+              │  a2a_bridge           ← Google A2A cross-system proto  │
+              │  intelligent_routing  ← MAL-predicted task routing    │
+              │  hitl_optimizer       ← Human-in-the-loop queue       │
+              └──────────────────────────────────────────────────────┘
+                                     │
+              ┌──────────────────────┴──────────────────────┐
+              │           Infrastructure                      │
+              │  PostgreSQL :5432   Redis :6379              │
+              │  Vault :8200        Kafka :9092 (saga)       │
+              └──────────────────────────────────────────────┘
 ```
+
+### Full Service Map
+
+| Service | Port | Stack | Purpose |
+|---------|------|-------|---------|
+| Money | 8000 | FastAPI + CrewAI + Gemini + Twilio | HVAC AI dispatch (revenue service) |
+| ComplianceOne | 8001 | FastAPI + PostgreSQL | SOC2/GDPR/HIPAA compliance tracking |
+| FinOps360 | 8002 | FastAPI + PostgreSQL | Cloud cost management (AWS/Azure/GCP) |
+| integration/auth | 8080 | FastAPI + SQLite + Redis | OAuth2/JWT, RBAC (4 roles) |
+| integration/event-bus | 8081 | FastAPI + Redis pub/sub | Async event distribution, DLQ |
+| integration/saga | 8090 | FastAPI + Kafka + Redis | Distributed transaction coordination |
+| orchestrator | 9000 | FastAPI + WebSocket + aiohttp | AI predictions, auto-scaling, self-healing |
+| ops-intelligence | 8095 | FastAPI + SQLite | Operations monitoring (8 domain routers) |
+| apex/apex-ui | 3000 | Next.js 15 | Agent platform UI |
+| Citadel | — | Flask + TimescaleDB:5433 + Redis:6380 | Security & observability (11 services) |
+| PostgreSQL | 5432 | postgres:15-alpine | Platform primary DB |
+| Redis | 6379 | redis:7-alpine | Cache, sessions, rate limiting |
+| Vault | 8200 | HashiCorp Vault | Secrets management (TLS enforced) |
+| Prometheus | 9090 | prom/prometheus | Metrics (monitoring compose) |
+| Grafana | 3000 | grafana/grafana | Dashboards (monitoring compose) |
 
 ---
 
-## 🚀 Quick Start
+## Core Services
+
+### Money — HVAC AI Dispatch
+The primary revenue service. Houston HVAC customers text or WhatsApp a problem; CrewAI agents backed by Google Gemini perform 4-level urgency triage (`LIFE_SAFETY → 911`, `EMERGENCY`, `URGENT`, `ROUTINE`), assign a technician, and send SMS confirmation via Twilio.
+
+**Three auth methods handled simultaneously:** Bearer JWT (verified against integration/auth:8080), `X-API-Key` header, or session cookie (CSRF-protected login form). Twilio webhook endpoints independently validate `X-Twilio-Signature` HMAC.
+
+**Key capabilities:**
+- Stripe billing (free/starter $99/professional $299/enterprise $999) with per-plan dispatch quotas
+- SSE live dispatch feed with thread-safe queue fan-out
+- Event-sourced state machine with `/api/dispatch/{id}/timeline` endpoint
+- Make.com and HubSpot HMAC-signed webhook receivers
+- Full Prometheus metrics at `/metrics`
+- Jinja2 admin dashboards at `/admin`
+- Circuit breaker on auth service calls (3 failures → 30s open)
+
+**Publishes** `EventType.DISPATCH_COMPLETED` to integration/event-bus on every completed dispatch.
+
+### ComplianceOne — Compliance Management
+SOC2/GDPR/HIPAA compliance tracking. Manages frameworks, controls, audits, evidence, and violations. Applies the full `shared/security_middleware.py` stack. Refuses to start if `CORS_ORIGINS` is unset or contains `*`.
+
+### FinOps360 — Cloud Cost Management
+Multi-cloud cost tracking and optimization. Budgets with threshold alerts checked hourly via `asyncio.create_task`. AI-generated optimization recommendations. Sample AWS/Azure/GCP accounts inserted on first startup. Same security constraints as ComplianceOne.
+
+### Orchestrator — Platform Brain
+Single-file `main.py`. Six background async loops: health checks (30s), metrics collection (60s), scaling decisions (2 min — serialized via `asyncio.Queue`), auto-healing (60s), AI predictions via Holt's double exponential smoothing (5 min), optimization reports (hourly).
+
+Scaling bounds: Money 2–10 instances, ComplianceOne/FinOps360 1–5, integration 1–3 (no auto-scale). Scale-up triggers: response_time > 1000ms OR cpu > 75% OR error_rate > 5%. WebSocket endpoint broadcasts real-time events to the dashboard.
+
+---
+
+## Integration Layer
+
+### Auth Contract
+```python
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "integration", "shared")))
+from jwt_validator import get_current_user   # FastAPI Depends() injection
+```
+Auth service hard-fails at startup if `AUTH_SECRET_KEY` is unset or < 32 chars.
+
+### Event Contract
+```python
+from integration.shared.event_types import EventType   # 16 canonical event types
+from integration.shared.event_bus_client import publish_sync
+```
+
+**16 event types:** `lead.created`, `lead.qualified`, `dispatch.requested`, `dispatch.completed`, `document.processed`, `agent.task.created`, `agent.task.completed`, `analytics.recorded`, `saga.started`, `saga.completed`, `saga.failed`, `user.created`, `user.updated`, `user.deleted`, `audit.log.recorded`
+
+All `EventMetadata` fields have `max_length` constraints (hardening against memory exhaustion attacks).
+
+### Advanced Integration Modules
+- **`a2a_bridge.py`** — Google's A2A (Agent-to-Agent) protocol for cross-system agent communication between APEX, Money, Citadel, and Acropolis. Task lifecycle: `submitted → working → input_required → completed | canceled | failed`.
+- **`intelligent_routing.py`** — Routes tasks using metacognitive layer predictions. Strategies: FASTEST, MOST_CAPABLE, COST_OPTIMIZED, MAL_PREDICTED, FALLBACK_SAFE.
+- **`hitl_optimizer.py`** — Human-in-the-loop review queue. Auto-approves patterns with confidence > 0.65 that aren't safety/compliance type. Priority-queued for human review: LOW_CONFIDENCE, HIGH_STAKES, NOVEL_DOMAIN, DISPUTED, SAFETY_CHECK, COMPLIANCE.
+- **`metacognitive_layer/`** — Layer 5 of APEX. Learns from observations using Bayesian confidence updates with exponential smoothing (alpha=0.3). Confidence: CRITICAL (0.95), HIGH (0.85), MEDIUM (0.70), LOW (0.50).
+- **`nexus-runtime/`** — mmap-based shared memory with atomic synchronization matching C++20 memory order semantics (RELAXED, ACQUIRE, RELEASE, ACQ_REL, SEQ_CST).
+
+---
+
+## Agent Frameworks
+
+### APEX (5-Layer Probabilistic System)
+- **L2** — Uncertainty calibration
+- **L3** — Specialized agents: analytics, creative, research, sales, cross-system dispatch
+- **L4** — Quality assurance: debate, evolution, hostile auditor
+- **L5** — Metacognitive engine (in `integration/metacognitive_layer/`): learns patterns, predicts intents, orchestrates autonomous healing
+
+APEX agents publish to Kafka directly (`apex/apex-agents/event_publisher.py`). This is a **separate channel** from the HTTP event-bus service used by Money/ComplianceOne/FinOps360.
+
+### CrewAI (Money Service)
+4-agent crew with Google Gemini. Houston HVAC-specific urgency classifier. Tenacity retry on all Twilio sends (3 attempts, 2s wait). LangSmith tracing on all agent calls.
+
+### Acropolis (Rust)
+Polyglot agent orchestration with Julia FFI bridge for numerical computing. CLI: `serve | run <batch> | init-admin`. Admin password enforced ≥ 12 chars. OTLP telemetry export. `sled` embedded DB for auth storage.
+
+---
+
+## Frontend & Design
+
+### ClearDesk
+Browser-only React SPA. Parses DOCX (mammoth), PDF (pdfjs-dist), images (Tesseract.js OCR), XLSX (xlsx) in-browser. No backend. Deployed to Vercel.
+
+### Gen-H
+React SPA with Radix UI + Tailwind. HVAC lead capture flows → feeds into Money dispatch.
+
+### reGenesis (Design System)
+pnpm workspace (Node ≥ 20). `@cyberarchitect/design-tokens` is the canonical source of truth. Build order is strictly enforced: tokens first, packages second (sequential, `--parallel=false` is intentional).
+
+### soviergn_ai
+Astro static site served via Bun. Rust compiled to WASM for in-browser graph visualization. **Requires** `Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy: require-corp` — only `bun-server.ts` provides these. Without them, `SharedArrayBuffer` (required by WASM threading) throws a `TypeError` in all modern browsers.
+
+---
+
+## Security Architecture
+
+**CORS (fail-closed):** ComplianceOne, FinOps360, and Orchestrator raise `RuntimeError` at startup if `CORS_ORIGINS` is unset or contains `*`. The platform refuses to start in an insecure configuration.
+
+**nginx rate limiting:** `api` zone (10 req/s), `auth` zone (5 req/min).
+
+**Vault:** TLS enforced. No `tls_disable = true`. Default lease 168h, max 720h.
+
+**Hostile Audit Protocol:** Every code change requires `Proof: <command> → <output> @ <timestamp>` stored in `proof/hostile-audit/`. Enforced in CI via `.github/workflows/ci-cd.yml`.
+
+---
+
+## Quick Start
 
 ### Prerequisites
-- Docker
-- Docker Compose
-- Bash shell (Linux/macOS) or WSL (Windows)
+Docker, Docker Compose, Bash.
 
-### 1. Clone & Navigate
+### 1. Configure Environment
 ```bash
-cd /home/donovan/Projects/platforms/ReliantAI
+cp .env.example .env
+# Required keys — service will hard-fail at startup if any are missing:
+# POSTGRES_USER, POSTGRES_PASSWORD
+# DISPATCH_API_KEY, GEMINI_API_KEY, TWILIO_SID, TWILIO_TOKEN
+# COMPLIANCEONE_API_KEY, FINOPS360_API_KEY
+# REDIS_PASSWORD
+# CORS_ORIGINS (comma-separated, no wildcards)
+# AUTH_SECRET_KEY, JWT_SECRET (generate: python -c "import secrets; print(secrets.token_urlsafe(64))")
 ```
 
-### 2. Deploy Platform
+### 2. Deploy
 ```bash
 ./scripts/deploy.sh local
 ```
 
-This will:
-- ✅ Check prerequisites
-- ✅ Build all Docker images
-- ✅ Start infrastructure (PostgreSQL, Redis)
-- ✅ Start all services
-- ✅ Run health checks
-- ✅ Initialize databases
-- ✅ Create sample data
-
-### 3. Access Services
-```bash
-# Dashboard (Web UI)
-open dashboard/index.html
-
-# Or via browser
-http://localhost:9000/dashboard
-
-# API Endpoints
-curl http://localhost:8000/health  # Money
-curl http://localhost:8001/health  # ComplianceOne
-curl http://localhost:8002/health  # FinOps360
-curl http://localhost:9000/health  # Orchestrator
-```
-
-### 4. Verify Health
+### 3. Verify
 ```bash
 ./scripts/health_check.py -v
-```
-
----
-
-## 📊 Services Overview
-
-| Service | Port | Purpose | Key Features |
-|---------|------|---------|-------------|
-| **Money** | 8000 | HVAC AI Dispatch | CrewAI, Twilio, Billing |
-| **ComplianceOne** | 8001 | Compliance Mgmt | SOC2, GDPR, Audits |
-| **FinOps360** | 8002 | Cloud Cost Mgmt | Budgets, Optimization |
-| **Orchestrator** | 9000 | Platform Brain | AI, Auto-scaling, Healing |
-| **Integration** | 8080 | Service Mesh | Cross-service communication |
-| **Citadel** | - | Security Service | Authentication, Encryption |
-| **ClearDesk** | - | Document Processing | AI-powered document handling |
-| **B-A-P** | - | Business Automation | Workflow automation |
-| **Acropolis** | - | Data Analytics | Business intelligence |
-| **BackupIQ** | - | Backup Service | Automated backups |
-| **Gen-H** | - | Generation Hub | AI content generation |
-| **ops-intelligence** | - | Operations Monitoring | Metrics & alerts |
-| **DocuMancer** | - | Document Management | Storage & retrieval |
-| **apex** | - | Performance Service | Optimization |
-| **reGenesis** | - | Recovery Service | Disaster recovery |
-| **CyberArchitect** | - | Security Architecture | Threat detection |
-| **citadel_ultimate_a_plus** | - | Advanced Security | Zero-trust architecture |
-| **soviergn_ai** | - | AI Services | Memory & visualization |
-
----
-
-## 📖 Documentation
-
-- **[PLATFORM_GUIDE.md](./PLATFORM_GUIDE.md)** - Complete platform guide with architecture details
-- **[USER_MANUAL.md](./USER_MANUAL.md)** - Comprehensive user manual for all services
-- **[dashboard/README.md](./dashboard/README.md)** - Dashboard usage guide
-
----
-
-## 🛠️ Commands
-
-### Deployment
-```bash
-./scripts/deploy.sh local       # Local development
-./scripts/deploy.sh staging     # Staging environment
-./scripts/deploy.sh production  # Production environment
-```
-
-### Health & Verification
-```bash
-./scripts/health_check.py -v           # Verbose health check
-./scripts/health_check.py -j           # JSON output
-./scripts/verify_integration.py       # Test integrations
-```
-
-### Docker Operations
-```bash
-docker-compose up -d                  # Start all services
-docker-compose down                   # Stop all services
-docker-compose logs -f [service]       # View logs
-docker-compose restart [service]      # Restart service
-docker-compose ps                     # List running services
-```
-
-### Service Control (via API)
-```bash
-# Manual scaling
-curl -X POST "http://localhost:9000/services/money/scale?target_instances=5"
-
-# Manual restart
-curl -X POST http://localhost:9000/services/money/restart
-
-# Get platform status
-curl http://localhost:9000/status
-
-# Get dashboard data
-curl http://localhost:9000/dashboard
-```
-
----
-
-## 🔌 API Endpoints
-
-### Orchestrator API (Port 9000)
-```
-GET  /health              - Orchestrator health
-GET  /status              - Full platform status
-GET  /services            - List all services
-GET  /dashboard           - Dashboard data
-GET  /metrics             - Detailed metrics
-GET  /decisions           - Decision history
-POST /services/{name}/scale     - Manual scale
-POST /services/{name}/restart   - Manual restart
-WS   /ws                  - WebSocket for real-time updates
-```
-
-### Money API (Port 8000)
-```
-GET  /health              - Service health
-POST /dispatch            - Create HVAC dispatch
-GET  /dispatches          - List dispatches
-GET  /status              - Dispatch status
-POST /webhook/twilio      - Twilio webhook
-```
-
-### ComplianceOne API (Port 8001)
-```
-GET  /health              - Service health
-POST /frameworks          - Create compliance framework
-GET  /frameworks          - List frameworks
-POST /controls            - Create control
-POST /audits              - Start audit
-POST /evidence            - Submit evidence
-GET  /dashboard           - Compliance dashboard
-```
-
-### FinOps360 API (Port 8002)
-```
-GET  /health              - Service health
-POST /accounts           - Register cloud account
-POST /costs               - Submit cost data
-POST /budgets             - Create budget
-GET  /budgets/{id}/status - Budget status
-POST /recommendations/generate - Generate recommendations
-GET  /dashboard           - FinOps dashboard
-```
-
----
-
-## 🎛️ Dashboard
-
-Open `dashboard/index.html` in your browser for:
-- Real-time platform health monitoring
-- Service status visualization
-- Manual scaling controls
-- Live event logs
-- AI prediction displays
-
----
-
-## 🔧 Configuration
-
-### Environment Variables (.env)
-```bash
-# Core Services
-MONEY_URL=http://localhost:8000
-COMPLIANCEONE_URL=http://localhost:8001
-FINOPS360_URL=http://localhost:8002
-ORCHESTRATOR_URL=http://localhost:9000
-
-# API Keys
-DISPATCH_API_KEY=your-key
-COMPLIANCEONE_API_KEY=your-key
-FINOPS360_API_KEY=your-key
-
-# External Services
-GEMINI_API_KEY=your-gemini-key
-TWILIO_SID=your-twilio-sid
-TWILIO_TOKEN=your-twilio-token
-
-# Database
-DATABASE_URL=postgresql://user:pass@localhost/platform
-```
-
----
-
-## 🧪 Testing
-
-### Run Integration Tests
-```bash
 ./scripts/verify_integration.py
 ```
 
-### Run Health Checks
+### 4. Access
+- **Dashboard:** `http://localhost:9000/dashboard`
+- **Money admin:** `http://localhost:8000/admin`
+- **With monitoring:** `docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d`
+  - Prometheus: `http://localhost:9090`
+  - Grafana: `http://localhost:3000`
+
+---
+
+## Development Reference
+
+### Package Managers
+| Project | Manager | Constraint |
+|---------|---------|-----------|
+| B-A-P | **Poetry only** | pip corrupts virtualenv |
+| Money, ComplianceOne, FinOps360, orchestrator, apex-agents | pip + requirements.txt | |
+| ClearDesk, Gen-H, DocuMancer, apex-ui, apex-mcp | npm | |
+| reGenesis | **pnpm 9.7.0** (Node ≥ 20) | workspace protocol |
+| soviergn_ai | bun | runtime + Astro |
+| Acropolis | cargo | Rust workspace |
+
+### Database Ownership (no cross-service SQL)
+| DB | Owner | Engine |
+|----|-------|--------|
+| `money` | Money | PostgreSQL 15 |
+| `complianceone` | ComplianceOne | PostgreSQL 15 |
+| `finops360` | FinOps360 | PostgreSQL 15 |
+| `integration` | integration/auth | PostgreSQL 15 + SQLite (user store) |
+| `reliantai` | root Alembic migrations | PostgreSQL 15 |
+| B-A-P DB | B-A-P | PostgreSQL (asyncpg, own connection) |
+| Citadel | Citadel | TimescaleDB :5433 |
+| ops-intelligence | ops-intelligence | SQLite |
+| citadel_ultimate_a_plus | citadel_ultimate_a_plus | SQLite |
+| Acropolis | Acropolis | sled (embedded) |
+
+### Testing
 ```bash
-./scripts/health_check.py -v
+./scripts/verify_integration.py                          # platform-wide (requires running services)
+cd Money && pytest tests/test_integration_suite.py -v
+cd integration/auth && pytest -v
+cd integration/event-bus && pytest test_event_bus_properties.py -v
+cd integration/metacognitive_layer && pytest tests/ -v
+cd B-A-P && poetry run pytest
+cd DocuMancer && npm test && npm run test:python
+cd reGenesis && pnpm run test && pnpm run test:e2e
+cd Acropolis && cargo test
 ```
 
-### Test Individual Services
-```bash
-# Money
-curl http://localhost:8000/health
-
-# ComplianceOne
-curl http://localhost:8001/health
-
-# FinOps360
-curl http://localhost:8002/health
-
-# Orchestrator
-curl http://localhost:9000/health
-```
+### Adding a New Python Service
+1. `sys.path.append("../integration/shared")` → import `get_current_user`, `EventType`, `publish_sync`
+2. `sys.path.append("../shared")` → import from `security_middleware`
+3. Set `CORS_ORIGINS` env var (required; no wildcards)
+4. Add to `docker-compose.yml` with health check
+5. Add Prometheus scrape config to `monitoring/prometheus.yml`
+6. Add upstream to `nginx/nginx.conf`
+7. Capture proof in `proof/hostile-audit/`
 
 ---
 
-## 📈 Monitoring
+## Documentation
 
-### Metrics Collection
-- Response time (ms)
-- CPU usage (%)
-- Memory usage (%)
-- Error rate (%)
-- Request rate (req/s)
-- Instance count
-
-### View Metrics
-```bash
-# Get all metrics
-curl http://localhost:9000/metrics
-
-# Get service-specific metrics
-curl http://localhost:9000/metrics?service=money&hours=1
-```
-
-### Dashboard Monitoring
-The dashboard provides:
-- Real-time health score
-- Live service status
-- Resource utilization graphs
-- Auto-scaling events
-- AI predictions
-
----
-
-## 🔒 Security
-
-### API Authentication
-All services use API key authentication:
-```bash
-X-API-Key: your-service-api-key
-```
-
-### Environment Variables
-Sensitive data stored in `.env` file (not committed to git).
-
-### Network Security
-- Services communicate via internal Docker network
-- Only necessary ports exposed to host
-- Health check endpoints require no auth (for monitoring)
-
----
-
-## 🐛 Troubleshooting
-
-### Services Not Starting
-```bash
-# Check logs
-docker-compose logs [service-name]
-
-# Restart specific service
-docker-compose restart [service-name]
-
-# Rebuild service
-docker-compose up -d --build [service-name]
-```
-
-### Database Connection Issues
-```bash
-# Check PostgreSQL status
-docker-compose logs postgres
-
-# Restart PostgreSQL
-docker-compose restart postgres
-
-# Check database exists
-docker-compose exec postgres psql -U postgres -l
-```
-
-### Port Conflicts
-```bash
-# Check what's using a port
-lsof -i :8000
-
-# Change port in docker-compose.yml
-ports:
-  - "8001:8000"  # Use different host port
-```
-
-### Health Check Failures
-```bash
-# Run verbose health check
-./scripts/health_check.py -v
-
-# Check service logs
-docker-compose logs -f [service]
-
-# Restart orchestrator
-docker-compose restart orchestrator
-```
-
----
-
-## 📚 Additional Resources
-
-### Service-Specific Documentation
-- **Money**: See `Money/AGENTS.md` for HVAC dispatch details
-- **ComplianceOne**: See `ComplianceOne/README.md`
-- **FinOps360**: See `FinOps360/README.md`
-- **Orchestrator**: See `orchestrator/README.md`
-
-### Integration Guide
-See `integration/README.md` for service integration details.
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests: `./scripts/health_check.py -v`
-5. Submit a pull request
-
----
-
-## 📝 License
-
-Proprietary - All rights reserved
-
----
-
-## 🎉 Platform Status
-
-✅ **20 Services** - All functional  
-✅ **Autonomous** - AI-powered orchestration  
-✅ **Self-Healing** - Automatic recovery  
-✅ **Auto-Scaling** - Dynamic resource allocation  
-✅ **Production Ready** - Fully tested and verified  
-
----
-
-## 📞 Support
-
-For issues or questions:
-- Check [USER_MANUAL.md](./USER_MANUAL.md) for detailed usage
-- Check [PLATFORM_GUIDE.md](./PLATFORM_GUIDE.md) for architecture
-- Review service-specific README files
-
----
-
-**Built for the future of enterprise automation.**
+- [`PLATFORM_GUIDE.md`](./PLATFORM_GUIDE.md) — Full architecture and operations guide
+- [`USER_MANUAL.md`](./USER_MANUAL.md) — Service-by-service user manual
+- [`AGENTS.md`](./AGENTS.md) — Agent operational guide (deployment, health, service control commands)
+- [`QUICK_REFERENCE.md`](./QUICK_REFERENCE.md) — Command cheat sheet
+- [`PRODUCTION_CHECKLIST.md`](./PRODUCTION_CHECKLIST.md) — Pre-production checklist
+- [`CLAUDE.md`](./CLAUDE.md) — Deep per-service reference for AI-assisted development
+- [`integration/saga/SAGA_GUIDE.md`](./integration/saga/SAGA_GUIDE.md) — Distributed transaction guide

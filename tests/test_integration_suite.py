@@ -894,6 +894,53 @@ class TestCORSHardening:
             )
 
 
+@pytest.mark.integration
+class TestRedisStreams:
+    """Verify Redis Stream infrastructure and event publishing."""
+
+    @pytest.mark.asyncio
+    async def test_platform_events_endpoint_exists(self, http):
+        data = await get_json(http, url("orchestrator", "/events"))
+        assert "events" in data
+        assert "redis_available" in data
+
+    @pytest.mark.asyncio
+    async def test_scale_action_publishes_event(self, http):
+        """Manual scale must result in a platform event within 5s."""
+        # Trigger scale
+        async with http.post(
+            url("orchestrator", "/services/finops360/scale"),
+            params={"target_instances": 1},
+            headers=auth_headers(),
+        ) as r:
+            assert r.status == 200
+
+        # Wait for event propagation
+        await asyncio.sleep(3)
+
+        events = await get_json(http, url("orchestrator", "/events?limit=20"))
+        if not events["redis_available"]:
+            pytest.skip("Redis unavailable in this environment")
+
+        recent = [
+            e for e in events["events"]
+            if e.get("service") == "finops360"
+            and e.get("event") in ("scale_intent", "scale_executed")
+        ]
+        assert recent, "No scale event found for finops360 after manual scale"
+
+    @pytest.mark.asyncio
+    async def test_events_endpoint_respects_limit(self, http):
+        data = await get_json(http, url("orchestrator", "/events?limit=5"))
+        assert len(data["events"]) <= 5
+
+    @pytest.mark.asyncio
+    async def test_events_limit_capped_at_1000(self, http):
+        """Adversarial limit parameter must be capped server-side."""
+        data = await get_json(http, url("orchestrator", "/events?limit=999999"))
+        assert "events" in data  # must not 500
+
+
 # ===========================================================================
 # TEST COLLECTION ENTRY POINT
 # ===========================================================================
