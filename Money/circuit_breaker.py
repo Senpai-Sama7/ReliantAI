@@ -109,7 +109,7 @@ class CircuitBreaker:
     
     def _on_failure(self, exception: Exception):
         """Record failed call."""
-        if isinstance(exception, self.excluded):
+        if self.excluded and isinstance(exception, self.excluded):
             # Don't count excluded exceptions
             return
         

@@ -11,6 +11,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import uuid4
 
 # ── Project config (loads .env, validates keys) ──────────────
 from config import (
@@ -28,6 +29,10 @@ from crewai.tools import tool as crewai_tool
 from langsmith import traceable
 from tenacity import retry, stop_after_attempt, wait_fixed
 from twilio.rest import Client as TwilioClient
+import threading
+
+# Lock for thread-safe agent initialization
+_agent_init_lock = threading.Lock()
 
 # ── Database ─────────────────────────────────────────────────
 from database import save_dispatch, log_message
@@ -170,7 +175,7 @@ def dispatch_to_tech(
     _twilio_send(TECH_PHONE_NUMBER, tech_msg)
     _twilio_send(OWNER_PHONE, owner_msg)
 
-    dispatch_id = f"DSP-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+    dispatch_id = f"DSP-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}-{uuid4().hex[:8]}"
 
     save_dispatch(
         dispatch_id=dispatch_id,
@@ -278,8 +283,18 @@ def _ensure_agents(outdoor_temp_f: float = 80.0) -> list[Agent]:
     """Initialize agents at module level if not already done."""
     global triage_agent, intake_agent, scheduler_agent, dispatch_agent, followup_agent
     
-    # Tools are already decorated with @crewai_tool, use them directly
-    triage_agent = Agent(
+    # Fast path: check if already initialized without lock
+    if triage_agent is not None:
+        return [triage_agent, intake_agent, scheduler_agent, dispatch_agent, followup_agent]
+    
+    # Thread-safe initialization
+    with _agent_init_lock:
+        # Double-check after acquiring lock
+        if triage_agent is not None:
+            return [triage_agent, intake_agent, scheduler_agent, dispatch_agent, followup_agent]
+        
+        # Tools are already decorated with @crewai_tool, use them directly
+        triage_agent = Agent(
         role="Houston Emergency Triage Specialist",
         goal=(
             "Instantly classify every inbound HVAC message with ZERO hallucinations. "

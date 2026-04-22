@@ -5,12 +5,15 @@ Handles transient failures with exponential backoff.
 
 import time
 import threading
+import logging
 from dataclasses import dataclass, asdict
 from typing import Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 
-from database import get_pool, logger
+from database import get_pool
+
+logger = logging.getLogger(__name__)
 
 
 class JobStatus(Enum):
@@ -220,8 +223,7 @@ class RetryQueue:
         
         # Schedule retry with exponential backoff
         delay = min(self.base_delay * (2 ** job.attempt), self.max_delay)
-        next_attempt = datetime.now(timezone.utc)
-        next_attempt = next_attempt.replace(second=next_attempt.second + int(delay))
+        next_attempt = datetime.now(timezone.utc) + timedelta(seconds=int(delay))
         job.next_attempt_at = next_attempt.isoformat()
         job.status = "pending"
         

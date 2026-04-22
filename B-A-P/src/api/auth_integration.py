@@ -11,8 +11,11 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from src.core.event_bus import publish_event
 
-# Add shared JWT validator to path
-sys.path.insert(0, '/home/donovan/Projects/ReliantAI/integration/shared')
+# Add shared JWT validator to path (resolved relative to this file)
+import os
+_file_dir = os.path.dirname(os.path.abspath(__file__))
+_shared_path = os.path.abspath(os.path.join(_file_dir, '..', '..', '..', 'integration', 'shared'))
+sys.path.insert(0, _shared_path)
 try:
     from jwt_validator import JWTValidator
     JWT_AVAILABLE = True

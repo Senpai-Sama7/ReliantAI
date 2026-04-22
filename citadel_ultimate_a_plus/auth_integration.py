@@ -16,8 +16,12 @@ from typing import Dict, Any, Optional, Callable
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-# Add shared JWT validator to path
-sys.path.insert(0, '/home/donovan/Projects/ReliantAI/integration/shared')
+# Add shared JWT validator to path (resolved relative to this file)
+_file_dir = os.path.dirname(os.path.abspath(__file__))
+_shared_path = os.path.abspath(os.path.join(_file_dir, '..', 'integration', 'shared'))
+_apex_path = os.path.abspath(os.path.join(_file_dir, '..', 'apex', 'apex-agents'))
+
+sys.path.insert(0, _shared_path)
 try:
     from jwt_validator import JWTValidator, get_current_user, require_roles as jwt_require_roles
     JWT_AVAILABLE = True
@@ -27,7 +31,7 @@ except ImportError:
 
 # Event publishing
 try:
-    sys.path.insert(0, '/home/donovan/Projects/ReliantAI/apex/apex-agents')
+    sys.path.insert(0, _apex_path)
     from event_publisher import EventPublisher, ApexEvent, get_publisher
     EVENT_PUBLISHING_AVAILABLE = True
 except ImportError:

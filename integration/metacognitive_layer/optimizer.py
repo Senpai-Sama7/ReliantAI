@@ -118,7 +118,7 @@ class CacheOptimizationStrategy(OptimizationStrategy):
     """Optimize cache TTL based on hit/miss rates."""
     
     def __init__(self):
-        super().____(OptimizationDomain.CACHE)
+        super().__init__(OptimizationDomain.CACHE)
         self.hit_rate_history: List[float] = []
     
     async def analyze(self, metrics_history: List[Dict[str, Any]]) -> Optional[OptimizationAction]:
@@ -180,7 +180,7 @@ class ConnectionPoolOptimizationStrategy(OptimizationStrategy):
     """Optimize database connection pool size."""
     
     def __init__(self):
-        super().____(OptimizationDomain.DATABASE)
+        super().__init__(OptimizationDomain.DATABASE)
     
     async def analyze(self, metrics_history: List[Dict[str, Any]]) -> Optional[OptimizationAction]:
         """Analyze connection pool utilization."""

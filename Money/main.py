@@ -612,8 +612,11 @@ async def dispatch(
     if x_api_key:
         try:
             customer = await validate_api_key(x_api_key)
-        except HTTPException:
-            # Fall back to legacy admin API key auth
+        except HTTPException as e:
+            # Re-raise billing/authentication errors (not validation failures)
+            if e.status_code in (401, 403, 429):
+                raise
+            # Fall back to legacy admin API key auth for other errors
             _authorize_request(x_api_key, request)
     else:
         _authorize_request(x_api_key, request)

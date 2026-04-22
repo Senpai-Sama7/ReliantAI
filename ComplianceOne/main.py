@@ -205,7 +205,7 @@ async def list_frameworks():
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("SELECT * FROM compliance_frameworks ORDER BY created_at DESC")
             frameworks = cur.fetchall()
         return {"frameworks": [dict(row) for row in frameworks]}
@@ -235,7 +235,7 @@ async def list_controls(framework_id: int):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
                 "SELECT * FROM compliance_controls WHERE framework_id = %s ORDER BY control_id",
                 (framework_id,)
@@ -267,7 +267,7 @@ async def list_audits():
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT a.*, f.name as framework_name 
                 FROM compliance_audits a 
@@ -335,7 +335,7 @@ async def list_violations(status: Optional[str] = None):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if status:
                 cur.execute(
                     "SELECT * FROM compliance_violations WHERE status = %s ORDER BY detected_at DESC",
@@ -354,32 +354,30 @@ async def compliance_dashboard():
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Framework stats
             cur.execute("SELECT COUNT(*) as total_frameworks FROM compliance_frameworks")
-            total_frameworks = cur.fetchone()[0]
+            total_frameworks = cur.fetchone()["total_frameworks"]
             
             # Control stats
             cur.execute("SELECT COUNT(*) as total_controls FROM compliance_controls")
-            total_controls = cur.fetchone()[0]
+            total_controls = cur.fetchone()["total_controls"]
             
             # Audit stats
             cur.execute("SELECT COUNT(*) as total_audits FROM compliance_audits")
-            total_audits = cur.fetchone()[0]
+            total_audits = cur.fetchone()["total_audits"]
             cur.execute("SELECT COUNT(*) as completed_audits FROM compliance_audits WHERE status = 'completed'")
-            completed_audits = cur.fetchone()[0]
+            completed_audits = cur.fetchone()["completed_audits"]
             
             # Violation stats
             cur.execute("SELECT COUNT(*) as open_violations FROM compliance_violations WHERE status = 'open'")
-            open_violations = cur.fetchone()[0]
+            open_violations = cur.fetchone()["open_violations"]
             
             # Recent activity
             cur.execute("""
-                SELECT v.*, c.title as control_title, f.name as framework_name
+                SELECT v.*, c.title as control_title
                 FROM compliance_violations v
                 JOIN compliance_controls c ON v.control_id = c.id
-                JOIN compliance_frameworks f ON c.framework_id = f.id
-                WHERE v.status = 'open'
                 ORDER BY v.detected_at DESC
                 LIMIT 10
             """)

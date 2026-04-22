@@ -227,7 +227,7 @@ async def list_accounts():
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("SELECT * FROM cloud_accounts WHERE is_active = TRUE ORDER BY provider, account_name")
             accounts = cur.fetchall()
         return {"accounts": [dict(row) for row in accounts]}
@@ -263,7 +263,7 @@ async def get_costs(
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             if group_by == "service" and account_id:
                 cur.execute("""
                     SELECT service_name, SUM(cost_amount) as total_cost
@@ -315,7 +315,7 @@ async def list_budgets():
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT b.*, ca.provider, ca.account_name
                 FROM budgets b
@@ -333,7 +333,7 @@ async def get_budget_status(budget_id: int):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             # Get budget details
             cur.execute("SELECT * FROM budgets WHERE id = %s", (budget_id,))
             budget = dict(cur.fetchone())
@@ -415,7 +415,7 @@ async def list_recommendations(account_id: Optional[int] = None, is_implemented:
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             query = "SELECT * FROM cost_optimization_recommendations WHERE 1=1"
             params = []
             if account_id:
@@ -452,7 +452,7 @@ async def get_alerts(is_acknowledged: Optional[bool] = False):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT a.*, b.name as budget_name
                 FROM cost_alerts a
@@ -521,8 +521,9 @@ async def finops_dashboard():
             row = cur.fetchone()
             open_recs = row[0]
             potential_savings = float(row[1])
-            
-            # Top services by cost
+        
+        # Top services by cost - uses RealDictCursor for dict(row)
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute("""
                 SELECT service_name, SUM(cost_amount) as total
                 FROM cost_data

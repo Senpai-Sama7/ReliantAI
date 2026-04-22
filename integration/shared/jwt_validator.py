@@ -20,12 +20,12 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8080")
-JWT_SECRET = os.getenv("JWT_SECRET")
+JWT_SECRET = os.getenv("AUTH_SECRET_KEY")  # Aligned with auth_server.py
 TOKEN_CACHE_TTL = int(os.getenv("TOKEN_CACHE_TTL", "300"))  # 5 minutes
 
 if not JWT_SECRET:
     logger.warning(
-        "JWT_SECRET is not set. Local JWT validation will fail if used. "
+        "AUTH_SECRET_KEY is not set. Local JWT validation will fail if used. "
         'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
     )
 

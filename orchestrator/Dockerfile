@@ -22,4 +22,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:9000/health || exit 1
 
 # Run orchestrator
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "9000"]
