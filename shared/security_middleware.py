@@ -111,11 +111,16 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     def _check_local(self, ip: str, now: float) -> bool:
         window_start = now - 60
+        # Clean up old entries first
+        self._local = {
+            k: v for k, v in self._local.items()
+            if any(t > window_start for t in v)
+        }
+        # If still too many entries, remove oldest (by first timestamp)
         if len(self._local) > self._local_max_ips:
-            self._local = {
-                k: v for k, v in self._local.items()
-                if any(t > window_start for t in v)
-            }
+            sorted_ips = sorted(self._local.keys(), key=lambda k: min(self._local[k]) if self._local[k] else 0)
+            for old_ip in sorted_ips[:len(self._local) - self._local_max_ips]:
+                del self._local[old_ip]
         bucket = self._local.setdefault(ip, [])
         self._local[ip] = [t for t in bucket if t > window_start]
         self._local[ip].append(now)
@@ -306,6 +311,67 @@ def sanitize_log_message(message: str) -> str:
     message = re.sub(r'secret[=:]\s*\S+', 'secret=***', message, flags=re.IGNORECASE)
     
     return message
+
+
+def validate_production_config() -> None:
+    """Validate that production environment doesn't contain placeholder values.
+    
+    Raises RuntimeError if placeholder values are detected in critical environment variables.
+    Should be called at application startup in production mode.
+    """
+    if os.getenv('ENVIRONMENT') != 'production':
+        return
+    
+    # Patterns that indicate placeholder/default values
+    placeholder_patterns = [
+        r'change-me',
+        r'your-production-',
+        r'sk_live_production_key',
+        r'whsec_production_secret',
+        r'prod-.*-key-change-me',
+        r'test-',
+        r'dev-',
+        r'placeholder',
+        r'replace-with',
+    ]
+    
+    # Critical environment variables to check
+    critical_vars = [
+        'DISPATCH_API_KEY',
+        'COMPLIANCEONE_API_KEY',
+        'FINOPS360_API_KEY',
+        'ORCHESTRATOR_API_KEY',
+        'POSTGRES_PASSWORD',
+        'DATABASE_URL',
+        'SECRET_KEY',
+        'JWT_SECRET',
+        'ENCRYPTION_KEY',
+        'GEMINI_API_KEY',
+        'TWILIO_SID',
+        'TWILIO_TOKEN',
+        'STRIPE_SECRET_KEY',
+        'STRIPE_WEBHOOK_SECRET',
+        'VAULT_TOKEN',
+    ]
+    
+    placeholders_found = []
+    for var_name in critical_vars:
+        value = os.getenv(var_name, '')
+        if not value:
+            placeholders_found.append(f"{var_name} is not set")
+            continue
+        
+        for pattern in placeholder_patterns:
+            if re.search(pattern, value, re.IGNORECASE):
+                placeholders_found.append(f"{var_name} contains placeholder pattern: {pattern}")
+                break
+    
+    if placeholders_found:
+        raise RuntimeError(
+            "Production configuration contains placeholder values. "
+            "Set all critical environment variables to production values before deploying. "
+            f"Issues: {'; '.join(placeholders_found)}"
+        )
 
 
 # Security utilities for FastAPI dependency injection

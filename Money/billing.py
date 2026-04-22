@@ -144,7 +144,7 @@ async def create_checkout(request: CheckoutRequest):
         )
     
     # Check if Stripe is configured
-    if not stripe.api_key or not plan_config.get("price_id"):
+    if not stripe or not stripe.api_key or not plan_config.get("price_id"):
         raise HTTPException(status_code=503, detail="Billing not configured")
     
     try:
@@ -258,8 +258,8 @@ async def stripe_webhook(request: Request):
     sig_header = request.headers.get("stripe-signature")
     
     if not stripe_webhook_secret:
-        logger.warning("Stripe webhook secret not configured")
-        return JSONResponse({"status": "webhook_secret_not_configured"})
+        logger.error("Stripe webhook secret not configured")
+        raise HTTPException(status_code=500, detail="Stripe webhook secret not configured")
     
     try:
         event = stripe.Webhook.construct_event(
@@ -294,7 +294,11 @@ async def _handle_checkout_completed(data: dict):
     """Handle successful checkout completion."""
     stripe_customer_id = data.get("customer")
     metadata = data.get("metadata", {})
-    customer_id = int(metadata.get("customer_id", 0))
+    try:
+        customer_id = int(metadata.get("customer_id", 0))
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid customer_id in metadata: {metadata.get('customer_id')}")
+        customer_id = 0
     plan = metadata.get("plan", "starter")
     
     if customer_id:

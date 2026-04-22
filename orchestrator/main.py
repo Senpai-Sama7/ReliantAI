@@ -840,7 +840,7 @@ class AutonomousOrchestrator:
         for conn in self.active_connections:
             try:
                 await conn.send_json(message)
-            except:
+            except (ConnectionError, RuntimeError, Exception):
                 disconnected.append(conn)
         
         # Remove disconnected clients
@@ -994,7 +994,15 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             # Keep connection alive and handle client commands
-            data = await websocket.receive_json()
+            try:
+                data = await websocket.receive_json()
+            except Exception as e:
+                # Handle JSON parsing errors or other receive errors
+                await websocket.send_json({
+                    "type": "error",
+                    "error": f"Failed to parse message: {str(e)}"
+                })
+                continue
             
             if data.get("action") == "get_status":
                 await websocket.send_json({

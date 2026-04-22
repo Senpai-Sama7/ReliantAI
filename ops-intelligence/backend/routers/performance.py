@@ -46,7 +46,7 @@ def performance_summary():
     def degradation_pct(item):
         if item["baseline_value"] == 0:
             return 0
-        return abs(item["current_value"] - item["baseline_value"]) / item["baseline_value"] * 100
+        return (item["current_value"] - item["baseline_value"]) / item["baseline_value"] * 100
 
     worst = sorted(open_items, key=degradation_pct, reverse=True)[:5]
 

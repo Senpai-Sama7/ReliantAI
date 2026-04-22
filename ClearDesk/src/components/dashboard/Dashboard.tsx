@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Layout } from './Layout';
 import { StatsOverview } from './StatsOverview';
 
@@ -156,7 +156,7 @@ function DashboardHome({ onNavigate }: { onNavigate: (v: string) => void }) {
   const { state } = useDocuments();
   const docs = state.documents;
 
-  useState(() => { requestAnimationFrame(() => setVisible(true)); });
+  useEffect(() => { requestAnimationFrame(() => setVisible(true)); }, []);
 
   const chartData = (() => {
     if (chartMetric === 'priority') {

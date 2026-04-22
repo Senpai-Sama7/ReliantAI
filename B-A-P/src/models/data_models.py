@@ -20,7 +20,7 @@ class Dataset(Base):  # type: ignore[misc]
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     status = Column(String(50), default="uploaded")
-    metadata_ = Column("metadata", JSON, default=dict)
+    metadata_ = Column("metadata", JSON, default=lambda: {})
     row_count = Column(Integer, default=0)
     column_count = Column(Integer, default=0)
     file_size = Column(Integer, default=0)
@@ -36,8 +36,8 @@ class ETLJob(Base):  # type: ignore[misc]
     started_at = Column(DateTime(timezone=True), server_default=func.now())
     completed_at = Column(DateTime(timezone=True), nullable=True)
     error_message = Column(Text, nullable=True)
-    parameters = Column(JSON, default=dict)
-    result = Column(JSON, default=dict)
+    parameters = Column(JSON, default=lambda: {})
+    result = Column(JSON, default=lambda: {})
     created_by = Column(String(128), nullable=False)
 
 
@@ -50,9 +50,9 @@ class ProcessedDataset(Base):  # type: ignore[misc]
     source_job_id = Column(String(128), index=True, nullable=False)
     row_count = Column(Integer, default=0)
     column_count = Column(Integer, default=0)
-    schema_ = Column("schema", JSON, default=dict)
-    summary = Column(JSON, default=dict)
-    records = Column(JSON, default=list)
+    schema_ = Column("schema", JSON, default=lambda: {})
+    summary = Column(JSON, default=lambda: {})
+    records = Column(JSON, default=lambda: [])
     processed_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
@@ -69,7 +69,7 @@ class AIInsight(Base):  # type: ignore[misc]
     insight_type = Column(String(50), nullable=False)  # summary, forecast, anomaly, etc.
     content = Column(Text, nullable=False)
     confidence = Column(Float, default=0.0)
-    metadata_ = Column("metadata", JSON, default=dict)
+    metadata_ = Column("metadata", JSON, default=lambda: {})
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     created_by = Column(String(128), nullable=False)
 

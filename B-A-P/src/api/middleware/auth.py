@@ -43,21 +43,24 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
             )
 
         token = auth_header.replace("Bearer ", "")
-        # If auth service is unavailable, allow request to proceed without auth
-        # This ensures the app can still serve requests when auth service is down
+        # If auth service is unavailable, reject the request (fail-closed security)
         if not auth_integration.validator:
-            logger.warning("Auth service unavailable, allowing request to proceed without authentication")
-            # Store no user - downstream code should handle optional auth
-            return await call_next(request)
+            logger.error("Auth service unavailable, rejecting request")
+            return JSONResponse(
+                status_code=503,
+                content={"detail": "Authentication service unavailable"},
+            )
 
         try:
             user = auth_integration.validator.validate_token(token)
         except HTTPException as exc:
-            # If auth service returns 503, allow request to proceed without auth
-            # This is a resilience pattern - fail open when auth service is down
+            # If auth service returns 503, reject the request (fail-closed security)
             if exc.status_code == 503:
-                logger.warning("Auth service unavailable (503), allowing request to proceed without authentication")
-                return await call_next(request)
+                logger.error("Auth service unavailable (503), rejecting request")
+                return JSONResponse(
+                    status_code=503,
+                    content={"detail": "Authentication service unavailable"},
+                )
             return JSONResponse(
                 status_code=exc.status_code,
                 content={"detail": exc.detail},

@@ -24,7 +24,7 @@ class EventType(str, Enum):
     USER_CREATED = "user.created"
     USER_UPDATED = "user.updated"
     USER_DELETED = "user.deleted"
-    AUDIT_LOG_RECORDED = "audit.log.recorded"
+    AUDIT_LOG_RECORDED = "audit.log"
 
 
 class EventMetadata(BaseModel):

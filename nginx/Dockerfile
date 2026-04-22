@@ -7,8 +7,8 @@ RUN apk add --no-cache curl
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy SSL certificates (in production, mount these as secrets)
-COPY ssl/cert.pem /etc/nginx/ssl/cert.pem 2>/dev/null || echo "SSL cert not found, will be mounted"
-COPY ssl/key.pem /etc/nginx/ssl/key.pem 2>/dev/null || echo "SSL key not found, will be mounted"
+COPY ssl/cert.pem /etc/nginx/ssl/cert.pem
+COPY ssl/key.pem /etc/nginx/ssl/key.pem
 
 # Copy dashboard files
 COPY dashboard/ /usr/share/nginx/html/dashboard/

@@ -122,6 +122,7 @@ services:
       - money
       - complianceone
       - finops360
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s

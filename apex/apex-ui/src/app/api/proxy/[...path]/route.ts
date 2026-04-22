@@ -17,8 +17,16 @@ export async function GET(
 ) {
   const { path } = await params;
   const url = upstream(path, req.nextUrl.search);
+  
+  // Forward Authorization header from original request
+  const headers: Record<string, string> = {};
+  const authHeader = req.headers.get("authorization");
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+  
   try {
-    const res = await fetch(url);
+    const res = await fetch(url, { headers });
     const data = await res.json();
     return NextResponse.json(data, { status: res.status });
   } catch {
@@ -33,10 +41,18 @@ export async function POST(
   const { path } = await params;
   const url = upstream(path, "");
   const body = await req.text();
+  
+  // Forward Authorization header from original request
+  const headers: Record<string, string> = { "Content-Type": "application/json" };
+  const authHeader = req.headers.get("authorization");
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+  
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body,
     });
     const data = await res.json();

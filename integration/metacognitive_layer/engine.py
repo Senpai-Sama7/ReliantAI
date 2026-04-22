@@ -6,6 +6,7 @@ makes predictions, and drives autonomous decisions.
 """
 
 import asyncio
+import os
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 from dataclasses import dataclass
@@ -195,9 +196,8 @@ class MetacognitiveEngine:
         """Initialize database connections and load learned patterns."""
         if not self.db_pool:
             # Connect to existing Postgres
-            self.db_pool = await asyncpg.create_pool(
-                "postgresql://localhost:5435/metacognitive"
-            )
+            db_url = os.getenv("METACOGNITIVE_DB_URL", "postgresql://localhost:5435/metacognitive")
+            self.db_pool = await asyncpg.create_pool(db_url)
         
         # Ensure tables exist
         await self._ensure_schema()
@@ -566,7 +566,7 @@ class MetacognitiveEngine:
     def _generate_id(self) -> str:
         """Generate unique ID."""
         import uuid
-        return str(uuid.uuid4())[:8]
+        return str(uuid.uuid4())
 
 
 # Singleton instance

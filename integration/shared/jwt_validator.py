@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8080")
 JWT_SECRET = os.getenv("AUTH_SECRET_KEY")  # Aligned with auth_server.py
 TOKEN_CACHE_TTL = int(os.getenv("TOKEN_CACHE_TTL", "300"))  # 5 minutes
+SKIP_TLS_VERIFY = os.getenv("SKIP_TLS_VERIFY", "false").lower() == "true"  # Only for localhost/dev
 
 if not JWT_SECRET:
     logger.warning(
@@ -78,14 +79,14 @@ class JWTValidator:
                 del self._cache[token]
 
         # Validate against auth service
-        # SECURITY NOTE: TLS verification (verify) is not explicitly set because the auth
-        # service URL is typically localhost (127.0.0.1) which doesn't need TLS.
-        # For production deployments with external auth service URLs, add verify=True.
+        # TLS verification is enforced by default for security.
+        # Set SKIP_TLS_VERIFY=true only for localhost/development.
         try:
             response = requests.get(
                 f"{self._auth_url}/verify",
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=5,
+                verify=not SKIP_TLS_VERIFY,
             )
 
             if response.status_code != 200:

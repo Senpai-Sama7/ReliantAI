@@ -78,15 +78,9 @@ async def upload_data(
         # Generate dataset ID
         dataset_id = f"ds-{uuid.uuid4().hex[:12]}"
 
-        upload_root = Path(settings.UPLOADS_DIR)
-        await asyncio.to_thread(upload_root.mkdir, parents=True, exist_ok=True)
-        stored_path = build_upload_path(upload_root, dataset_id, file.filename)
-        await asyncio.to_thread(stored_path.write_bytes, content)
-
         try:
             inspection = inspect_dataset(file.filename, content)
         except Exception as exc:
-            await _cleanup_file(stored_path)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Failed to parse uploaded file: {exc}",
@@ -97,7 +91,7 @@ async def upload_data(
             dataset_id=dataset_id,
             name=name or Path(file.filename).stem,
             description=description,
-            file_path=str(stored_path),
+            file_path="",  # Will be updated after file write
             file_type=inspection.file_type,
             created_by=created_by,
             status="uploaded",
@@ -110,6 +104,17 @@ async def upload_data(
             file_size=file_size,
         )
         db.add(dataset)
+        await db.commit()
+        await db.refresh(dataset)
+
+        # Now write the file after DB commit
+        upload_root = Path(settings.UPLOADS_DIR)
+        await asyncio.to_thread(upload_root.mkdir, parents=True, exist_ok=True)
+        stored_path = build_upload_path(upload_root, dataset_id, file.filename)
+        await asyncio.to_thread(stored_path.write_bytes, content)
+        
+        # Update dataset with actual file path
+        dataset.file_path = str(stored_path)
         await db.commit()
         await db.refresh(dataset)
 

@@ -121,6 +121,9 @@ class ApiService {
       method: 'GET',
       credentials: 'include',
     });
+    if (!response.ok) {
+      throw new Error(`Failed to load login form: ${response.status} ${response.statusText}`);
+    }
     const html = await response.text();
     const match = html.match(/name="csrf_token" value="([^"]+)"/);
     if (!match?.[1]) {

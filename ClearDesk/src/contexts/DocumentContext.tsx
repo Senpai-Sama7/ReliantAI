@@ -143,6 +143,10 @@ export function DocumentProvider({ children }: { children: React.ReactNode }) {
           dispatch({ type: 'SET_DOCUMENTS', payload: docs as Document[] });
         }
         hydrated.current = true;
+      })
+      .catch((error) => {
+        console.error('Failed to hydrate from KV:', error);
+        hydrated.current = true; // Mark as hydrated even on error to prevent retries
       });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

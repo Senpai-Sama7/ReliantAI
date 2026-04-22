@@ -137,6 +137,13 @@ def _render_login_page(request: Request, error: str | None, status_code: int = 2
 async def lifespan(app: FastAPI):
     """Application lifespan context manager for startup and shutdown."""
     # Startup
+    # Validate production config (blocks deployment with placeholder values)
+    try:
+        from shared.security_middleware import validate_production_config
+        validate_production_config()
+    except RuntimeError as e:
+        logger.error(f"Production configuration validation failed: {e}")
+        raise
     init_db()
     try:
         from hvac_dispatch_crew import warmup_node
@@ -605,8 +612,6 @@ async def dispatch(
     x_api_key: str = Header(default=None),
 ):
     """API-driven dispatch with customer API key validation and billing."""
-    _rate_limit(_rate_bucket(request, "dispatch"))
-
     # Validate customer API key for multi-tenant billing
     customer = None
     if x_api_key:
@@ -620,6 +625,9 @@ async def dispatch(
             _authorize_request(x_api_key, request)
     else:
         _authorize_request(x_api_key, request)
+
+    # Rate limit after authentication
+    _rate_limit(_rate_bucket(request, "dispatch"))
     
     # Check dispatch quota if customer is authenticated
     if customer:

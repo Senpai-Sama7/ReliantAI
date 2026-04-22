@@ -78,7 +78,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -252,8 +252,6 @@ volumes:
   redis-data:
   postgres-data:
   kong-db-data:
-  zookeeper-data:
-  zookeeper-logs:
   kafka-data:
   prometheus-data:
   grafana-data:

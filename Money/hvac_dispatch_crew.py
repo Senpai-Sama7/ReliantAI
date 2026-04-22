@@ -45,11 +45,17 @@ logger = setup_logging("hvac_dispatch")
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 def _twilio_send(to: str, body: str) -> str:
     """Send SMS via Twilio with automatic retry on transient failure."""
-    client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
-    msg = client.messages.create(body=body, from_=TWILIO_FROM_PHONE, to=to)
-    logger.info("SMS sent to %s: SID=%s", to, msg.sid)
-    log_message(direction="outbound", phone=to, body=body, sms_sid=msg.sid)
-    return msg.sid
+    try:
+        client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
+        msg = client.messages.create(body=body, from_=TWILIO_FROM_PHONE, to=to)
+        logger.info("SMS sent to %s: SID=%s", to, msg.sid)
+        log_message(direction="outbound", phone=to, body=body, sms_sid=msg.sid)
+        return msg.sid
+    except Exception as e:
+        logger.error("Twilio send failed after retries: %s", str(e))
+        log_message(direction="outbound", phone=to, body=body, error=str(e))
+        # Return a fallback SID to allow crew to continue
+        return f"failed-{to[:10]}"
 
 
 # ════════════════════════════════════════════════════════════

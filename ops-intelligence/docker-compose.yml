@@ -15,7 +15,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-change-in-production}
       OPS_DB_PATH: /data/ops_intelligence.db
       PORT: "8095"
-      CORS_ORIGINS: "http://localhost:5173,http://ops-intelligence-frontend:80"
+      CORS_ORIGINS: "http://localhost:5174,http://ops-intelligence-frontend:80"
     volumes:
       - ops-data:/data
     healthcheck:

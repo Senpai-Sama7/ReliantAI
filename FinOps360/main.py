@@ -560,6 +560,9 @@ async def finops_dashboard():
 # Background task to check budgets and generate alerts
 async def check_budget_alerts():
     """Periodic task to check budget thresholds and create alerts"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     while True:
         try:
             pool = get_db_pool()
@@ -602,7 +605,10 @@ async def check_budget_alerts():
             finally:
                 pool.putconn(conn)
         except Exception as e:
-            print(f"Budget alert check error: {e}")
+            logger.error(f"Budget alert check error: {e}", exc_info=True)
+            # Sleep longer on error to avoid tight error loops
+            await asyncio.sleep(300)  # Wait 5 minutes before retry
+            continue
         
         await asyncio.sleep(3600)  # Check every hour
 

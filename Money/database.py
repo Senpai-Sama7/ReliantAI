@@ -22,7 +22,10 @@ _pool_lock = threading.Lock()
 
 def get_database_url() -> str:
     """Resolve the active database URL, honoring runtime/test overrides."""
-    return os.environ.get("DATABASE_URL", "postgresql://reliantai:change-in-production@127.0.0.1:5435/reliantai_integration")
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        raise ValueError("DATABASE_URL environment variable must be set")
+    return db_url
 
 def get_pool():
     global _pool

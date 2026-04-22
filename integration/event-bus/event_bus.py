@@ -218,7 +218,11 @@ async def get_event(
         event_json = await r.get(event_key)
 
         if event_json:
-            return json.loads(event_json)
+            try:
+                return json.loads(event_json)
+            except json.JSONDecodeError as e:
+                logger.error("json_decode_error", event_id=event_id, error=str(e))
+                raise HTTPException(status_code=500, detail="Invalid JSON in event data")
         else:
             raise HTTPException(status_code=404, detail="Event not found")
 

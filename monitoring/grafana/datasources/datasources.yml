@@ -20,4 +20,4 @@ datasources:
       derivedFields:
         - name: TraceID
           matcherRegex: "traceID=(\\w+)"
-          url: "$$${__value.raw}"
+          url: "${__value.raw}"

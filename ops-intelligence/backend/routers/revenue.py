@@ -121,7 +121,7 @@ def bulk_import_leads(body: BulkImport):
         score = _score_lead(item.rating, item.review_count, item.has_website,
                             item.deal_value, item.product_line)
         id = str(uuid.uuid5(uuid.NAMESPACE_DNS,
-                            f"{item.product_line}:{item.company}:{item.external_id}"))[:16]
+                            f"{item.product_line}:{item.company}:{item.external_id}"))
         upsert_revenue_lead(
             id=id, external_id=item.external_id, company=item.company,
             contact_name=item.contact_name, phone=item.phone, email=item.email,
@@ -139,7 +139,7 @@ def add_lead(body: LeadImportItem):
     score = _score_lead(body.rating, body.review_count, body.has_website,
                         body.deal_value, body.product_line)
     id = str(uuid.uuid5(uuid.NAMESPACE_DNS,
-                        f"{body.product_line}:{body.company}:{body.external_id}"))[:16]
+                        f"{body.product_line}:{body.company}:{body.external_id}"))
     return upsert_revenue_lead(
         id=id, external_id=body.external_id, company=body.company,
         contact_name=body.contact_name, phone=body.phone, email=body.email,

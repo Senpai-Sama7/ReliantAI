@@ -34,9 +34,11 @@ config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# from Money.database import Base
-# target_metadata = Base.metadata
-target_metadata = None
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'B-A-P', 'src')))
+from core.database import Base
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
