@@ -33,15 +33,21 @@ class _CursorWrapper:
 
 
 class _ConnWrapper:
-    """sqlite3-style connection wrapper for psycopg2."""
+    """sqlite3-style connection wrapper for psycopg2.
+
+    Auto-closes the underlying psycopg2 connection when the wrapper goes out
+    of scope (__del__) or when used as a context manager (with _get_conn()).
+    """
     def __init__(self, conn):
         self._conn = conn
 
     def executescript(self, sql: str):
         """Execute multi-statement SQL (psycopg2 doesn't have executescript)."""
         cursor = self._conn.cursor()
-        cursor.execute(sql)
-        cursor.close()
+        try:
+            cursor.execute(sql)
+        finally:
+            cursor.close()
 
     def execute(self, sql: str, params=None):
         """Execute SQL and return a cursor wrapper."""
@@ -55,8 +61,30 @@ class _ConnWrapper:
     def commit(self):
         self._conn.commit()
 
+    def rollback(self):
+        self._conn.rollback()
+
     def close(self):
-        self._conn.close()
+        try:
+            self._conn.close()
+        except Exception:
+            pass
+
+    # Context manager — use with `with _get_conn() as conn:`
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            try:
+                self._conn.rollback()
+            except Exception:
+                pass
+        self.close()
+        return False  # do not suppress exceptions
+
+    def __del__(self):
+        self.close()
 
 
 def _get_conn():

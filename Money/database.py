@@ -38,7 +38,22 @@ def get_pool():
         with _pool_lock:
             if _pool is None:
                 db_url = get_database_url()
-                _pool = pool.ThreadedConnectionPool(1, 20, dsn=db_url)
+                min_conn = int(os.environ.get("DB_POOL_MIN", "1"))
+                max_conn = int(os.environ.get("DB_POOL_MAX", "20"))
+                _pool = pool.ThreadedConnectionPool(min_conn, max_conn, dsn=db_url)
+                # Validate pool at startup
+                test_conn = _pool.getconn()
+                try:
+                    with test_conn.cursor() as cur:
+                        cur.execute("SELECT 1")
+                    logger.info("DB pool validated", pool_min=min_conn, pool_max=max_conn)
+                except Exception as exc:
+                    _pool.closeall()
+                    _pool = None
+                    raise RuntimeError(f"DB pool startup validation failed: {exc}") from exc
+                finally:
+                    if _pool is not None:
+                        _pool.putconn(test_conn)
                 GracefulShutdownManager.register_pool(_pool, name="money_db")
     return _pool
 
@@ -140,6 +155,9 @@ def init_db() -> None:
                 CREATE INDEX IF NOT EXISTS idx_customer_events_created ON customer_events(created_at);
             """)
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
     logger.info("Database initialized at PostgreSQL target.")
@@ -186,6 +204,9 @@ def save_dispatch(
                  now, now),
             )
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -200,6 +221,9 @@ def update_dispatch_status(dispatch_id: str, status: str, result: Optional[dict]
                 (status, json.dumps(result) if result else None, now, dispatch_id),
             )
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -246,6 +270,9 @@ def log_message(
                 (direction, phone, body, sms_sid, channel, now),
             )
         conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -287,6 +314,9 @@ def create_customer(
             row = cursor.fetchone()
             conn.commit()
             return dict(row)
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -361,6 +391,9 @@ def update_customer(customer_id: int, **kwargs) -> Optional[dict]:
             row = cursor.fetchone()
             conn.commit()
             return dict(row) if row else None
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -408,6 +441,9 @@ def delete_customer(customer_id: int) -> bool:
             )
             conn.commit()
             return cursor.rowcount > 0
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -434,6 +470,9 @@ def log_customer_event(
             row = cursor.fetchone()
             conn.commit()
             return dict(row)
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 
@@ -561,6 +600,9 @@ def update_dispatch_fields(dispatch_id: str, **fields) -> Optional[dict]:
             row = cursor.fetchone()
             conn.commit()
             return dict(row) if row else None
+    except Exception:
+        conn.rollback()
+        raise
     finally:
         get_pool().putconn(conn)
 

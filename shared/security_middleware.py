@@ -55,9 +55,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         # Referrer Policy
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         
-        # HSTS (HTTPS only)
+        # HSTS — only on HTTPS; injecting on plain HTTP is a protocol violation
         env = os.getenv('ENV', os.getenv('ENVIRONMENT', '')).lower()
-        if env in ['staging', 'production']:
+        if env in ['staging', 'production'] and request.url.scheme == 'https':
             response.headers['Strict-Transport-Security'] = (
                 'max-age=31536000; includeSubDomains; preload'
             )
