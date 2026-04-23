@@ -1,7 +1,7 @@
 # ReliantAI Platform - Comprehensive System Audit Report
 **Date**: 2026-04-23  
 **Scope**: Full platform (26 services, 500+ files)  
-**Severity Summary**: 26 critical/high issues identified
+**Severity Summary**: 31 issues identified (20 critical/high)
 
 ---
 
@@ -9,9 +9,9 @@
 
 The ReliantAI platform has **systemic issues** across multiple critical areas that would prevent reliable production deployment:
 
-- **4 Critical Issues** that break deployments or enable RCE
-- **8 High-Severity Issues** causing silent failures, security gaps, or data corruption
-- **14 Medium/Low Issues** affecting reliability, best practices, and operational safety
+- **7 Critical Issues** that break deployments or enable RCE
+- **13 High-Severity Issues** causing silent failures, security gaps, or data corruption
+- **11 Medium/Low Issues** affecting reliability, best practices, and operational safety
 
 ---
 
@@ -294,9 +294,12 @@ CMD curl -f http://localhost:8000/health || exit 1
 
 **Problem**: `python:3.11-slim` base image does NOT include curl by default
 
-**Services with Missing curl**:
-- `B-A-P/Dockerfile` — no health check, no curl explicit install
+**Services with Missing curl Installation**:
+- `apex/apex-ui/Dockerfile` — no curl explicit install
+- `ops-intelligence/frontend/Dockerfile` — likely no curl
 - Others rely on it being in build layer but don't explicitly verify
+
+**Note**: B-A-P/Dockerfile DOES include curl on line 8 (`curl git` in apt-get install)
 
 **Consequence**: Docker health checks fail with `curl: command not found` even if service is healthy
 
@@ -333,10 +336,18 @@ if len(self._local) > self._local_max_ips:
 
 **Severity**: 🔴 **HIGH** - Race condition in rate limiter
 
-**Fix**: Use lock:
+**Fix**: Initialize lock in `__init__` and use it:
 ```python
+# In RateLimitMiddleware.__init__
+self._lock = threading.Lock()
+
+# In _check_local
 with self._lock:
-    self._local = {k: v for k, v in self._local.items() if ...}
+    self._local = {k: v for k, v in self._local.items() if any(t > window_start for t in v)}
+    if len(self._local) > self._local_max_ips:
+        sorted_ips = sorted(self._local.keys(), key=lambda k: min(self._local[k]) if self._local[k] else 0)
+        for old_ip in sorted_ips[:len(self._local) - self._local_max_ips]:
+            del self._local[old_ip]
 ```
 
 ---
@@ -570,14 +581,14 @@ except ValueError:
 
 ---
 
-### 3.12 Missing Curl in B-A-P and Other Frontend Dockerfiles
+### 3.12 Missing Curl and Health Checks in Frontend Dockerfiles
 
 **Files**:
-- `B-A-P/Dockerfile` — no curl, no health check
-- `apex/apex-ui/Dockerfile` — no curl, no health check
-- `ops-intelligence/frontend/Dockerfile` — likely no curl
+- `apex/apex-ui/Dockerfile` — no curl explicit install, no health check
+- `ops-intelligence/frontend/Dockerfile` — likely no curl, needs verification
+- `B-A-P/Dockerfile` — HAS curl (line 8), but missing HEALTHCHECK instruction
 
-**Consequence**: Health checks fail in Docker
+**Consequence**: Health checks may fail in Docker or are missing entirely
 
 **Severity**: 🟠 **MEDIUM** - Deployment health unreliability
 
