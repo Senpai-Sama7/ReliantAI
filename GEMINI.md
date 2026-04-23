@@ -1,6 +1,7 @@
 # ReliantAI Platform — Master Context Scaffold
 ## Deterministic Codebase Intelligence Audit
 **Generated**: 2026-04-22 | **Scope**: Full Platform | **Version**: 2.0
+**For**: Google Gemini Code Assist
 
 ---
 

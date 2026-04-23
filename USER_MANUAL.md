@@ -68,6 +68,192 @@ The ReliantAI Platform is an **autonomous, self-managing, AI-powered enterprise 
 └─────────────────────────────────────────────────────────────┘
 ```
 
+### Micro-Topology Architecture
+
+#### Service Communication Matrix
+
+| Source Service | Target Service | Protocol | Purpose | Authentication |
+|----------------|----------------|----------|---------|----------------|
+| Money | integration/auth:8080 | HTTP/REST | JWT validation | Internal network |
+| Money | integration/event-bus:8081 | HTTP/REST | Event publishing | EVENT_BUS_API_KEY |
+| Money | Twilio API | HTTPS | SMS/WhatsApp | HMAC-SHA256 |
+| Money | Stripe API | HTTPS | Billing | Webhook secrets |
+| Money | Gemini API | HTTPS | AI dispatch | API key |
+| ComplianceOne | PostgreSQL | TCP/5432 | Data persistence | Password |
+| ComplianceOne | integration/auth | HTTP/REST | JWT validation | Internal network |
+| FinOps360 | PostgreSQL | TCP/5432 | Data persistence | Password |
+| Orchestrator | All services | HTTP/REST | Health checks | X-API-Key |
+| Orchestrator | Redis | TCP/6379 | Streams, metrics | Password |
+| Apex Agents | Kafka | TCP/9092 | Event publishing | Internal network |
+| Auth service | Redis | TCP/6379 | Token revocation | Password |
+| Event Bus | Redis | TCP/6379 | Pub/sub, DLQ | Password |
+
+#### Database Topology
+
+**PostgreSQL Instance (postgres:15-alpine)**
+- Port: 5432
+- Container: reliantai-postgres
+- Health Check: `pg_isready -U ${POSTGRES_USER}` every 5s
+- Volumes: postgres_data (persistent), init-scripts (seeding)
+
+**Database Separation (Service Per Database)**
+| Database | Service | Tables | Pool Size |
+|----------|---------|--------|-----------|
+| `money` | Money | 4 | 1-20 connections |
+| `complianceone` | ComplianceOne | 5 | 1-10 connections |
+| `finops360` | FinOps360 | 6 | 1-10 connections |
+| `integration` | Integration | Varies | Default |
+| `reliantai` | Root (migrations) | — | Alembic |
+
+**Connection Pool Configuration**
+```python
+# Money (highest traffic)
+psycopg2.pool.ThreadedConnectionPool(1, 20, dsn=DATABASE_URL)
+
+# ComplianceOne & FinOps360 (moderate traffic)
+psycopg2.pool.ThreadedConnectionPool(1, 10, dsn=DATABASE_URL)
+```
+
+**Mandatory Cursor Factory**
+All services MUST use `RealDictCursor` to prevent tuple/dict crashes:
+```python
+from psycopg2.extras import RealDictCursor
+# All queries return dict-like rows, not tuples
+```
+
+#### Redis Topology
+
+**Redis Instance (redis:alpine)**
+- Port: 6379
+- Password: Required (REDIS_PASSWORD env var)
+- Command: `redis-server --requirepass ${REDIS_PASSWORD}`
+- Health Check: `redis-cli -a ${REDIS_PASSWORD} ping`
+
+**Redis Key Namespaces**
+| Namespace | Pattern | Purpose |
+|-----------|---------|---------|
+| `rl:*` | `rl:{ip_address}` | Rate limiting buckets (sliding window) |
+| `event:*` | `event:{event_id}` | Event storage (24h TTL) |
+| `dlq:*` | `dlq:events`, `dlq:handler_errors` | Dead letter queues (10k cap) |
+| `reliantai:*` | `reliantai:scale_intents` | Orchestrator streams |
+| `session:*` | `session:{session_id}` | User sessions |
+| `token:*` | `token_revoked:{jti}` | Revoked JWT tokens |
+
+**Redis Streams (Orchestrator)**
+- `reliantai:scale_intents` — Scale actions with service name, target instances, reason
+- `reliantai:heal_intents` — Heal actions with service name, action type, reason
+- `reliantai:platform_events` — General platform events broadcast to WebSocket clients
+
+#### Network Topology
+
+**Docker Network: `reliantai-network`** (bridge driver)
+
+All services MUST declare:
+```yaml
+networks:
+  - reliantai-network
+```
+
+**DNS Resolution Within Network**
+| Hostname | Resolves To | Port |
+|----------|-------------|------|
+| `postgres` | PostgreSQL container | 5432 |
+| `redis` | Redis container | 6379 |
+| `money` | Money container | 8000 |
+| `complianceone` | ComplianceOne container | 8001 |
+| `finops360` | FinOps360 container | 8002 |
+| `integration` | Integration container | 8080 |
+| `orchestrator` | Orchestrator container | 9000 |
+
+**⚠️ Critical Invariant**: Services without explicit `networks: - reliantai-network` will fail to resolve other service hostnames (Bug #104 evidence).
+
+#### Endpoint Security Topology
+
+**Middleware Stack Order (Applied Sequentially)**
+1. **CORS Middleware** — Origin validation (fails closed if CORS_ORIGINS unset)
+2. **SecurityHeadersMiddleware** — CSP, HSTS, X-Frame-Options, Permissions-Policy
+3. **InputValidationMiddleware** — Request validation, size limits
+4. **AuditLogMiddleware** — Request/response logging with correlation IDs
+5. **RateLimitMiddleware** — Redis-backed sliding window (100 rpm default)
+
+**Authentication Patterns by Endpoint**
+
+| Endpoint Category | Auth Method | Header/Token |
+|-------------------|-------------|--------------|
+| Public health | None | — |
+| Internal metrics | API key | `X-API-Key` |
+| API operations | Triple auth | Bearer JWT OR `X-API-Key` OR session cookie |
+| Twilio webhooks | HMAC | `X-Twilio-Signature` |
+| Stripe webhooks | Secret | Stripe-Signature |
+| Make.com webhooks | HMAC | X-Make-Signature |
+| HubSpot webhooks | HMAC | X-HubSpot-Signature |
+
+#### AI/ML Topology
+
+**Orchestrator Predictions (Holt's Double Exponential Smoothing)**
+```
+α (level smoothing) = 0.3
+β (trend smoothing) = 0.1
+
+Update formulas:
+level_t = α * observation + (1-α) * (level_{t-1} + trend_{t-1})
+trend_t = β * (level_t - level_{t-1}) + (1-β) * trend_{t-1}
+
+Two-step-ahead forecast:
+prediction = level_t + 2 * trend_t
+```
+
+**CrewAI Architecture (Money Service)**
+- **Triage Agent**: 4-level urgency classification (LIFE_SAFETY → 911, EMERGENCY, URGENT, ROUTINE)
+- **Scheduler Agent**: Appointment scheduling with availability check
+- **Notifier Agent**: SMS confirmation via Twilio (tenacity retry: 3 attempts, 2s wait)
+- **Update Agent**: Customer status updates
+
+**LangSmith Tracing**
+All CrewAI calls traced with `@traceable` decorator for observability.
+
+#### Event Bus Topology
+
+**16 Canonical Event Types**
+```python
+class EventType(str, Enum):
+    LEAD_CREATED = "lead.created"
+    LEAD_QUALIFIED = "lead.qualified"
+    DISPATCH_REQUESTED = "dispatch.requested"
+    DISPATCH_COMPLETED = "dispatch.completed"
+    DOCUMENT_PROCESSED = "document.processed"
+    AGENT_TASK_CREATED = "agent.task.created"
+    AGENT_TASK_COMPLETED = "agent.task.completed"
+    ANALYTICS_RECORDED = "analytics.recorded"
+    SAGA_STARTED = "saga.started"
+    SAGA_COMPLETED = "saga.completed"
+    SAGA_FAILED = "saga.failed"
+    USER_CREATED = "user.created"
+    USER_UPDATED = "user.updated"
+    USER_DELETED = "user.deleted"
+    AUDIT_LOG_RECORDED = "audit.log"
+```
+
+**Event Flow**
+```
+Publisher (e.g., Money)
+    ↓
+POST /publish to event-bus:8081
+    ↓
+Pydantic validation (EventPublishRequest)
+    ↓
+Payload size check (64KB limit enforced)
+    ↓
+Redis SETEX (24h TTL) + PUBLISH (pub/sub)
+    ↓
+Background subscription processor
+    ↓
+Handler execution with metrics tracking
+    ↓
+Success: Metrics counter incremented
+Failure: Pushed to DLQ (dlq:events)
+```
+
 ---
 
 ## Getting Started
@@ -1413,6 +1599,311 @@ docker-compose logs > logs.txt
 ```bash
 ./scripts/verify_integration.py
 ```
+
+---
+
+## Production Troubleshooting Guide
+
+Based on **104 bugs fixed** in production. This guide helps diagnose and resolve common issues.
+
+### Critical System Invariants (Never Break)
+
+These are documented failure patterns from production incidents:
+
+| Invariant | Bug # | Evidence | Fix |
+|-----------|-------|----------|-----|
+| **Docker Network** | #104 | orchestrator couldn't resolve `redis:6379` (Error -2) | All services MUST declare `networks: - reliantai-network` |
+| **Health Check curl** | #104 | Containers showed `(unhealthy)` despite working services | All Dockerfiles MUST install `curl` |
+| **RealDictCursor** | Multiple | `dict(row)` crashes on psycopg2 tuples | Mandatory `cursor_factory=RealDictCursor` |
+| **CORS Origins** | Multiple | Services refused to start | `CORS_ORIGINS` required, no wildcard `*` |
+| **Auth Secret** | Multiple | RuntimeError at startup | `AUTH_SECRET_KEY` ≥ 32 chars |
+| **Rate Limit Order** | Multiple | Rate limiting ran before auth | Middleware must run AFTER authentication |
+| **Event Payload** | Multiple | Memory exhaustion attacks | 64KB limit enforced via `@field_validator` |
+
+### Common Issues and Solutions
+
+#### 1. Service Shows `(unhealthy)` in Docker but `/health` Works
+
+**Root Cause:** Missing `curl` in container image.
+
+**Evidence:**
+```
+docker inspect --format='{{json .State.Health}}' container_name
+# Output: "exec: \\"curl\\": executable file not found in $PATH"
+```
+
+**Solution:**
+```dockerfile
+# In service Dockerfile, add:
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+```
+
+**Verify:**
+```bash
+docker compose build [service]
+docker compose up -d
+docker compose ps  # Should show (healthy)
+```
+
+#### 2. Orchestrator Can't Connect to Redis
+
+**Root Cause:** Network isolation — orchestrator not on `reliantai-network`.
+
+**Evidence:**
+```
+⚠️  Redis unavailable (Error -2 connecting to redis:6379. Name or service not known.)
+```
+
+**Solution:**
+```yaml
+# In docker-compose.yml, add to orchestrator service:
+services:
+  orchestrator:
+    networks:
+      - reliantai-network  # REQUIRED
+```
+
+**Verify:**
+```bash
+docker exec reliantai-orchestrator curl -s http://redis:6379
+# Should return Redis version info
+```
+
+#### 3. PostgreSQL Tuple/Dict Crashes
+
+**Root Cause:** Using `dict(row)` on psycopg2 tuples without `RealDictCursor`.
+
+**Evidence:**
+```python
+# BAD - crashes
+cursor.execute("SELECT * FROM table")
+row = cursor.fetchone()
+data = dict(row)  # TypeError!
+
+# GOOD - works
+cursor.execute("SELECT * FROM table")
+row = cursor.fetchone()
+data = row  # Already dict-like with RealDictCursor
+```
+
+**Solution:**
+```python
+from psycopg2.extras import RealDictCursor
+
+conn = psycopg2.connect(
+    dsn=DATABASE_URL,
+    cursor_factory=RealDictCursor  # MANDATORY
+)
+```
+
+#### 4. CORS Errors in Browser
+
+**Root Cause:** Missing or wildcard `CORS_ORIGINS`.
+
+**Evidence:**
+```
+RuntimeError: CORS_ORIGINS environment variable is required. Do NOT use wildcard *...
+```
+
+**Solution:**
+```bash
+# In .env
+CORS_ORIGINS=http://localhost:3000,http://localhost:5173,https://yourdomain.com
+# NO wildcards allowed
+```
+
+#### 5. Event Bus Payload Rejected
+
+**Root Cause:** Payload exceeds 64KB limit.
+
+**Evidence:**
+```
+ValueError: Payload exceeds 64KB limit
+```
+
+**Solution:**
+- Chunk large payloads
+- Store large data in PostgreSQL, emit event with ID
+- Use `integration/shared/event_types.py:validate_payload_size`
+
+#### 6. Authentication Race Condition
+
+**Root Cause:** Rate limiting applied before authentication check.
+
+**Evidence:**
+- Legitimate requests rate-limited
+- Unauthorized requests consume rate limit budget
+
+**Solution:**
+```python
+# In endpoint handlers (Money/main.py:607-629 pattern):
+async def protected_endpoint(
+    x_api_key: str = Header(default=None),
+    request: Request
+):
+    # 1. Authenticate FIRST
+    customer = await validate_api_key(x_api_key)
+    
+    # 2. Rate limit AFTER authentication
+    _rate_limit(_rate_bucket(request, "dispatch"))
+    
+    # 3. Proceed with handler
+```
+
+#### 7. Memory Exhaustion from Unbounded Arrays
+
+**Root Cause:** Lists growing without limits in long-running services.
+
+**Evidence:**
+- OOM kills
+- Gradual memory increase over time
+
+**Solution:**
+```python
+# Cap all lists (orchestrator/main.py:147 pattern)
+MAX_DECISIONS = 10_000
+if len(self.decision_history) > MAX_DECISIONS:
+    self.decision_history = self.decision_history[-MAX_DECISIONS//2:]
+
+# Cap dispatch store (Money/main.py pattern)
+MAX_DISPATCHES = 1000
+def _prune_stores():
+    if len(dispatch_store) > MAX_DISPATCHES:
+        # Remove oldest entries
+        pass
+```
+
+#### 8. Circuit Breaker Not Excluding Expected Exceptions
+
+**Root Cause:** Checking tuple membership on empty excluded tuple.
+
+**Evidence:**
+```python
+# Bug at circuit_breaker.py:112
+if exc_type not in self.excluded:  # Fails if excluded is empty tuple
+    self.failures += 1
+```
+
+**Solution:**
+```python
+# Fixed version
+if self.excluded and exc_type not in self.excluded:
+    self.failures += 1
+```
+
+#### 9. Pydantic v1/v2 API Drift
+
+**Root Cause:** Using `model_validate_json` (v2) in v1 environment.
+
+**Evidence:**
+```
+AttributeError: 'EventPublishRequest' object has no attribute 'model_validate_json'
+```
+
+**Solution:**
+```python
+# Version detection with fallback (saga_orchestrator.py:143 pattern)
+if hasattr(EventPublishRequest, 'model_validate_json'):
+    # Pydantic v2
+    event = EventPublishRequest.model_validate_json(payload)
+else:
+    # Pydantic v1
+    event = EventPublishRequest.parse_raw(payload)
+```
+
+#### 10. Async Generator Not Properly Closed
+
+**Root Cause:** `Redis.pubsub().listen()` not cleaned up on shutdown.
+
+**Evidence:**
+```
+RuntimeWarning: coroutine 'process_subscriptions' was never awaited
+```
+
+**Solution:**
+```python
+# In lifespan context manager (event_bus.py pattern)
+@app.on_event("shutdown")
+async def shutdown():
+    if hasattr(app.state, "pubsub") and app.state.pubsub:
+        await app.state.pubsub.aclose()
+    if hasattr(app.state, "redis") and app.state.redis:
+        await app.state.redis.close()
+```
+
+### Diagnostic Commands
+
+```bash
+# Check all service health
+./scripts/health_check.py -v
+
+# Check container status
+docker compose ps
+
+# View logs for specific service
+docker compose logs -f money
+docker compose logs -f orchestrator
+docker compose logs -f integration
+
+# Inspect health check status
+docker inspect --format='{{.State.Health.Status}}' container_name
+
+# Check network connectivity
+docker exec reliantai-orchestrator curl -s http://money:8000/health
+docker exec reliantai-orchestrator curl -s http://redis:6379
+
+# Database connectivity
+docker compose exec postgres psql -U postgres -d money -c "SELECT COUNT(*) FROM dispatches;"
+
+# Redis connectivity
+docker compose exec redis redis-cli -a ${REDIS_PASSWORD} ping
+
+# Check environment variables
+docker compose exec money env | grep -E "(API_KEY|DATABASE_URL|CORS)"
+```
+
+### Performance Tuning
+
+**Database Connection Pool Sizes:**
+- Money: 1-20 (high traffic)
+- ComplianceOne: 1-10 (moderate)
+- FinOps360: 1-10 (moderate)
+
+**Redis Connection Tuning:**
+```python
+# Use connection pooling
+redis_pool = redis.ConnectionPool(
+    host='redis',
+    port=6379,
+    password=REDIS_PASSWORD,
+    max_connections=50
+)
+```
+
+**Async Task Limits:**
+- Money SSE: Max 1000 connected clients
+- Orchestrator WebSocket: Max 100 connected clients
+- Event Bus DLQ: Max 10,000 entries
+
+### Incident Response Runbook
+
+**Severity 1: Complete Platform Down**
+1. Check Docker daemon: `docker ps`
+2. Check disk space: `df -h`
+3. Restart all services: `docker compose down && docker compose up -d`
+4. Run health checks: `./scripts/health_check.py -v`
+
+**Severity 2: Single Service Down**
+1. Check service logs: `docker compose logs [service]`
+2. Check health endpoint: `curl http://localhost:[port]/health`
+3. Restart service: `docker compose restart [service]`
+4. Check dependencies: Are postgres/redis healthy?
+
+**Severity 3: Degraded Performance**
+1. Check orchestrator metrics: `curl http://localhost:9000/dashboard`
+2. Check if scaling is triggered
+3. Review decision history: `curl http://localhost:9000/decisions`
+4. Manual scale if needed: `curl -X POST "http://localhost:9000/services/money/scale?target_instances=5"`
 
 ---
 
