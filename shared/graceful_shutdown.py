@@ -6,7 +6,6 @@ Handles graceful shutdown of FastAPI applications
 import asyncio
 import signal
 import sys
-import os
 from typing import Callable, List
 from contextlib import asynccontextmanager
 import logging
@@ -50,8 +49,14 @@ class GracefulShutdownManager:
         
         def signal_handler(signum, frame):
             logger.info(f"Received signal {signum}, initiating graceful shutdown...")
-            loop = asyncio.get_event_loop()
-            loop.run_until_complete(self.shutdown())
+            try:
+                # Try to get running loop first (Python 3.7+)
+                asyncio.get_running_loop()
+                # Schedule shutdown in the running loop
+                asyncio.create_task(self.shutdown())
+            except RuntimeError:
+                # No loop running, create new one for sync context
+                asyncio.run(self.shutdown())
             sys.exit(0)
         
         signal.signal(signal.SIGTERM, signal_handler)

@@ -4,31 +4,24 @@ Self-managing, self-healing, AI-powered platform orchestration
 """
 
 import os
-import sys
 import json
 import time
 import asyncio
-import subprocess
 import uuid
-from typing import Dict, List, Optional, Any, Callable
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 from collections import defaultdict
 import threading
-import hashlib
 import secrets
 import aiohttp
 
 import redis.asyncio as aioredis
 from redis.asyncio.client import Redis as AsyncRedis
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, BackgroundTasks, Depends, status
-
-from fastapi.responses import JSONResponse, HTMLResponse
-from pydantic import BaseModel, Field
-import sys
-import os
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, status
+from pydantic import BaseModel
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,

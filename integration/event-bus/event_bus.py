@@ -1,15 +1,20 @@
-module resolves
+import sys
+import os
+
+# Module resolution for shared imports
 _INTEGRATION_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _INTEGRATION_ROOT not in sys.path:
     sys.path.insert(0, _INTEGRATION_ROOT)
 
-import json
-import asyncio
-import threading
-import time
+import json  # noqa: E402
+import asyncio  # noqa: E402
+from typing import Dict, List, Callable  # noqa: E402
+from contextlib import asynccontextmanager  # noqa: E402
+from datetime import datetime, UTC  # noqa: E402
+import time  # noqa: E402
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Depends
-from pydantic import BaseModel, Field, ValidationError
+from fastapi import FastAPI, HTTPException, Request, Depends
+from pydantic import ValidationError
 from prometheus_client import Counter, Histogram, Gauge, generate_latest
 from fastapi.responses import Response
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -48,8 +53,7 @@ active_subscribers = Gauge(
     "active_subscribers", "Number of active subscribers", ["channel"]
 )
 
-from shared.event_types import (
-    EventType,
+from shared.event_types import (  # noqa: E402
     EventMetadata,
     Event,
     EventPublishRequest,
@@ -90,7 +94,17 @@ async def lifespan(app: FastAPI):
     app.state.redis = r
     app.state.pubsub = r.pubsub()
 
+    # Start background subscription processor
+    processor_task = asyncio.create_task(process_subscriptions(app))
+
     yield
+
+    # Cancel background task on shutdown
+    processor_task.cancel()
+    try:
+        await processor_task
+    except asyncio.CancelledError:
+        pass
 
     if hasattr(app.state, "pubsub") and app.state.pubsub:
         await app.state.pubsub.aclose()
