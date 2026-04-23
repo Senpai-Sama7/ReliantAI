@@ -232,9 +232,10 @@ if ENV == "dev":
             ]
         )
 elif not _cors_origins:
-    # In production, fail explicitly if CORS_ORIGINS not set
-    logger.warning(
-        "SECURITY WARNING: CORS_ORIGINS not set in production! API will reject all cross-origin requests."
+    # In production, fail explicitly if CORS_ORIGINS not set (consistent with orchestrator)
+    raise RuntimeError(
+        "CORS_ORIGINS environment variable is required in production. "
+        "Set it to a comma-separated list of allowed origins."
     )
 
 app.add_middleware(

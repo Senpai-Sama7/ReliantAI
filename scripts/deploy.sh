@@ -75,7 +75,7 @@ check_prerequisites() {
     
     # Check ports
     print_status "Checking port availability..."
-    local PORTS=(8000 8001 8002 8080 9000 5432 6379)
+    local PORTS=(80 443 4000 5174 8000 8001 8002 8080 8095 8100 8101 8102 8103 8104 8105 8106 8107 8108 8109 8110 8111 8112 8113 8200 9000 5432 6379)
     for PORT in "${PORTS[@]}"; do
         if ss -tlnp | grep -q ":$PORT "; then
             print_warning "Port $PORT is already in use"

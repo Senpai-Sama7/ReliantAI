@@ -12,12 +12,14 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir poetry==1.8.2
 
 WORKDIR /app
-COPY pyproject.toml poetry.lock* README.md /app/
+COPY pyproject.toml poetry.lock* /app/
+# README.md is optional; create a minimal one if missing to avoid build failure
+RUN if [ ! -f README.md ]; then echo "# B-A-P" > README.md; fi
+
+# Copy source before poetry install so the package can be installed
+COPY src/ /app/src/
 RUN poetry config virtualenvs.create false && \
   poetry install --no-interaction --no-ansi --only main
-
-COPY src/ /app/src/
-COPY README.md /app/
 
 # uvicorn hot reload off for prod
 EXPOSE 8000

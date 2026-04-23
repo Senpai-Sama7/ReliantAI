@@ -36,6 +36,8 @@ security = HTTPBearer()
 class JWTValidator:
     """JWT token validator with caching."""
 
+    MAX_CACHE_SIZE = 10_000
+
     def __init__(
         self,
         secret_key: Optional[str] = None,
@@ -53,6 +55,13 @@ class JWTValidator:
                 "Set JWT_SECRET if local fallback validation is needed.",
                 self._auth_url,
             )
+
+    def _set_cache(self, token: str, payload: Dict) -> None:
+        """Add token to cache with TTL, evicting oldest if over max size."""
+        if len(self._cache) >= self.MAX_CACHE_SIZE:
+            # Evict oldest entry (simple FIFO via popitem on arbitrary key)
+            self._cache.pop(next(iter(self._cache)), None)
+        self._cache[token] = (payload, time.time() + TOKEN_CACHE_TTL)
 
     def validate_token(self, token: str) -> Dict:
         """
@@ -98,7 +107,7 @@ class JWTValidator:
             payload = response.json()
 
             # Cache the result
-            self._cache[token] = (payload, time.time() + TOKEN_CACHE_TTL)
+            self._set_cache(token, payload)
             logger.info(
                 f"Token validated and cached for user: {payload.get('username')}"
             )

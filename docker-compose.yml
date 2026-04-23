@@ -38,7 +38,7 @@ services:
     ports:
     - 8000:8000
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/money
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/money
     - DISPATCH_API_KEY=${DISPATCH_API_KEY:?DISPATCH_API_KEY must be set}
     - GEMINI_API_KEY=${GEMINI_API_KEY:?GEMINI_API_KEY must be set}
     - TWILIO_SID=${TWILIO_SID:?TWILIO_SID must be set}
@@ -79,7 +79,7 @@ services:
     ports:
     - 8001:8001
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/complianceone
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/complianceone
     - COMPLIANCEONE_API_KEY=${COMPLIANCEONE_API_KEY:?COMPLIANCEONE_API_KEY must be set}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -115,7 +115,7 @@ services:
     ports:
     - 8002:8002
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finops360
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/finops360
     - FINOPS360_API_KEY=${FINOPS360_API_KEY:?FINOPS360_API_KEY must be set}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -154,11 +154,14 @@ services:
     - MONEY_URL=http://money:8000
     - COMPLIANCEONE_URL=http://complianceone:8001
     - FINOPS360_URL=http://finops360:8002
-    - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/integration
+    - POSTGRES_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/integration
     depends_on:
-    - money
-    - complianceone
-    - finops360
+      money:
+        condition: service_healthy
+      complianceone:
+        condition: service_healthy
+      finops360:
+        condition: service_healthy
     networks:
     - reliantai-network
     volumes:
@@ -196,11 +199,8 @@ services:
     - redis_data:/data
     healthcheck:
       test:
-      - CMD
-      - redis-cli
-      - -a
-      - ${REDIS_PASSWORD}
-      - ping
+      - CMD-SHELL
+      - redis-cli -a "$REDIS_PASSWORD" ping
       interval: 5s
       timeout: 3s
       retries: 5
@@ -232,10 +232,14 @@ services:
     - API_KEY=${ORCHESTRATOR_API_KEY:-${API_KEY:?API_KEY must be set}}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
-    - money
-    - complianceone
-    - finops360
-    - redis
+      money:
+        condition: service_healthy
+      complianceone:
+        condition: service_healthy
+      finops360:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
     - reliantai-network
     volumes:
@@ -375,7 +379,7 @@ services:
     ports:
     - 8108:8000
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/bap
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/bap
     - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -415,11 +419,14 @@ services:
     environment:
     - AUTH_SERVICE_URL=${AUTH_SERVICE_URL:-http://integration:8080}
     - EVENT_BUS_URL=${EVENT_BUS_URL:-http://integration:8081}
-    - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY:-change-me-event-bus-api-key}
-    - JWT_SECRET=${JWT_SECRET:-change-in-production}
+    - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY:?EVENT_BUS_API_KEY must be set}
+    - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set}
     - OPS_DB_PATH=/data/ops_intelligence.db
     - PORT=8095
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
     - ops-data:/data
     networks:
@@ -480,7 +487,7 @@ services:
     ports:
     - 8109:8001
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/apex
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/apex
     - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -595,8 +602,9 @@ services:
     healthcheck:
       test:
       - CMD
-      - acropolis-cli
-      - --version
+      - curl
+      - -f
+      - http://localhost:8080/health
       interval: 30s
       timeout: 10s
       retries: 3
@@ -649,7 +657,7 @@ services:
     ports:
     - 8100:8100
     environment:
-    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/citadel
+    - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/citadel
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
       postgres:

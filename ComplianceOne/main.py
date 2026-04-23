@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, APIRouter, HTTPException, Header, Request, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -40,7 +41,15 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import pool
 
-app = FastAPI(title="ComplianceOne", version="1.0.0", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from security_middleware import validate_production_config
+    validate_production_config()
+    init_db()
+    yield
+    await GracefulShutdownManager.shutdown_all()
+
+app = FastAPI(title="ComplianceOne", version="1.0.0", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 # Apply ReliantAI platform branding to API docs
 from docs_branding import configure_docs_branding
@@ -200,14 +209,6 @@ class ViolationReport(BaseModel):
 # dependency 'verify_api_key' imported from shared.security_middleware
 
 # Routes
-@app.on_event("startup")
-async def startup():
-    init_db()
-
-@app.on_event("shutdown")
-async def shutdown():
-    await GracefulShutdownManager.shutdown_all()
-
 @router.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "complianceone", "timestamp": datetime.now(timezone.utc).isoformat()}

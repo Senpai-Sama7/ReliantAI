@@ -36,14 +36,9 @@ app = FastAPI(
     description="Service mesh and A2A protocol bridge for ReliantAI platform"
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS middleware — use shared helper for fail-closed defaults
+from shared.security_middleware import create_cors_middleware
+create_cors_middleware(app)
 
 
 @app.get("/health")
@@ -73,40 +68,33 @@ async def root():
     }
 
 
-@app.get("/proxy/money/{path:path}")
-async def proxy_money(path: str):
-    """Proxy requests to Money service."""
+@app.api_route("/proxy/{service}/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"])
+async def proxy_service(service: str, path: str, request: Request):
+    """Proxy requests to backend services. Supports all HTTP methods."""
+    service_urls = {
+        "money": MONEY_URL,
+        "complianceone": COMPLIANCEONE_URL,
+        "finops360": FINOPS360_URL,
+    }
+    target_url = service_urls.get(service)
+    if not target_url:
+        raise HTTPException(status_code=404, detail=f"Unknown service: {service}")
+
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(f"{MONEY_URL}/{path}")
+            body = await request.body() if request.method in ("POST", "PUT", "PATCH") else None
+            response = await client.request(
+                method=request.method,
+                url=f"{target_url}/{path}",
+                headers={k: v for k, v in request.headers.items() if k.lower() not in ("host", "content-length")},
+                params=request.query_params,
+                content=body,
+                timeout=30.0,
+            )
             return JSONResponse(content=response.json(), status_code=response.status_code)
         except Exception as e:
-            logger.error("money_proxy_error", error=str(e))
-            raise HTTPException(status_code=503, detail="Money service unavailable")
-
-
-@app.get("/proxy/complianceone/{path:path}")
-async def proxy_complianceone(path: str):
-    """Proxy requests to ComplianceOne service."""
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(f"{COMPLIANCEONE_URL}/{path}")
-            return JSONResponse(content=response.json(), status_code=response.status_code)
-        except Exception as e:
-            logger.error("complianceone_proxy_error", error=str(e))
-            raise HTTPException(status_code=503, detail="ComplianceOne service unavailable")
-
-
-@app.get("/proxy/finops360/{path:path}")
-async def proxy_finops360(path: str):
-    """Proxy requests to FinOps360 service."""
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.get(f"{FINOPS360_URL}/{path}")
-            return JSONResponse(content=response.json(), status_code=response.status_code)
-        except Exception as e:
-            logger.error("finops360_proxy_error", error=str(e))
-            raise HTTPException(status_code=503, detail="FinOps360 service unavailable")
+            logger.error(f"{service}_proxy_error", error=str(e))
+            raise HTTPException(status_code=503, detail=f"{service} service unavailable")
 
 
 if __name__ == "__main__":

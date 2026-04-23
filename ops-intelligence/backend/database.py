@@ -10,11 +10,57 @@ from psycopg2.extras import RealDictCursor
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-DB_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/ops_intelligence")
+DB_URL = os.getenv(
+    "DATABASE_URL",
+    os.getenv("OPS_DB_PATH", "postgresql://user:pass@localhost/ops_intelligence"),
+)
+
+
+def _get_conn_raw():
+    return psycopg2.connect(DB_URL, cursor_factory=RealDictCursor)
+
+
+class _CursorWrapper:
+    """sqlite3-style cursor wrapper for psycopg2."""
+    def __init__(self, cursor):
+        self._cursor = cursor
+
+    def fetchone(self):
+        return self._cursor.fetchone()
+
+    def fetchall(self):
+        return self._cursor.fetchall()
+
+
+class _ConnWrapper:
+    """sqlite3-style connection wrapper for psycopg2."""
+    def __init__(self, conn):
+        self._conn = conn
+
+    def executescript(self, sql: str):
+        """Execute multi-statement SQL (psycopg2 doesn't have executescript)."""
+        cursor = self._conn.cursor()
+        cursor.execute(sql)
+        cursor.close()
+
+    def execute(self, sql: str, params=None):
+        """Execute SQL and return a cursor wrapper."""
+        # Translate sqlite3 ? placeholders to psycopg2 %s
+        if params is not None and "?" in sql:
+            sql = sql.replace("?", "%s")
+        cursor = self._conn.cursor()
+        cursor.execute(sql, params)
+        return _CursorWrapper(cursor)
+
+    def commit(self):
+        self._conn.commit()
+
+    def close(self):
+        self._conn.close()
 
 
 def _get_conn():
-    return psycopg2.connect(DB_URL, cursor_factory=RealDictCursor)
+    return _ConnWrapper(_get_conn_raw())
 
 
 def _now() -> str:

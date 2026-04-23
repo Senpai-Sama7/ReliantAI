@@ -189,7 +189,7 @@ class HealthChecker:
                         "response_time": response.elapsed.total_seconds(),
                         "data": data
                     }
-                except:
+                except Exception:
                     status = {
                         "status": "healthy",
                         "response_time": response.elapsed.total_seconds()

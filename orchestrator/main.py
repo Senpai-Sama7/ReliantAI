@@ -17,6 +17,7 @@ from collections import defaultdict
 import threading
 import secrets
 import aiohttp
+from contextlib import asynccontextmanager
 
 import redis.asyncio as aioredis
 from redis.asyncio.client import Redis as AsyncRedis
@@ -43,7 +44,15 @@ try:
 except ImportError:
     AI_AVAILABLE = False
 
-app = FastAPI(title="ReliantAI Orchestrator", version="2.0.0", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from security_middleware import validate_production_config
+    validate_production_config()
+    await orchestrator.start()
+    yield
+    await orchestrator.stop()
+
+app = FastAPI(title="ReliantAI Orchestrator", version="2.0.0", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 # Apply ReliantAI platform branding to API docs
 from docs_branding import configure_docs_branding
@@ -167,14 +176,14 @@ class AutonomousOrchestrator:
         
         # Shared aiohttp session for HTTP requests
         self._http: Optional[aiohttp.ClientSession] = None
-        self._http_lock: Optional[asyncio.Lock] = None
+        self._http_lock = asyncio.Lock()
         
         # Holt smoothing states for AI prediction
         self._holt_states: Dict[str, Dict[str, HoltState]] = defaultdict(dict)
         
         # Redis client for event streaming
         self._redis: Optional[AsyncRedis] = None
-        self._redis_lock: Optional[asyncio.Lock] = None
+        self._redis_lock = asyncio.Lock()
         self._instance_id: str = str(uuid.uuid4())[:8]
         
         # Stream names -- single source of truth
@@ -249,8 +258,6 @@ class AutonomousOrchestrator:
             self.ai_model = None
 
     async def _get_http(self) -> aiohttp.ClientSession:
-        if self._http_lock is None:
-            self._http_lock = asyncio.Lock()
         async with self._http_lock:
             if self._http is None or self._http.closed:
                 connector = aiohttp.TCPConnector(
@@ -270,8 +277,6 @@ class AutonomousOrchestrator:
         Returns None if Redis is unavailable -- callers must handle gracefully.
         Failure to connect is logged but never raises, preserving orchestrator
         availability in Redis-absent environments."""
-        if self._redis_lock is None:
-            self._redis_lock = asyncio.Lock()
         async with self._redis_lock:
             if self._redis is None:
                 redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379")
@@ -643,7 +648,19 @@ class AutonomousOrchestrator:
         # A real actuator confirms completion by writing back to platform_events.
         service.status = ServiceStatus.MAINTENANCE
         await asyncio.sleep(5)
-        service.status = ServiceStatus.HEALTHY
+        # Verify health before declaring HEALTHY (prevents false positive)
+        try:
+            session = await self._get_http()
+            async with session.get(
+                f"{service.url}{service.health_endpoint}",
+                timeout=aiohttp.ClientTimeout(total=5)
+            ) as response:
+                if response.status == 200:
+                    service.status = ServiceStatus.HEALTHY
+                else:
+                    service.status = ServiceStatus.DEGRADED
+        except Exception:
+            service.status = ServiceStatus.UNHEALTHY
 
         await self._broadcast_event("heal", {
             "service":   action.service,
@@ -797,17 +814,20 @@ class AutonomousOrchestrator:
     async def _scale_executor_loop(self):
         """Single consumer for scale decisions to prevent race conditions"""
         while self.running:
+            action = None
             try:
                 action = await asyncio.wait_for(self._scale_queue.get(), timeout=1.0)
                 service = self.services[action.service]
                 # Apply only if still relevant (no conflicting decision in meantime)
                 if action.target_instances != service.current_instances:
                     await self._execute_scale_action(action)
-                self._scale_queue.task_done()
             except asyncio.TimeoutError:
                 continue  # No queued actions, check running flag
             except Exception as e:
                 print(f"Error processing scale action: {e}")
+            finally:
+                if action is not None:
+                    self._scale_queue.task_done()
 
     # ─────────────────────────────────────────────────────────────────────────
     # UTILITY METHODS
@@ -916,14 +936,6 @@ orchestrator = AutonomousOrchestrator()
 # FASTAPI ROUTES
 # ─────────────────────────────────────────────────────────────────────────────
 
-@app.on_event("startup")
-async def startup():
-    await orchestrator.start()
-
-@app.on_event("shutdown")
-async def shutdown():
-    await orchestrator.stop()
-
 @app.get("/health")
 async def health():
     return {"status": "healthy", "orchestrator": "running"}
@@ -993,10 +1005,13 @@ async def websocket_endpoint(websocket: WebSocket):
     orchestrator.active_connections.append(websocket)
     
     # Send initial status
-    await websocket.send_json({
-        "type": "connected",
-        "data": orchestrator.get_platform_status()
-    })
+    try:
+        await websocket.send_json({
+            "type": "connected",
+            "data": orchestrator.get_platform_status()
+        })
+    except Exception:
+        pass  # Client may have disconnected immediately
     
     try:
         while True:
@@ -1005,17 +1020,23 @@ async def websocket_endpoint(websocket: WebSocket):
                 data = await websocket.receive_json()
             except Exception as e:
                 # Handle JSON parsing errors or other receive errors
-                await websocket.send_json({
-                    "type": "error",
-                    "error": f"Failed to parse message: {str(e)}"
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "error",
+                        "error": f"Failed to parse message: {str(e)}"
+                    })
+                except Exception:
+                    pass  # Client disconnected
                 continue
             
             if data.get("action") == "get_status":
-                await websocket.send_json({
-                    "type": "status",
-                    "data": orchestrator.get_platform_status()
-                })
+                try:
+                    await websocket.send_json({
+                        "type": "status",
+                        "data": orchestrator.get_platform_status()
+                    })
+                except Exception:
+                    pass
             elif data.get("action") == "scale":
                 service = data.get("service")
                 instances = data.get("instances")
@@ -1024,19 +1045,27 @@ async def websocket_endpoint(websocket: WebSocket):
                     if s:
                         # Validate min/max bounds
                         if instances < s.min_instances or instances > s.max_instances:
-                            await websocket.send_json({
-                                "type": "scale_error",
-                                "service": service,
-                                "error": f"Instances must be between {s.min_instances} and {s.max_instances}"
-                            })
+                            try:
+                                await websocket.send_json({
+                                    "type": "scale_error",
+                                    "service": service,
+                                    "error": f"Instances must be between {s.min_instances} and {s.max_instances}"
+                                })
+                            except Exception:
+                                pass
                             continue
                         s.current_instances = instances
-                        await websocket.send_json({
-                            "type": "scale_ack",
-                            "service": service,
-                            "instances": instances
-                        })
+                        try:
+                            await websocket.send_json({
+                                "type": "scale_ack",
+                                "service": service,
+                                "instances": instances
+                            })
+                        except Exception:
+                            pass
     except WebSocketDisconnect:
+        pass
+    finally:
         if websocket in orchestrator.active_connections:
             orchestrator.active_connections.remove(websocket)
 

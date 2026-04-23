@@ -10,6 +10,7 @@ from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException, Header, BackgroundTasks, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -36,7 +37,17 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import pool
 
-app = FastAPI(title="FinOps360", version="1.0.0", docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    from security_middleware import validate_production_config
+    validate_production_config()
+    init_db()
+    task = asyncio.create_task(check_budget_alerts())
+    GracefulShutdownManager.register_task(task)
+    yield
+    await GracefulShutdownManager.shutdown_all()
+
+app = FastAPI(title="FinOps360", version="1.0.0", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 # Apply ReliantAI platform branding to API docs
 from docs_branding import configure_docs_branding
@@ -215,14 +226,6 @@ class AlertAcknowledge(BaseModel):
 # dependency 'verify_api_key' imported from shared.security_middleware
 
 # Routes
-@app.on_event("startup")
-async def startup():
-    init_db()
-
-@app.on_event("shutdown")
-async def shutdown():
-    await GracefulShutdownManager.shutdown_all()
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "finops360", "timestamp": datetime.now(timezone.utc).isoformat()}
@@ -642,11 +645,6 @@ async def check_budget_alerts():
             continue
         
         await asyncio.sleep(3600)  # Check every hour
-
-@app.on_event("startup")
-async def startup_tasks():
-    task = asyncio.create_task(check_budget_alerts())
-    GracefulShutdownManager.register_task(task)
 
 if __name__ == "__main__":
     import uvicorn

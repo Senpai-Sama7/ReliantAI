@@ -31,16 +31,24 @@ import structlog
 from rate_limiter import SlidingWindowRateLimiter
 from user_store import SQLiteUserStore, UserStoreConflictError
 
-# Configuration
-SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
-if not SECRET_KEY:
-    raise RuntimeError(
-        "FATAL: AUTH_SECRET_KEY environment variable is not set. "
-        'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
-    )
-if len(SECRET_KEY) < 32:
-    raise RuntimeError("FATAL: AUTH_SECRET_KEY must be at least 32 characters.")
+# Configuration — lazy validation to avoid crashing at import time
+_SECRET_KEY_RAW = os.getenv("AUTH_SECRET_KEY")
 ALGORITHM = "HS256"
+
+
+def _require_secret_key() -> str:
+    key = _SECRET_KEY_RAW
+    if not key:
+        raise RuntimeError(
+            "FATAL: AUTH_SECRET_KEY environment variable is not set. "
+            'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
+        )
+    if len(key) < 32:
+        raise RuntimeError("FATAL: AUTH_SECRET_KEY must be at least 32 characters.")
+    return key
+
+
+SECRET_KEY: str = _SECRET_KEY_RAW or ""
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("AUTH_ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 REFRESH_TOKEN_EXPIRE_DAYS = int(os.getenv("AUTH_REFRESH_TOKEN_EXPIRE_DAYS", "7"))
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -208,6 +216,13 @@ async def initialize_services(
     user_store = SQLiteUserStore(db_path or get_auth_db_path())
     applied_migrations = await user_store.initialize()
 
+    # Validate auth secret key at startup (not import time)
+    if not SECRET_KEY or len(SECRET_KEY) < 32:
+        raise RuntimeError(
+            "FATAL: AUTH_SECRET_KEY environment variable is not set or too short. "
+            'Generate one with: python -c "import secrets; print(secrets.token_urlsafe(64))"'
+        )
+
     factory = redis_factory or redis.from_url
     redis_client = await maybe_await(
         factory(
@@ -324,9 +339,9 @@ async def revoke_token(token: str):
 
 
 async def is_token_revoked(token: str) -> bool:
-    """Check if token is revoked"""
+    """Check if token is revoked. Fail-closed: assume revoked if Redis unavailable."""
     if redis_client is None:
-        return False
+        return True
     return await redis_client.exists(f"revoked:{token}") > 0
 
 
@@ -337,6 +352,8 @@ def has_permission(role: Role, permission: Permission) -> bool:
 
 async def track_failed_login(username: str) -> bool:
     """Track failed login attempts, return True if account should be locked"""
+    if redis_client is None:
+        return False
     key = f"failed_login:{username}"
     count = await redis_client.incr(key)
     if count == 1:
@@ -346,11 +363,15 @@ async def track_failed_login(username: str) -> bool:
 
 async def reset_failed_login(username: str):
     """Reset failed login counter"""
+    if redis_client is None:
+        return
     await redis_client.delete(f"failed_login:{username}")
 
 
 async def is_account_locked(username: str) -> bool:
     """Check if account is locked due to failed attempts"""
+    if redis_client is None:
+        return False
     count = await redis_client.get(f"failed_login:{username}")
     return bool(count and int(count) >= 5)
 
@@ -397,10 +418,15 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
         if payload.get("type") != "access":
             raise HTTPException(status_code=401, detail="Invalid token type")
 
+        role_str = payload.get("role")
+        try:
+            role = Role(role_str) if role_str else Role.TECHNICIAN
+        except ValueError:
+            raise HTTPException(status_code=401, detail="Invalid role in token")
         return {
             "username": payload.get("sub"),
             "tenant_id": payload.get("tenant_id"),
-            "role": Role(payload.get("role")),
+            "role": role,
         }
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
@@ -563,7 +589,7 @@ async def login(
 
 
 @app.post("/refresh", response_model=TokenResponse)
-async def refresh(refresh_token: str):
+async def refresh(refresh_token: str = Body(..., embed=True)):
     """Refresh access token using refresh token"""
     with request_duration.labels(endpoint="refresh").time():
         try:

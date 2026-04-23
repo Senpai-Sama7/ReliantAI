@@ -323,10 +323,47 @@ class BrowserAutomation:
         return self._driver
 
     def run_script(self, script: str) -> str:
-        """Executes user-provided Python code that references `driver`."""
+        """Executes user-provided Python code that references `driver`.
+
+        SECURITY: AST whitelist prevents RCE via __import__, open(), eval(), etc.
+        """
+        import ast
+
+        # Block dangerous builtins and names
+        DENIED_NAMES = {
+            "__import__", "import", "open", "eval", "exec", "compile",
+            "input", "globals", "locals", "vars", "dir", "getattr",
+            "setattr", "delattr", "hasattr", "staticmethod", "classmethod",
+            "property", "type", "object", "super", "object",
+            "os", "sys", "subprocess", "socket", "urllib", "http",
+            "ftplib", "pickle", "marshal", "ctypes", "threading",
+            "multiprocessing", "tempfile", "shutil", "pathlib",
+            "base64", "binascii", "code", "codeop", "commands",
+            "pty", "platform", "popen", "spawn",
+        }
+
+        try:
+            tree = ast.parse(script)
+        except SyntaxError as exc:
+            return f"❌ Syntax error: {exc}"
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import) or isinstance(node, ast.ImportFrom):
+                return "❌ Import statements are not allowed."
+            if isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Name) and func.id in DENIED_NAMES:
+                    return f"❌ Disallowed call: {func.id}"
+                if isinstance(func, ast.Attribute):
+                    # Block access to dunder methods that could escape sandbox
+                    if func.attr.startswith("__") and func.attr.endswith("__"):
+                        return f"❌ Disallowed attribute access: {func.attr}"
+            if isinstance(node, ast.Name) and node.id in DENIED_NAMES:
+                return f"❌ Disallowed name: {node.id}"
+
         local_vars = {"driver": self.driver}
         try:
-            exec(script, {}, local_vars)
+            exec(compile(tree, filename="<sandbox>", mode="exec"), {"__builtins__": {}}, local_vars)
             return "✅ Selenium script executed."
         except Exception as e:
             return f"❌ {e}"

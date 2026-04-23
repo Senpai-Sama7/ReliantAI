@@ -66,17 +66,21 @@ services:
   orchestrator:
     volumes:
       - ./orchestrator:/app
+      - ./shared:/shared:ro
     environment:
-      - DEBUG=true
-      - LOG_LEVEL=DEBUG
+      DEBUG: true
+      LOG_LEVEL: DEBUG
+      ENVIRONMENT: dev
     command: uvicorn main:app --host 0.0.0.0 --port 9000 --reload
 
   integration:
     volumes:
       - ./integration:/app
+      - ./shared:/shared:ro
     environment:
-      - DEBUG=true
-      - LOG_LEVEL=DEBUG
+      DEBUG: true
+      LOG_LEVEL: DEBUG
+      ENVIRONMENT: dev
     command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
 
   # Vault for secrets management (enabled by default in local dev)

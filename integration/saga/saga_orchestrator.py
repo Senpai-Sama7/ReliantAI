@@ -171,7 +171,10 @@ async def store_idempotency(idempotency_key: str, result: Dict[str, Any]):
 
 def generate_deterministic_idempotency_key(step: SagaStep, correlation_id: str) -> str:
     """Generate deterministic idempotency key based on step content and correlation"""
-    content = f"{correlation_id}:{step.step_id}:{step.action}:{step.service}:{hashlib.sha256(str(step.payload).encode()).hexdigest()[:16]}"
+    payload_hash = hashlib.sha256(
+        json.dumps(step.payload, sort_keys=True).encode()
+    ).hexdigest()[:16]
+    content = f"{correlation_id}:{step.step_id}:{step.action}:{step.service}:{payload_hash}"
     return hashlib.sha256(content.encode()).hexdigest()[:32]
 
 
@@ -322,8 +325,12 @@ async def create_saga(req: SagaCreateRequest):
 
     await store_saga(saga)
 
-    # Execute asynchronously
-    asyncio.create_task(execute_saga(saga))
+    # Execute asynchronously and store reference for error tracking
+    task = asyncio.create_task(execute_saga(saga))
+    task.add_done_callback(
+        lambda t: logger.error("saga_task_failed", error=str(t.exception()))
+        if t.done() and t.exception() else None
+    )
 
     return {"saga_id": saga.saga_id, "status": saga.status, "message": "Saga started"}
 
@@ -360,4 +367,4 @@ if __name__ == "__main__":
     import uvicorn
 
     port = int(os.getenv("SAGA_PORT", "8090"))
-    uvicorn.run(app, host="127.0.0.1", port=port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

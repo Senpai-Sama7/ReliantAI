@@ -162,7 +162,7 @@ async def publish_event(
     try:
         # Create event
         now = datetime.now(UTC)
-        event_id = f"evt_{now.timestamp()}_{os.urandom(4).hex()}"
+        event_id = f"evt_{now.timestamp()}_{os.urandom(16).hex()}"
         event = Event(
             metadata=EventMetadata(
                 event_id=event_id,
@@ -209,7 +209,8 @@ async def publish_event(
 
         # Send to DLQ
         try:
-            await r.lpush(
+            redis = fastapi_req.app.state.redis
+            await redis.lpush(
                 "dlq:events",
                 json.dumps(
                     {
@@ -266,13 +267,8 @@ async def get_dlq(
     limit = min(max(1, limit), 1000)  # Clamp between 1 and 1000
     r = request.app.state.redis
     try:
-        events = []
-        for i in range(limit):
-            event_json = await r.lindex("dlq:events", i)
-            if event_json:
-                events.append(json.loads(event_json))
-            else:
-                break
+        events_raw = await r.lrange("dlq:events", 0, limit - 1)
+        events = [json.loads(e) for e in events_raw]
         return {"dlq_size": len(events), "events": events}
     except Exception as e:
         logger.error("get_dlq_error", error=str(e))
@@ -383,6 +379,6 @@ async def process_subscriptions(app: FastAPI):
 if __name__ == "__main__":
     import uvicorn
 
-    _host = os.getenv("EVENT_BUS_HOST", "127.0.0.1")
+    _host = os.getenv("EVENT_BUS_HOST", "0.0.0.0")
     _port = int(os.getenv("EVENT_BUS_PORT", "8081"))
     uvicorn.run(app, host=_host, port=_port)

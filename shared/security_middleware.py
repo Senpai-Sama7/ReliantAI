@@ -6,6 +6,7 @@ Shared security utilities for all services
 import os
 import re
 import logging
+import threading
 from typing import Optional, Dict, List
 from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
@@ -55,7 +56,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         
         # HSTS (HTTPS only)
-        if os.getenv('ENVIRONMENT') in ['staging', 'production']:
+        env = os.getenv('ENV', os.getenv('ENVIRONMENT', '')).lower()
+        if env in ['staging', 'production']:
             response.headers['Strict-Transport-Security'] = (
                 'max-age=31536000; includeSubDomains; preload'
             )
@@ -78,6 +80,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self._redis_url = redis_url or os.getenv("REDIS_URL")
         self._redis = None
         self._local: Dict[str, List[float]] = {}
+        self._local_lock = threading.Lock()
         self._local_max_ips = 10_000
         self.logger = logging.getLogger('rate_limit')
 
@@ -111,20 +114,21 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
     def _check_local(self, ip: str, now: float) -> bool:
         window_start = now - 60
-        # Clean up old entries first
-        self._local = {
-            k: v for k, v in self._local.items()
-            if any(t > window_start for t in v)
-        }
-        # If still too many entries, remove oldest (by first timestamp)
-        if len(self._local) > self._local_max_ips:
-            sorted_ips = sorted(self._local.keys(), key=lambda k: min(self._local[k]) if self._local[k] else 0)
-            for old_ip in sorted_ips[:len(self._local) - self._local_max_ips]:
-                del self._local[old_ip]
-        bucket = self._local.setdefault(ip, [])
-        self._local[ip] = [t for t in bucket if t > window_start]
-        self._local[ip].append(now)
-        return len(self._local[ip]) > self.requests_per_minute
+        with self._local_lock:
+            # Clean up old entries first
+            self._local = {
+                k: v for k, v in self._local.items()
+                if any(t > window_start for t in v)
+            }
+            # If still too many entries, remove oldest (by first timestamp)
+            if len(self._local) > self._local_max_ips:
+                sorted_ips = sorted(self._local.keys(), key=lambda k: min(self._local[k]) if self._local[k] else 0)
+                for old_ip in sorted_ips[:len(self._local) - self._local_max_ips]:
+                    del self._local[old_ip]
+            bucket = self._local.setdefault(ip, [])
+            self._local[ip] = [t for t in bucket if t > window_start]
+            self._local[ip].append(now)
+            return len(self._local[ip]) > self.requests_per_minute
 
     async def dispatch(self, request: Request, call_next):
         # Skip rate limiting for health checks
@@ -184,8 +188,8 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
         if request.url.path in ['/health', '/nginx-health']:
             return await call_next(request)
         
-        # Check query parameters
-        for key, value in request.query_params.items():
+        # Check query parameters and path parameters
+        for key, value in list(request.query_params.items()) + list(request.path_params.items()):
             if self._is_suspicious(str(value)):
                 return JSONResponse(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -319,7 +323,8 @@ def validate_production_config() -> None:
     Raises RuntimeError if placeholder values are detected in critical environment variables.
     Should be called at application startup in production mode.
     """
-    if os.getenv('ENVIRONMENT') != 'production':
+    env = os.getenv('ENV', os.getenv('ENVIRONMENT', '')).lower()
+    if env != 'production':
         return
     
     # Patterns that indicate placeholder/default values
@@ -386,8 +391,10 @@ async def verify_api_key(request: Request):
             headers={"WWW-Authenticate": "ApiKey"}
         )
     
-    # Get expected API key from environment
-    service_name = request.url.path.split('/')[1] if request.url.path else 'default'
+    # Get expected API key from environment using a known-service whitelist
+    KNOWN_SERVICES = {"money", "complianceone", "finops360", "orchestrator", "integration", "bap", "apex", "citadel"}
+    raw_segment = request.url.path.split('/')[1] if request.url.path else ''
+    service_name = raw_segment if raw_segment in KNOWN_SERVICES else 'default'
     expected_key = os.getenv(f'{service_name.upper()}_API_KEY') or os.getenv('API_KEY')
     
     # HIGH-2 fix: Fail closed if no expected key is configured
