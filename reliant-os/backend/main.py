@@ -15,11 +15,15 @@ import time
 from datetime import datetime
 from typing import Optional
 
+import httpx
 import google.generativeai as genai
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from fastapi.middleware.cors import CORSMiddleware
+
+# ── MCP Bridge Integration ──────────────────────────────────────
+MCP_BRIDGE_URL = os.environ.get("MCP_BRIDGE_URL", "http://mcp-bridge:8083")
 
 app = FastAPI(title="Reliant JIT OS", version="2.0.0")
 app.add_middleware(
@@ -269,6 +273,65 @@ Always wrap code in ```python ... ``` blocks."""
             "execution_time_ms": 0
         }
 
+
+# ── MCP (Model Context Protocol) Endpoints ────────────────────────
+# These allow the AI to discover and call tools across all platform services
+
+@app.get("/api/os/mcp/tools")
+async def mcp_list_tools(service: Optional[str] = None, capability: Optional[str] = None):
+    """Discover available MCP tools across the platform."""
+    try:
+        async with httpx.AsyncClient() as client:
+            params = {}
+            if service:
+                params["service"] = service
+            if capability:
+                params["capability"] = capability
+            response = await client.get(f"{MCP_BRIDGE_URL}/mcp/tools", params=params, timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+    except Exception as e:
+        return {"error": str(e), "bridge_available": False}
+
+@app.post("/api/os/mcp/call")
+async def mcp_call_tool(request: Request):
+    """Execute an MCP tool call on behalf of the AI."""
+    try:
+        body = await request.json()
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{MCP_BRIDGE_URL}/mcp/tools/call",
+                json=body,
+                timeout=30.0
+            )
+            response.raise_for_status()
+            return response.json()
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
+@app.get("/api/os/mcp/history")
+async def mcp_tool_history(limit: int = 50):
+    """Get MCP tool execution history."""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"{MCP_BRIDGE_URL}/mcp/tools/history", params={"limit": limit}, timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/api/os/health")
+async def platform_health():
+    """Get aggregated platform health from the health aggregator."""
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get("http://health-aggregator:8086/health/aggregate", timeout=10.0)
+            response.raise_for_status()
+            return response.json()
+    except Exception as e:
+        return {"error": str(e), "aggregator_available": False}
+
+# ── Execution History ───────────────────────────────────────────
 
 @app.get("/api/os/execution-history")
 def get_execution_history(limit: int = 50):
