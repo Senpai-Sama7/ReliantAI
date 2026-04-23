@@ -1,17 +1,4 @@
-"""
-ReliantAI Event Bus - Production Redis Pub/Sub Event-Driven Communication
-NO MOCKING - Real Redis, real schema validation, real DLQ
-"""
-
-from datetime import datetime, UTC
-from enum import Enum
-from contextlib import asynccontextmanager
-from typing import Dict, List, Optional, Any, Callable
-
-import os
-import sys
-
-# Add integration root so 'shared' module resolves
+module resolves
 _INTEGRATION_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _INTEGRATION_ROOT not in sys.path:
     sys.path.insert(0, _INTEGRATION_ROOT)

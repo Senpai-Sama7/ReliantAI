@@ -17,8 +17,6 @@ from pydantic import BaseModel, Field
 
 import sys
 import os
-# Resolve workspace shared code
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,

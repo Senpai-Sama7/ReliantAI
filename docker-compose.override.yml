@@ -73,6 +73,8 @@ services:
     build:
       context: ./vault
       dockerfile: Dockerfile
+    profiles:
+      - vault
     container_name: reliantai-vault
     ports:
       - "8200:8200"

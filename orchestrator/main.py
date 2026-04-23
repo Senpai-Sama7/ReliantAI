@@ -29,7 +29,6 @@ from fastapi.responses import JSONResponse, HTMLResponse
 from pydantic import BaseModel, Field
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,

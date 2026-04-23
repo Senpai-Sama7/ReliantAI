@@ -28,7 +28,6 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 # Resolve workspace shared code
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from integration.shared.event_types import EventPublishRequest, EventType
 from integration.shared.event_bus_client import publish_sync as _event_bus_publish_sync
 

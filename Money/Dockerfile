@@ -40,7 +40,10 @@ RUN cd frontend && npm run build
 # 7. Copy Application Source Code
 COPY . .
 
-# 7.5. Mount static files from built frontend for serving
+# 7.5. Copy integration directory
+COPY integration ./integration
+
+# 8. Mount static files from built frontend for serving
 RUN mkdir -p /app/static && cp -r frontend/dist/* /app/static/
 
 # 8. Create directory for SQLite persistent data (Render mount point)
