@@ -35,7 +35,7 @@ EXPOSE 8080
 
 # Health check
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
-  CMD python -c "import httpx; r = httpx.get('http://localhost:8080/health'); exit(0 if r.status_code == 200 else 1)"
+  CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')"
 
 # Run the service
 CMD ["python", "main.py"]

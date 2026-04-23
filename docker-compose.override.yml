@@ -1,6 +1,6 @@
 # ReliantAI Platform - Docker Compose Override for Local Development
 # This file is automatically loaded by docker-compose alongside docker-compose.yml
-# Use it for local development overrides
+# Use it for local development overrides. Uses dict-style env to merge with base.
 
 version: '3.8'
 
@@ -13,7 +13,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - NGINX_MODE=development
+      NGINX_MODE: development
     command: >
       sh -c "sed -i 's/listen 443 ssl http2;/listen 80;/' /etc/nginx/nginx.conf &&
              sed -i 's/ssl_certificate.*;//' /etc/nginx/nginx.conf &&
@@ -27,30 +27,41 @@ services:
       timeout: 10s
       retries: 3
 
-  # Development volumes for hot reloading
+  # Development volumes for hot reloading - MERGES with base environment
   money:
+    environment:
+      DEBUG: true
+      LOG_LEVEL: DEBUG
+      # Pass through required env vars from base compose
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DISPATCH_API_KEY: ${DISPATCH_API_KEY}
+      ENVIRONMENT: dev
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./Money:/app
-    environment:
-      - DEBUG=true
-      - LOG_LEVEL=DEBUG
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - ./shared:/shared:ro
 
   complianceone:
+    environment:
+      DEBUG: true
+      LOG_LEVEL: DEBUG
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      ENVIRONMENT: dev
     volumes:
       - ./ComplianceOne:/app
-    environment:
-      - DEBUG=true
-      - LOG_LEVEL=DEBUG
-    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+      - ./shared:/shared:ro
 
   finops360:
+    environment:
+      DEBUG: true
+      LOG_LEVEL: DEBUG
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      ENVIRONMENT: dev
+      # Fix: pass correct DATABASE_URL for finops360 from base
+      DATABASE_URL: ${DATABASE_URL}
     volumes:
       - ./FinOps360:/app
-    environment:
-      - DEBUG=true
-      - LOG_LEVEL=DEBUG
-    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+      - ./shared:/shared:ro
 
   orchestrator:
     volumes:

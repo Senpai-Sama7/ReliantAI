@@ -1,0 +1,61 @@
+{
+  "status": "fail",
+  "total_tests": 4,
+  "passed": 0,
+  "results": {
+    "timestamp": "2026-04-23T00:20:16.080121",
+    "complianceone": {
+      "tests": [
+        {
+          "name": "Health Check",
+          "status": "fail",
+          "data": {
+            "status": "unreachable",
+            "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x70918b0bd2b0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+          }
+        },
+        {
+          "name": "Integration Test",
+          "status": "error",
+          "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /frameworks (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x70918b0cd950>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+        }
+      ],
+      "summary": {
+        "passed": 0,
+        "total": 2,
+        "status": "partial"
+      }
+    },
+    "finops360": {
+      "tests": [
+        {
+          "name": "Health Check",
+          "status": "fail",
+          "data": {
+            "status": "unreachable",
+            "error": "HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /health (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x70918b0ce210>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+          }
+        },
+        {
+          "name": "Integration Test",
+          "status": "error",
+          "error": "HTTPConnectionPool(host='localhost', port=8002): Max retries exceeded with url: /accounts (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x70918b0728b0>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+        }
+      ],
+      "summary": {
+        "passed": 0,
+        "total": 2,
+        "status": "partial"
+      }
+    },
+    "cross_service": {
+      "tests": [
+        {
+          "name": "Cross-Service Test",
+          "status": "error",
+          "error": "HTTPConnectionPool(host='localhost', port=8001): Max retries exceeded with url: /violations?status=open (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x70918b073100>: Failed to establish a new connection: [Errno 111] Connection refused'))"
+        }
+      ]
+    }
+  }
+}

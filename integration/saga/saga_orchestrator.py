@@ -340,8 +340,10 @@ async def get_saga_status(saga_id: str):
 
 @app.get("/health")
 async def health():
-    """Health check"""
+    """Health check - fail closed if redis not configured"""
     try:
+        if redis_client is None:
+            raise HTTPException(status_code=503, detail="Redis client not initialized")
         await redis_client.ping()
         return {"status": "healthy", "redis": "connected"}
     except Exception as e:

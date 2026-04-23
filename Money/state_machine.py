@@ -20,6 +20,7 @@ from typing import Dict, List, Optional, Iterator, Set
 
 from config import setup_logging
 from database import get_pool
+from psycopg2.extras import RealDictCursor
 
 logger = setup_logging("state_machine")
 
@@ -132,7 +133,7 @@ class DispatchStateMachine:
     def init_db(self) -> None:
         """Initialize database schema with events table"""
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute(
                 """
                 CREATE TABLE IF NOT EXISTS dispatch_events (
@@ -200,7 +201,7 @@ class DispatchStateMachine:
             ValueError: If transition is invalid
         """
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # Get current state
             cursor.execute(
                 "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = %s",
@@ -279,7 +280,7 @@ class DispatchStateMachine:
         )
         
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute(
                 """
                 INSERT INTO dispatch_events 
@@ -296,7 +297,7 @@ class DispatchStateMachine:
     def get_current_state(self, dispatch_id: str) -> Optional[str]:
         """Get current state of a dispatch"""
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute(
                 "SELECT current_state FROM dispatch_current_state WHERE dispatch_id = %s",
                 (dispatch_id,)
@@ -307,7 +308,7 @@ class DispatchStateMachine:
     def get_timeline(self, dispatch_id: str) -> List[Dict]:
         """Get full event timeline for a dispatch"""
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             cursor.execute(
                 """
                 SELECT * FROM dispatch_events 
@@ -323,7 +324,7 @@ class DispatchStateMachine:
     def funnel_counts(self) -> Dict[str, int]:
         """Get count of dispatches in each state"""
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # Current states
             cursor.execute(
                 """
@@ -364,7 +365,7 @@ class DispatchStateMachine:
     def rebuild_state_cache(self) -> None:
         """Rebuild current_state cache from events (recovery)"""
         with self.tx() as conn:
-            cursor = conn.cursor()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
             # Clear cache
             cursor.execute("DELETE FROM dispatch_current_state")
             

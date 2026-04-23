@@ -17,7 +17,8 @@ RUN poetry config virtualenvs.create false && \
   poetry install --no-interaction --no-ansi --only main
 
 COPY src/ /app/src/
+COPY README.md /app/
 
 # uvicorn hot reload off for prod
 EXPOSE 8000
-CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

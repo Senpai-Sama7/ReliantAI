@@ -18,12 +18,11 @@ load_dotenv(_ENV_PATH)
 
 # ── Validation helper ─────────────────────────────────────────
 def _require(name: str) -> str:
-    """Return env var or fail fast if missing."""
+    """Return env var or raise RuntimeError if missing."""
     val = os.environ.get(name)
     if not val:
-        sys.stderr.write(f"[FATAL] Missing required environment variable: {name}\n")
-        sys.stderr.write("        Copy .env.example → .env and fill in your keys.\n")
-        sys.exit(1)
+        raise RuntimeError(f"Missing required environment variable: {name}. "
+                           "Copy .env.example → .env and fill in your keys.")
     return val
 
 
@@ -49,8 +48,7 @@ os.environ["LANGCHAIN_TRACING_V2"] = "false"
 os.environ.pop("LANGCHAIN_API_KEY", None)
 
 if not DISPATCH_API_KEY and ENV != "test":
-    sys.stderr.write("[FATAL] DISPATCH_API_KEY must be set to a real value.\n")
-    sys.exit(1)
+    raise RuntimeError("DISPATCH_API_KEY must be set to a real value.")
 
 # ── LLM config ────────────────────────────────────────────────
 # CrewAI v1.10 uses litellm for model routing.

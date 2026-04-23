@@ -147,7 +147,7 @@ class AutonomousOrchestrator:
     def __init__(self):
         self.services: Dict[str, Service] = {}
         self.metrics: List[Metric] = []
-        self.metrics_lock = threading.Lock()
+        self.metrics_lock = asyncio.Lock()
         self.running = False
         self.ai_model = None
         self.prediction_window = 300  # 5 minutes
