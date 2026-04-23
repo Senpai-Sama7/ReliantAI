@@ -29,10 +29,12 @@ class SlidingWindowRateLimiter:
         self._locks: dict[str, asyncio.Lock] = {}
         self._lock_factory_lock = asyncio.Lock()
 
-    def _get_lock(self, key: str) -> asyncio.Lock:
+    async def _get_lock(self, key: str) -> asyncio.Lock:
         """Get or create lock for key in thread-safe manner."""
         if key not in self._locks:
-            self._locks[key] = asyncio.Lock()
+            async with self._lock_factory_lock:
+                if key not in self._locks:
+                    self._locks[key] = asyncio.Lock()
         return self._locks[key]
 
     async def check(
@@ -45,9 +47,7 @@ class SlidingWindowRateLimiter:
         """Allow or reject a request based on the recent request count."""
         key = self._key(scope, identifier)
 
-        # Get or create lock atomically
-        async with self._lock_factory_lock:
-            lock = self._get_lock(key)
+        lock = await self._get_lock(key)
 
         async with lock:
             now = time.time()

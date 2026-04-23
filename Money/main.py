@@ -355,7 +355,7 @@ def _verify_bearer_token(token: str) -> dict[str, Any]:
     return response.json()
 
 
-def _authorize_request(x_api_key: str | None, request: Request | None = None) -> None:
+async def _authorize_request(x_api_key: str | None, request: Request | None = None) -> None:
     # Accept valid session cookie as alternative to API key or bearer auth
     if request and _get_session_user(request):
         return
@@ -594,9 +594,9 @@ def health():
 
 
 @app.get("/metrics")
-def metrics(request: Request, x_api_key: str = Header(default=None)):
+async def metrics(request: Request, x_api_key: str = Header(default=None)):
     """Expose Prometheus metrics."""
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
     return get_metrics_response()
 
 
@@ -622,9 +622,9 @@ async def dispatch(
             if e.status_code in (401, 403, 429):
                 raise
             # Fall back to legacy admin API key auth for other errors
-            _authorize_request(x_api_key, request)
+            await _authorize_request(x_api_key, request)
     else:
-        _authorize_request(x_api_key, request)
+        await _authorize_request(x_api_key, request)
 
     # Rate limit after authentication
     _rate_limit(_rate_bucket(request, "dispatch"))
@@ -684,9 +684,9 @@ async def dispatch(
 
 
 @app.get("/run/{run_id}", response_model=DispatchResponse)
-def get_run(run_id: str, request: Request, x_api_key: str = Header(default=None)):
+async def get_run(run_id: str, request: Request, x_api_key: str = Header(default=None)):
     _rate_limit(_rate_bucket(request, "run"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
     job = job_store.get(run_id)
     if not job:
         # Try database fallback
@@ -707,22 +707,22 @@ def get_run(run_id: str, request: Request, x_api_key: str = Header(default=None)
 
 
 @app.get("/dispatches")
-def list_dispatches(
+async def list_dispatches(
     request: Request, limit: int = 50, x_api_key: str = Header(default=None)
 ):
     """Return recent dispatch history from database."""
     _rate_limit(_rate_bucket(request, "dispatches"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
     return get_recent_dispatches(limit)
 
 
 @app.get("/api/dispatch/{dispatch_id}/timeline")
-def get_dispatch_timeline(
+async def get_dispatch_timeline(
     dispatch_id: str, request: Request, x_api_key: str = Header(default=None)
 ):
     """Get full event timeline for a dispatch (event sourcing)."""
     _rate_limit(_rate_bucket(request, "timeline"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
 
     from state_machine import get_state_machine
 
@@ -742,10 +742,10 @@ def get_dispatch_timeline(
 
 
 @app.get("/api/dispatch/funnel")
-def get_dispatch_funnel(request: Request, x_api_key: str = Header(default=None)):
+async def get_dispatch_funnel(request: Request, x_api_key: str = Header(default=None)):
     """Get dispatch pipeline funnel counts."""
     _rate_limit(_rate_bucket(request, "funnel"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
 
     from state_machine import get_state_machine
 
@@ -778,16 +778,16 @@ def get_dispatch_funnel(request: Request, x_api_key: str = Header(default=None))
 
 
 @app.get("/api/metrics")
-def get_dashboard_metrics(request: Request, x_api_key: str = Header(default=None)):
+async def get_dashboard_metrics(request: Request, x_api_key: str = Header(default=None)):
     """Server-side dispatch metrics — single DB query, no client-side aggregation."""
     _rate_limit(_rate_bucket(request, "metrics"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
     from database import get_dispatch_metrics
     return get_dispatch_metrics()
 
 
 @app.get("/api/dispatches/search")
-def search_dispatches_api(
+async def search_dispatches_api(
     request: Request,
     q: str = "",
     status: str = "",
@@ -798,7 +798,7 @@ def search_dispatches_api(
 ):
     """Full-text search + filter dispatches. Supports q, status, urgency params."""
     _rate_limit(_rate_bucket(request, "search"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
     from database import search_dispatches
     results = search_dispatches(query=q, status=status, urgency=urgency, limit=min(limit, 200), offset=offset)
     return {"results": results, "count": len(results), "offset": offset}
@@ -814,7 +814,7 @@ class DispatchUpdateBody(BaseModel):
 
 
 @app.patch("/api/dispatch/{dispatch_id}/status")
-def update_dispatch_status_api(
+async def update_dispatch_status_api(
     dispatch_id: str,
     body: DispatchUpdateBody,
     request: Request,
@@ -826,7 +826,7 @@ def update_dispatch_status_api(
     Used by dashboard operators to correct AI assignments.
     """
     _rate_limit(_rate_bucket(request, "update"))
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
 
     from database import update_dispatch_fields
 
@@ -882,7 +882,7 @@ async def stream_dispatches(request: Request, x_api_key: str = Header(default=No
     Server-Sent Events stream — push live dispatch updates to the dashboard.
     Clients reconnect automatically on disconnect (EventSource spec).
     """
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
 
     queue: asyncio.Queue = asyncio.Queue(maxsize=50)
     with _sse_lock:
@@ -1107,7 +1107,7 @@ def admin_dashboard(request: Request):
 @app.get("/integrations/status")
 async def integrations_status(request: Request, x_api_key: str = Header(default="")):
     """Status of all integration connections"""
-    _authorize_request(x_api_key, request)
+    await _authorize_request(x_api_key, request)
 
     from integrations import (
         SalesIntelligenceConnector,

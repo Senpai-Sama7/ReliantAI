@@ -276,8 +276,7 @@ class TestMoneyServiceContract:
     async def test_metrics_endpoint_exists(self, http):
         # Orchestrator depends on /metrics being present on all services
         async with http.get(url("money", "/metrics"), headers=auth_headers()) as r:
-            # Accept 200 or 404; 500 is a failure
-            assert r.status != 500, "money /metrics returned 500"
+            assert r.status == 200, "money /metrics did not return 200 OK"
 
 
 @pytest.mark.contract
@@ -388,15 +387,15 @@ class TestMetricsFlow:
 
     @pytest.mark.asyncio
     async def test_orchestrator_accumulates_metrics_over_time(self, http):
-        """After 65s, the orchestrator should have at least some metrics."""
+        """After 2s, the orchestrator should have at least some metrics."""
         # This test is slow; skip if metrics are already populated
         before = await get_json(http, url("orchestrator", "/metrics?hours=1"))
         if len(before["metrics"]) > 0:
             pytest.skip("Metrics already present, skipping wait")
 
-        await asyncio.sleep(65)
+        await asyncio.sleep(2)
         after = await get_json(http, url("orchestrator", "/metrics?hours=1"))
-        assert len(after["metrics"]) > 0, "No metrics accumulated after 65s"
+        assert len(after["metrics"]) > 0, "No metrics accumulated after 2s"
 
     @pytest.mark.asyncio
     async def test_metrics_have_valid_structure(self, http):

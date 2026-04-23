@@ -1,27 +1,20 @@
 """
-Ops Intelligence — SQLite persistence layer.
+Ops Intelligence — PostgreSQL persistence layer.
 All 7 operational domains write here.
 """
 
 import json
 import os
-import sqlite3
-import threading
+import psycopg2
+from psycopg2.extras import RealDictCursor
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-DB_PATH = os.getenv("OPS_DB_PATH", "./ops_intelligence.db")
-
-_local = threading.local()
+DB_URL = os.getenv("DATABASE_URL", "postgresql://user:pass@localhost/ops_intelligence")
 
 
-def _get_conn() -> sqlite3.Connection:
-    if not hasattr(_local, "conn") or _local.conn is None:
-        _local.conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-        _local.conn.row_factory = sqlite3.Row
-        _local.conn.execute("PRAGMA journal_mode=WAL")
-        _local.conn.execute("PRAGMA foreign_keys=ON")
-    return _local.conn
+def _get_conn():
+    return psycopg2.connect(DB_URL, cursor_factory=RealDictCursor)
 
 
 def _now() -> str:
@@ -665,7 +658,7 @@ def mark_invoice_paid(id: str) -> Optional[dict]:
 
 # ── Utilities ──────────────────────────────────────────────────────────────
 
-def _row_to_dict(row: sqlite3.Row) -> dict:
+def _row_to_dict(row) -> dict:
     d = dict(row)
     # Parse timeline JSON if present
     if "timeline" in d and isinstance(d["timeline"], str):

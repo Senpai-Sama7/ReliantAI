@@ -202,7 +202,7 @@ async def metrics_endpoint(system: MetacognitiveAutonomySystem = Depends(get_sys
     
     # Generate metrics
     return JSONResponse(
-        content=generate_latest(),
+        content=generate_latest().decode(),
         media_type=CONTENT_TYPE_LATEST
     )
 

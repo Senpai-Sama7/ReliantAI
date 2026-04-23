@@ -53,7 +53,7 @@ function buildContext(docs: Document[], query: string): string {
     // Fallback: if no keyword match, send top 10 by priority
     if (!relevant.length) {
       const order = { critical: 0, high: 1, medium: 2, low: 3 };
-      relevant = [...docs].sort((a, b) => order[a.priority] - order[b.priority]).slice(0, 10);
+      relevant = [...docs].sort((a, b) => (order[a.priority] ?? 99) - (order[b.priority] ?? 99)).slice(0, 10);
     }
   }
 

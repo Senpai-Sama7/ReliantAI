@@ -25,7 +25,7 @@ pub type AppRateLimiter = RateLimiter<NotKeyed, InMemoryState, DefaultClock>;
 
 /// Create rate limiter from configuration
 pub fn create_rate_limiter(config: &SecurityConfig) -> Arc<AppRateLimiter> {
-    let quota = Quota::per_minute(NonZeroU32::new(config.rate_limit_per_minute).unwrap());
+    let quota = Quota::per_minute(NonZeroU32::new(config.rate_limit_per_minute.max(1)).unwrap());
     Arc::new(RateLimiter::direct(quota))
 }
 

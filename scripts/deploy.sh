@@ -77,7 +77,7 @@ check_prerequisites() {
     print_status "Checking port availability..."
     local PORTS=(8000 8001 8002 8080 9000 5432 6379)
     for PORT in "${PORTS[@]}"; do
-        if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        if ss -tlnp | grep -q ":$PORT "; then
             print_warning "Port $PORT is already in use"
         fi
     done

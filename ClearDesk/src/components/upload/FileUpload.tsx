@@ -95,7 +95,7 @@ export function FileUpload({ onHandleFiles }: { onHandleFiles?: (handler: (files
 
     setFiles(p => [...p, ...valid, ...invalid]);
     valid.forEach(processFile);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [processFile, isValidDocumentFile]);
 
   // Expose handleFiles to parent
   useEffect(() => { onHandleFiles?.((files) => handleFiles(files)); }, [handleFiles, onHandleFiles]);

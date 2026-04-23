@@ -17,7 +17,7 @@ services:
     container_name: apex_postgres
     environment:
       POSTGRES_USER:     apex
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB:       apex_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -38,7 +38,7 @@ services:
     container_name: apex_postgres_langfuse
     environment:
       POSTGRES_USER:     langfuse
-      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:-changeme-langfuse}
+      POSTGRES_PASSWORD: ${LANGFUSE_DB_PASSWORD:?LANGFUSE_DB_PASSWORD must be set}
       POSTGRES_DB:       langfuse_db
     volumes:
       - postgres_langfuse_data:/var/lib/postgresql/data
@@ -60,7 +60,7 @@ services:
       - "8001:8001"
     env_file: ../.env
     environment:
-      DATABASE_URL: postgresql://apex:${POSTGRES_PASSWORD:-changeme}@postgres:5432/apex_db
+      DATABASE_URL: postgresql://apex:${POSTGRES_PASSWORD}@postgres:5432/apex_db
       APEX_MCP_URL: http://apex-mcp:4000
     depends_on:
       postgres:
@@ -108,10 +108,10 @@ services:
     ports:
       - "3001:3000"   # Langfuse runs internally on 3000; map to 3001 to avoid UI conflict
     environment:
-      DATABASE_URL:    postgresql://langfuse:${LANGFUSE_DB_PASSWORD:-changeme-langfuse}@postgres-langfuse:5432/langfuse_db
-      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET}
+      DATABASE_URL: postgresql://langfuse:${LANGFUSE_DB_PASSWORD}@postgres-langfuse:5432/langfuse_db
+      NEXTAUTH_SECRET: ${LANGFUSE_NEXTAUTH_SECRET:?LANGFUSE_NEXTAUTH_SECRET must be set}
       NEXTAUTH_URL:    http://localhost:3001
-      SALT:            ${LANGFUSE_SALT}
+      SALT:            ${LANGFUSE_SALT:?LANGFUSE_SALT must be set}
       TELEMETRY_ENABLED: "false"
       # Auto-create org, project, and admin user on first boot:
       LANGFUSE_INIT_ORG_ID:                 apex-org

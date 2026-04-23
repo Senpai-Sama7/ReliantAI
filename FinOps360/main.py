@@ -411,11 +411,19 @@ async def generate_recommendations(account_id: int, api_key: str = Depends(verif
         pool.putconn(conn)
 
 @app.get("/recommendations")
-async def list_recommendations(account_id: Optional[int] = None, is_implemented: Optional[bool] = None):
+async def list_recommendations(account_id: Optional[int] = None, is_implemented: Optional[bool] = None, order_by: str = "potential_savings", sort_dir: str = "DESC"):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            allowed_columns = {"potential_savings", "account_id", "created_at", "is_implemented"}
+            allowed_dirs = {"ASC", "DESC"}
+            
+            if order_by not in allowed_columns:
+                order_by = "potential_savings"
+            if sort_dir.upper() not in allowed_dirs:
+                sort_dir = "DESC"
+            
             query = "SELECT * FROM cost_optimization_recommendations WHERE 1=1"
             params = []
             if account_id:
@@ -424,7 +432,7 @@ async def list_recommendations(account_id: Optional[int] = None, is_implemented:
             if is_implemented is not None:
                 query += " AND is_implemented = %s"
                 params.append(is_implemented)
-            query += " ORDER BY potential_savings DESC"
+            query += f" ORDER BY {order_by} {sort_dir}"
             
             cur.execute(query, params)
             recommendations = [dict(row) for row in cur.fetchall()]

@@ -436,7 +436,7 @@ impl TaskRouter {
             LoadBalancingStrategy::LeastConnections => {
                 capable_nodes
                     .iter()
-                    .min_by(|a, b| a.value().load.partial_cmp(&b.value().load).unwrap())
+                    .min_by(|a, b| a.value().load.partial_cmp(&b.value().load).unwrap_or(std::cmp::Ordering::Equal))
                     .unwrap()
                     .value()
                     .id

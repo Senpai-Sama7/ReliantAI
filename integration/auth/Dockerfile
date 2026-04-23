@@ -16,8 +16,9 @@ COPY auth/auth_server.py .
 COPY auth/migrate.py .
 COPY auth/migrations/ ./migrations/
 
-# Create entrypoint script
-RUN echo '#!/bin/sh\npython -c "import asyncio; from user_store import SQLiteUserStore; asyncio.run(SQLiteUserStore(\"/app/auth.db\").initialize())" || true\nexec python auth_server.py' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+# Copy and set up entrypoint script
+COPY auth/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 # Health check using httpx (installed dependency)
 HEALTHCHECK --interval=10s --timeout=3s --retries=3 \

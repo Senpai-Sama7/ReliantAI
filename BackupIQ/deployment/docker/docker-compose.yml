@@ -63,7 +63,7 @@ services:
     container_name: backup-neo4j
     restart: unless-stopped
     environment:
-      - NEO4J_AUTH=neo4j/backup-enterprise-password
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:?NEO4J_PASSWORD must be set}
       - NEO4J_PLUGINS=["apoc", "graph-data-science"]
       - NEO4J_db_tx__log_rotation_retention__policy=1 days
       - NEO4J_dbms_memory_heap_initial__size=512m
@@ -77,7 +77,7 @@ services:
     networks:
       - backup-network
     healthcheck:
-      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "backup-enterprise-password", "RETURN 1"]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD}", "RETURN 1"]
       interval: 30s
       timeout: 10s
       retries: 5

@@ -22,7 +22,7 @@ try:
     from jwt_validator import JWTValidator
 
     _secret = os.getenv("AUTH_SECRET_KEY", "")
-    _auth_url = os.getenv("AUTH_SERVICE_URL", "http://127.0.0.1:8080")
+    _auth_url = os.getenv("AUTH_SERVICE_URL", "http://integration:8080")
     _validator = JWTValidator(secret_key=_secret, auth_url=_auth_url)
     AUTH_ENABLED = True
 except Exception:
