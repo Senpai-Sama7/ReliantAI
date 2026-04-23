@@ -6,6 +6,12 @@ _INTEGRATION_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _INTEGRATION_ROOT not in sys.path:
     sys.path.insert(0, _INTEGRATION_ROOT)
 
+# Resolve workspace shared code (docs branding, tracing)
+_PROJECT_ROOT = os.path.dirname(_INTEGRATION_ROOT)
+_SHARED_DIR = os.path.join(_PROJECT_ROOT, "shared")
+if _SHARED_DIR not in sys.path:
+    sys.path.insert(0, _SHARED_DIR)
+
 import json  # noqa: E402
 import asyncio  # noqa: E402
 from typing import Dict, List, Callable  # noqa: E402
@@ -115,7 +121,21 @@ async def lifespan(app: FastAPI):
 
 
 # App
-app = FastAPI(title="ReliantAI Event Bus", lifespan=lifespan)
+app = FastAPI(title="ReliantAI Event Bus", lifespan=lifespan, docs_url=None, redoc_url=None)
+
+# Apply ReliantAI platform branding to API docs
+from docs_branding import configure_docs_branding
+configure_docs_branding(app, service_name="Event Bus", service_color="#DC2626")
+
+# Distributed tracing (OpenTelemetry)
+from tracing import configure_tracing
+configure_tracing(service_name="event-bus")
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
 
 
 @app.get("/health")

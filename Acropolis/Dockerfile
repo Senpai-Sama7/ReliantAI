@@ -84,9 +84,10 @@ FROM debian:12.8-slim AS runtime
 RUN groupadd -r acropolis && \
     useradd -r -g acropolis -s /sbin/nologin -c "Acropolis service user" acropolis
 
-# Install minimal runtime dependencies
+# Install minimal runtime dependencies + curl for Docker health probes (AGENTS.md invariant)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+        curl \
         python3 \
         python3-pip \
         ca-certificates \

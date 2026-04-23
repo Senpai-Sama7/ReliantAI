@@ -1,8 +1,11 @@
 global:
-  smtp_smarthost: 'localhost:587'
-  smtp_from: 'alerts@reliantai.io'
-  smtp_auth_username: 'alerts@reliantai.io'
-  smtp_auth_password: 'your-smtp-password'
+  smtp_smarthost: '${ALERTMANAGER_SMTP_HOST:-localhost:587}'
+  smtp_from: '${ALERTMANAGER_SMTP_FROM:-alerts@reliantai.io}'
+  smtp_auth_username: '${ALERTMANAGER_SMTP_USER:-alerts@reliantai.io}'
+  smtp_auth_password: '${ALERTMANAGER_SMTP_PASS:-your-smtp-password}'
+  slack_api_url: '${ALERTMANAGER_SLACK_URL:-}'
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  resolve_timeout: 5m
 
 # Templates for notifications
 templates:
@@ -16,22 +19,41 @@ route:
   repeat_interval: 12h
   receiver: 'default'
   routes:
-    # Critical alerts
+    # Critical alerts → PagerDuty + Slack + Email
     - match:
         severity: critical
-      receiver: 'pagerduty-critical'
+      receiver: 'critical-all'
       continue: true
     
-    # Warning alerts
+    # Warning alerts → Slack + Email
     - match:
         severity: warning
-      receiver: 'slack-warnings'
+      receiver: 'warning-all'
       continue: true
     
-    # Service-specific routing
+    # Info alerts → Slack only
+    - match:
+        severity: info
+      receiver: 'slack-info'
+      continue: false
+    
+    # Service-specific routing for platform team
     - match_re:
-        service: money|complianceone|finops360
+        service: money|complianceone|finops360|integration|orchestrator
       receiver: 'team-platform'
+      continue: true
+    
+    # Security-specific alerts
+    - match_re:
+        service: citadel|cyberarchitect|vault
+      receiver: 'team-security'
+      continue: true
+    
+    # AI/ML-specific alerts
+    - match_re:
+        service: apex-agents|apex-ui|apex-mcp|acropolis|bap
+      receiver: 'team-ai'
+      continue: true
 
 # Inhibition rules
 inhibit_rules:
@@ -40,12 +62,17 @@ inhibit_rules:
     target_match:
       severity: 'warning'
     equal: ['alertname', 'cluster', 'service']
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'cluster', 'service']
 
 # Receivers
 receivers:
   - name: 'default'
     email_configs:
-      - to: 'team@reliantai.io'
+      - to: '${ALERTMANAGER_DEFAULT_EMAIL:-team@reliantai.io}'
         send_resolved: true
         headers:
           Subject: 'ReliantAI Alert: {{ .GroupLabels.alertname }}'
@@ -56,20 +83,47 @@ receivers:
           <p>Labels: {{ .Labels }}</p>
           {{ end }}
 
-  - name: 'pagerduty-critical'
+  - name: 'critical-all'
     pagerduty_configs:
-      - service_key: 'your-pagerduty-service-key'
+      - service_key: '${ALERTMANAGER_PAGERDUTY_KEY:-your-pagerduty-service-key}'
         description: '{{ .GroupLabels.alertname }}: {{ .GroupLabels.service }}'
         severity: 'critical'
         details:
           firing: '{{ template "pagerduty.default.description" . }}'
           resolved: '{{ template "pagerduty.default.instances" . }}'
-
-  - name: 'slack-warnings'
     slack_configs:
-      - api_url: 'your-slack-webhook-url'
+      - api_url: '${ALERTMANAGER_SLACK_URL:-}'
+        channel: '#alerts-critical'
+        title: '🔥 CRITICAL: ReliantAI Platform Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Severity:* {{ .Labels.severity }}
+          *Service:* {{ .Labels.service }}
+          *Instance:* {{ .Labels.instance }}
+          {{ end }}
+        send_resolved: true
+    email_configs:
+      - to: '${ALERTMANAGER_ONCALL_EMAIL:-oncall@reliantai.io}'
+        send_resolved: true
+        headers:
+          Subject: '[CRITICAL] ReliantAI: {{ .GroupLabels.alertname }}'
+        html: |
+          {{ range .Alerts }}
+          <h2 style="color:red">CRITICAL ALERT</h2>
+          <p><strong>Alert:</strong> {{ .Annotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .Annotations.description }}</p>
+          <p><strong>Severity:</strong> {{ .Labels.severity }}</p>
+          <p><strong>Service:</strong> {{ .Labels.service }}</p>
+          <p><strong>Time:</strong> {{ .StartsAt }}</p>
+          {{ end }}
+
+  - name: 'warning-all'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_SLACK_URL:-}'
         channel: '#alerts'
-        title: 'ReliantAI Platform Alert'
+        title: '⚠️ WARNING: ReliantAI Platform Alert'
         text: |
           {{ range .Alerts }}
           *Alert:* {{ .Annotations.summary }}
@@ -78,8 +132,46 @@ receivers:
           *Service:* {{ .Labels.service }}
           {{ end }}
         send_resolved: true
+    email_configs:
+      - to: '${ALERTMANAGER_DEFAULT_EMAIL:-team@reliantai.io}'
+        send_resolved: true
+        headers:
+          Subject: '[WARNING] ReliantAI: {{ .GroupLabels.alertname }}'
+
+  - name: 'slack-info'
+    slack_configs:
+      - api_url: '${ALERTMANAGER_SLACK_URL:-}'
+        channel: '#alerts-info'
+        title: 'ℹ️ INFO: ReliantAI Platform'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Service:* {{ .Labels.service }}
+          {{ end }}
+        send_resolved: false
 
   - name: 'team-platform'
     email_configs:
       - to: 'platform-team@reliantai.io'
+        send_resolved: true
+
+  - name: 'team-security'
+    email_configs:
+      - to: 'security-team@reliantai.io'
+        send_resolved: true
+    slack_configs:
+      - api_url: '${ALERTMANAGER_SLACK_URL:-}'
+        channel: '#security-alerts'
+        title: '🔒 Security Alert'
+        text: |
+          {{ range .Alerts }}
+          *Alert:* {{ .Annotations.summary }}
+          *Service:* {{ .Labels.service }}
+          *Severity:* {{ .Labels.severity }}
+          {{ end }}
+
+  - name: 'team-ai'
+    email_configs:
+      - to: 'ai-team@reliantai.io'
         send_resolved: true

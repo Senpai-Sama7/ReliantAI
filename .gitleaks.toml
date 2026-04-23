@@ -1,0 +1,58 @@
+title = "ReliantAI Platform Gitleaks Configuration"
+
+[extend]
+# Use default gitleaks rules as base
+useDefault = true
+
+[[rules]]
+# ReliantAI-specific API key patterns
+id = "reliantai-api-key"
+description = "ReliantAI service API key"
+regex = '''(DISPATCH_API_KEY|COMPLIANCEONE_API_KEY|FINOPS360_API_KEY|ORCHESTRATOR_API_KEY|EVENT_BUS_API_KEY|JWT_SECRET)\s*=\s*['"][^'"]{8,}['"]'''
+keywords = ["DISPATCH_API_KEY", "COMPLIANCEONE_API_KEY", "FINOPS360_API_KEY", "ORCHESTRATOR_API_KEY", "EVENT_BUS_API_KEY", "JWT_SECRET"]
+
+[[rules]]
+# Twilio credentials
+id = "twilio-credentials"
+description = "Twilio SID or Token"
+regex = '''(TWILIO_SID|TWILIO_TOKEN)\s*=\s*['"][a-zA-Z0-9]{20,}['"]'''
+keywords = ["TWILIO_SID", "TWILIO_TOKEN"]
+
+[[rules]]
+# Redis password
+id = "redis-password"
+description = "Redis AUTH password"
+regex = '''REDIS_PASSWORD\s*=\s*['"][^'"]{8,}['"]'''
+keywords = ["REDIS_PASSWORD"]
+
+[[rules]]
+# PostgreSQL password
+id = "postgres-password"
+description = "PostgreSQL password"
+regex = '''POSTGRES_PASSWORD\s*=\s*['"][^'"]{8,}['"]'''
+keywords = ["POSTGRES_PASSWORD"]
+
+[[rules]]
+# Alertmanager credentials
+id = "alertmanager-credentials"
+description = "Alertmanager SMTP or PagerDuty credentials"
+regex = '''(ALERTMANAGER_SMTP_PASS|ALERTMANAGER_PAGERDUTY_KEY)\s*=\s*['"][^'"]{8,}['"]'''
+keywords = ["ALERTMANAGER_SMTP_PASS", "ALERTMANAGER_PAGERDUTY_KEY"]
+
+[allowlist]
+# Allow placeholder/example values
+regexes = [
+  '''change-me''',
+  '''change-in-production''',
+  '''your-''',
+  '''placeholder''',
+  '''example''',
+  '''test-''',
+  '''fake-''',
+  '''dummy''',
+]
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''\.env\.example$''',
+  '''(pkg|vendor)/.*''',
+]

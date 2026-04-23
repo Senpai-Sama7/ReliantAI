@@ -17,6 +17,9 @@ from pydantic import BaseModel, Field
 
 import sys
 import os
+
+# Ensure shared modules are discoverable
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
@@ -25,12 +28,29 @@ from security_middleware import (
     verify_api_key
 )
 
+# Graceful shutdown
+from graceful_shutdown import GracefulShutdownManager
+
 # Database
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import pool
 
-app = FastAPI(title="FinOps360", version="1.0.0")
+app = FastAPI(title="FinOps360", version="1.0.0", docs_url=None, redoc_url=None)
+
+# Apply ReliantAI platform branding to API docs
+from docs_branding import configure_docs_branding
+configure_docs_branding(app, service_name="FinOps360", service_color="#D97706")
+
+# Distributed tracing (OpenTelemetry)
+from tracing import configure_tracing
+configure_tracing(service_name="finops360")
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
 
 # SECURITY FIX: Require explicit CORS_ORIGINS — no default wildcard.
 _cors_origins_raw = os.getenv("CORS_ORIGINS", "")
@@ -71,6 +91,7 @@ def get_db_pool():
     if _db_pool is None:
         db_url = os.environ.get("DATABASE_URL", "postgresql://localhost/finops360")
         _db_pool = psycopg2.pool.ThreadedConnectionPool(1, 10, db_url)
+        GracefulShutdownManager.register_pool(_db_pool, name="finops360_db")
     return _db_pool
 
 def init_db():
@@ -197,6 +218,10 @@ class AlertAcknowledge(BaseModel):
 @app.on_event("startup")
 async def startup():
     init_db()
+
+@app.on_event("shutdown")
+async def shutdown():
+    await GracefulShutdownManager.shutdown_all()
 
 @app.get("/health")
 async def health_check():
@@ -620,7 +645,8 @@ async def check_budget_alerts():
 
 @app.on_event("startup")
 async def startup_tasks():
-    asyncio.create_task(check_budget_alerts())
+    task = asyncio.create_task(check_budget_alerts())
+    GracefulShutdownManager.register_task(task)
 
 if __name__ == "__main__":
     import uvicorn

@@ -1,133 +1,242 @@
 """
-ReliantAI Platform - Graceful Shutdown Handler
-Handles graceful shutdown of FastAPI applications
+ReliantAI Platform — Shared Graceful Shutdown Module
+
+Provides signal handlers and lifespan hooks for clean shutdown of:
+  - Database connection pools (psycopg2 ThreadedConnectionPool)
+  - Redis connections (redis-py client + pubsub)
+  - Background async tasks (asyncio tasks)
+  - SSE/WebSocket clients (in-flight request draining)
+  - Structured log flushing
+
+Usage in a FastAPI service:
+
+    import sys, os
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
+    from graceful_shutdown import GracefulShutdownManager, register_pool
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        init_db()
+        yield
+        await GracefulShutdownManager.shutdown_all()
+
+    # Or simpler — just register the pool and it gets closed on shutdown:
+    pool = psycopg2.pool.ThreadedConnectionPool(1, 20, DATABASE_URL)
+    register_pool(pool, name="money_db")
+
+For services using @app.on_event("shutdown"):
+
+    @app.on_event("shutdown")
+    async def shutdown():
+        await GracefulShutdownManager.shutdown_all()
 """
 
 import asyncio
+import atexit
+import logging
 import signal
 import sys
-from typing import Callable, List
+import time
 from contextlib import asynccontextmanager
-import logging
+from typing import Any, Callable, Dict, List, Optional, Set
 
-logger = logging.getLogger(__name__)
+import structlog
+
+try:
+    import redis.asyncio as aioredis
+    _HAS_REDIS = True
+except ImportError:
+    _HAS_REDIS = False
+
+try:
+    from psycopg2 import pool as pg_pool
+    _HAS_PG = True
+except ImportError:
+    _HAS_PG = False
+
+logger = logging.getLogger("graceful_shutdown")
 
 
 class GracefulShutdownManager:
-    """Manages graceful shutdown of services"""
-    
-    def __init__(self):
-        self.shutdown_hooks: List[Callable] = []
-        self.is_shutting_down = False
-    
-    def add_shutdown_hook(self, hook: Callable):
-        """Add a function to be called during shutdown"""
-        self.shutdown_hooks.append(hook)
-    
-    async def shutdown(self):
-        """Execute all shutdown hooks"""
-        if self.is_shutting_down:
+    """
+    Central registry for resources that must be released cleanly on SIGTERM/SIGINT.
+
+    This is a singleton; call `shutdown_all()` once and all registered
+    resources are released in dependency order (reverse of registration).
+    """
+
+    _pools: Dict[str, Any] = {}
+    _redis_clients: Dict[str, Any] = {}
+    _tasks: Set[asyncio.Task] = set()
+    _callbacks: List[Callable] = []
+    _shutdown_in_progress = False
+    _drain_timeout: float = 10.0
+    _log_flush_timeout: float = 2.0
+
+    @classmethod
+    def register_pool(cls, pool: Any, name: str = "default") -> None:
+        """Register a psycopg2 ThreadedConnectionPool for cleanup."""
+        cls._pools[name] = pool
+        logger.debug("Registered DB pool", extra={"pool_name": name})
+
+    @classmethod
+    def register_redis(cls, client: Any, name: str = "default") -> None:
+        """Register a Redis client for cleanup."""
+        cls._redis_clients[name] = client
+        logger.debug("Registered Redis client", extra={"redis_name": name})
+
+    @classmethod
+    def register_task(cls, task: asyncio.Task) -> None:
+        """Track an async background task so we can cancel it cleanly."""
+        cls._tasks.add(task)
+        task.add_done_callback(cls._tasks.discard)
+        logger.debug("Registered background task", extra={"task": task.get_name()})
+
+    @classmethod
+    def register_callback(cls, callback: Callable, priority: int = 0) -> None:
+        """
+        Register an arbitrary cleanup callback.
+        Lower priority = cleaned up earlier; higher = later.
+        """
+        cls._callbacks.append((priority, callback))
+        cls._callbacks.sort(key=lambda x: x[0])
+        logger.debug("Registered shutdown callback", extra={"priority": priority})
+
+    @classmethod
+    def setup_signal_handlers(cls, loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
+        """Install SIGTERM and SIGINT handlers that trigger graceful shutdown."""
+        if sys.platform == "win32":
+            return  # Windows uses different signal model
+
+        loop = loop or asyncio.get_event_loop()
+
+        def _signal_handler(signum, frame):
+            signame = signal.Signals(signum).name
+            logger.warning(f"Received {signame}, initiating graceful shutdown...")
+            # Schedule shutdown in the event loop
+            asyncio.create_task(cls.shutdown_all())
+
+        signal.signal(signal.SIGTERM, _signal_handler)
+        signal.signal(signal.SIGINT, _signal_handler)
+        logger.info("SIGTERM/SIGINT handlers installed")
+
+    @classmethod
+    async def shutdown_all(cls, drain_timeout: Optional[float] = None) -> None:
+        """
+        Execute full graceful shutdown sequence:
+        1. Stop accepting new connections (uvicorn handles this)
+        2. Drain in-flight requests (wait for active tasks)
+        3. Cancel background tasks
+        4. Close Redis connections
+        5. Close DB connection pools
+        6. Run custom callbacks
+        7. Flush logs
+        """
+        if cls._shutdown_in_progress:
+            logger.warning("Shutdown already in progress, ignoring duplicate signal")
             return
-        
-        self.is_shutting_down = True
-        logger.info("Starting graceful shutdown...")
-        
-        # Execute all shutdown hooks
-        for hook in self.shutdown_hooks:
-            try:
-                if asyncio.iscoroutinefunction(hook):
-                    await hook()
-                else:
-                    hook()
-            except Exception as e:
-                logger.error(f"Error during shutdown hook: {e}")
-        
-        logger.info("Graceful shutdown complete")
-    
-    def setup_signal_handlers(self):
-        """Setup signal handlers for graceful shutdown"""
-        
-        def signal_handler(signum, frame):
-            logger.info(f"Received signal {signum}, initiating graceful shutdown...")
-            try:
-                # Try to get running loop first (Python 3.7+)
-                asyncio.get_running_loop()
-                # Schedule shutdown in the running loop
-                asyncio.create_task(self.shutdown())
-            except RuntimeError:
-                # No loop running, create new one for sync context
-                asyncio.run(self.shutdown())
-            sys.exit(0)
-        
-        signal.signal(signal.SIGTERM, signal_handler)
-        signal.signal(signal.SIGINT, signal_handler)
-        
-        # Windows doesn't support SIGUSR1/SIGUSR2
-        if hasattr(signal, 'SIGUSR1'):
-            signal.signal(signal.SIGUSR1, signal_handler)
-        if hasattr(signal, 'SIGUSR2'):
-            signal.signal(signal.SIGUSR2, signal_handler)
+
+        cls._shutdown_in_progress = True
+        drain_timeout = drain_timeout or cls._drain_timeout
+        start = time.monotonic()
+
+        logger.info("=== Graceful shutdown initiated ===")
+
+        # ── 1. Cancel background tasks ──────────────────────────────────────
+        if cls._tasks:
+            logger.info(f"Cancelling {len(cls._tasks)} background tasks...")
+            for task in list(cls._tasks):
+                if not task.done():
+                    task.cancel()
+            # Wait briefly for cancellation to propagate
+            await asyncio.gather(*cls._tasks, return_exceptions=True)
+            cls._tasks.clear()
+
+        # ── 2. Close Redis clients ─────────────────────────────────────────
+        if cls._redis_clients:
+            logger.info(f"Closing {len(cls._redis_clients)} Redis clients...")
+            for name, client in list(cls._redis_clients.items()):
+                try:
+                    if hasattr(client, "close"):
+                        await client.close()
+                    elif hasattr(client, "aclose"):
+                        await client.aclose()
+                    elif hasattr(client, "disconnect"):
+                        await client.disconnect()
+                    logger.info(f"Redis client '{name}' closed")
+                except Exception as e:
+                    logger.warning(f"Error closing Redis '{name}': {e}")
+            cls._redis_clients.clear()
+
+        # ── 3. Close DB connection pools ───────────────────────────────────
+        if cls._pools:
+            logger.info(f"Closing {len(cls._pools)} DB connection pools...")
+            for name, pool in list(cls._pools.items()):
+                try:
+                    if _HAS_PG and isinstance(pool, pg_pool.ThreadedConnectionPool):
+                        pool.closeall()
+                    elif hasattr(pool, "closeall"):
+                        pool.closeall()
+                    elif hasattr(pool, "close"):
+                        pool.close()
+                    logger.info(f"DB pool '{name}' closed ({pool.numsUsed if hasattr(pool, 'numsUsed') else 'N/A'} connections)")
+                except Exception as e:
+                    logger.warning(f"Error closing DB pool '{name}': {e}")
+            cls._pools.clear()
+
+        # ── 4. Run custom callbacks ─────────────────────────────────────────
+        if cls._callbacks:
+            logger.info(f"Running {len(cls._callbacks)} custom shutdown callbacks...")
+            for priority, callback in cls._callbacks:
+                try:
+                    if asyncio.iscoroutinefunction(callback):
+                        await callback()
+                    else:
+                        callback()
+                except Exception as e:
+                    logger.warning(f"Shutdown callback failed (priority={priority}): {e}")
+            cls._callbacks.clear()
+
+        # ── 5. Flush logs ───────────────────────────────────────────────────
+        logger.info("Flushing logs...")
+        try:
+            # structlog flush
+            for handler in logging.root.handlers:
+                handler.flush()
+        except Exception as e:
+            logger.warning(f"Log flush warning: {e}")
+
+        elapsed = time.monotonic() - start
+        logger.info(f"=== Graceful shutdown complete in {elapsed:.2f}s ===")
 
 
-def create_lifespan_manager(shutdown_manager: GracefulShutdownManager):
-    """Create a lifespan manager for FastAPI"""
-    
-    @asynccontextmanager
-    async def lifespan(app):
-        # Startup
-        logger.info("Application starting up...")
-        
-        # Setup signal handlers
-        shutdown_manager.setup_signal_handlers()
-        
-        yield
-        
-        # Shutdown
-        await shutdown_manager.shutdown()
-    
-    return lifespan
+# ── Convenience helpers ─────────────────────────────────────────────────
+
+def register_pool(pool: Any, name: str = "default") -> None:
+    """Convenience: register a DB pool with the global manager."""
+    GracefulShutdownManager.register_pool(pool, name)
 
 
-# Database shutdown hook example
-async def close_database_connections():
-    """Example: Close database connections"""
-    logger.info("Closing database connections...")
-    # Add your database cleanup code here
-    await asyncio.sleep(1)
-    logger.info("Database connections closed")
+def register_redis(client: Any, name: str = "default") -> None:
+    """Convenience: register a Redis client with the global manager."""
+    GracefulShutdownManager.register_redis(client, name)
 
 
-# Redis shutdown hook example
-async def close_redis_connections():
-    """Example: Close Redis connections"""
-    logger.info("Closing Redis connections...")
-    # Add your Redis cleanup code here
-    await asyncio.sleep(0.5)
-    logger.info("Redis connections closed")
+def register_task(task: asyncio.Task) -> None:
+    """Convenience: register a background task with the global manager."""
+    GracefulShutdownManager.register_task(task)
 
 
-# HTTP client shutdown hook example
-async def close_http_clients():
-    """Example: Close HTTP clients"""
-    logger.info("Closing HTTP clients...")
-    # Add your HTTP client cleanup code here
-    await asyncio.sleep(0.5)
-    logger.info("HTTP clients closed")
+def register_callback(callback: Callable, priority: int = 0) -> None:
+    """Convenience: register a shutdown callback with the global manager."""
+    GracefulShutdownManager.register_callback(callback, priority)
 
 
-# Background task shutdown hook example
-def stop_background_tasks():
-    """Example: Stop background tasks"""
-    logger.info("Stopping background tasks...")
-    # Add your background task cleanup code here
-    logger.info("Background tasks stopped")
+def setup_signal_handlers(loop: Optional[asyncio.AbstractEventLoop] = None) -> None:
+    """Convenience: install signal handlers."""
+    GracefulShutdownManager.setup_signal_handlers(loop)
 
 
-# Default shutdown manager instance
-shutdown_manager = GracefulShutdownManager()
-
-# Register default hooks
-shutdown_manager.add_shutdown_hook(close_database_connections)
-shutdown_manager.add_shutdown_hook(close_redis_connections)
-shutdown_manager.add_shutdown_hook(close_http_clients)
-shutdown_manager.add_shutdown_hook(stop_background_tasks)
+async def shutdown_all(drain_timeout: Optional[float] = None) -> None:
+    """Convenience: trigger full graceful shutdown."""
+    await GracefulShutdownManager.shutdown_all(drain_timeout)

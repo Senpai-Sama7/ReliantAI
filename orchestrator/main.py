@@ -4,6 +4,7 @@ Self-managing, self-healing, AI-powered platform orchestration
 """
 
 import os
+import sys
 import json
 import time
 import asyncio
@@ -22,13 +23,17 @@ from redis.asyncio.client import Redis as AsyncRedis
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, status
 from pydantic import BaseModel
+
+# Shared graceful shutdown
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
+from graceful_shutdown import GracefulShutdownManager
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
     InputValidationMiddleware,
     AuditLogMiddleware,
     verify_api_key,
-    create_cors_middleware
+    create_cors_middleware,
 )
 
 # AI/ML components
@@ -38,7 +43,21 @@ try:
 except ImportError:
     AI_AVAILABLE = False
 
-app = FastAPI(title="ReliantAI Orchestrator", version="2.0.0")
+app = FastAPI(title="ReliantAI Orchestrator", version="2.0.0", docs_url=None, redoc_url=None)
+
+# Apply ReliantAI platform branding to API docs
+from docs_branding import configure_docs_branding
+configure_docs_branding(app, service_name="Orchestrator", service_color="#7C3AED")
+
+# Distributed tracing (OpenTelemetry)
+from tracing import configure_tracing
+configure_tracing(service_name="orchestrator")
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
 
 # SECURITY FIX: Apply fail-closed CORS via shared middleware
 create_cors_middleware(app)
@@ -266,6 +285,7 @@ class AutonomousOrchestrator:
                         max_connections=10,
                     )
                     await self._redis.ping()
+                    GracefulShutdownManager.register_redis(self._redis, name="orchestrator_redis")
                     print(f"✅ Redis connected: {redis_url}")
                 except Exception as e:
                     print(f"⚠️  Redis unavailable ({e}) -- scale intents will be local-only")
@@ -303,25 +323,20 @@ class AutonomousOrchestrator:
         print("🚀 Autonomous Orchestrator Started")
         
         # Start background tasks
-        asyncio.create_task(self._health_check_loop())
-        asyncio.create_task(self._metrics_collection_loop())
-        asyncio.create_task(self._auto_scaling_loop())
-        asyncio.create_task(self._auto_healing_loop())
-        asyncio.create_task(self._ai_prediction_loop())
-        asyncio.create_task(self._optimization_loop())
-        asyncio.create_task(self._scale_executor_loop())
+        GracefulShutdownManager.register_task(asyncio.create_task(self._health_check_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._metrics_collection_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._auto_scaling_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._auto_healing_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._ai_prediction_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._optimization_loop()))
+        GracefulShutdownManager.register_task(asyncio.create_task(self._scale_executor_loop()))
     
     async def stop(self):
-        """Stop orchestrator"""
+        """Stop orchestrator — delegates to GracefulShutdownManager for clean shutdown."""
         self.running = False
         if self._http:
             await self._http.close()
-        if self._redis is not None:
-            try:
-                await self._redis.aclose()
-            except Exception:
-                pass
-            self._redis = None
+        await GracefulShutdownManager.shutdown_all()
         print("🛑 Autonomous Orchestrator Stopped")
     
     # ─────────────────────────────────────────────────────────────────────────

@@ -1,0 +1,153 @@
+# ReliantAI Platform — PostgreSQL High Availability (HA) Configuration
+# 
+# This file provides a primary-replica PostgreSQL setup using native streaming replication.
+# 
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.ha.yml up -d
+#
+# Architecture:
+#   - postgres-primary:  Read-write primary (synchronous_commit = remote_apply)
+#   - postgres-replica:  Hot standby (read-only queries, failover target)
+#   - pgpool:            Connection pooler + load balancer (read queries → replica, writes → primary)
+#   - repmgr:            Replication manager (automated failover, witness node)
+#
+# Failover:
+#   - If primary fails, repmgr promotes replica to primary within ~30s
+#   - pgpool automatically routes connections to new primary
+#   - Applications use pgpool:5432 instead of postgres:5432
+
+version: '3.8'
+
+services:
+  # ── PostgreSQL Primary ───────────────────────────────────────────────────
+  postgres-primary:
+    image: bitnami/postgresql-repmgr:15
+    container_name: reliantai-postgres-primary
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER:-postgres}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB:-reliantai}
+      # Replication
+      REPMGR_PASSWORD: ${REPMGR_PASSWORD:-repmgrpass}
+      REPMGR_PRIMARY_HOST: postgres-primary
+      REPMGR_PRIMARY_PORT: 5432
+      REPMGR_PARTNER_NODES: "postgres-primary:5432,postgres-replica:5432"
+      REPMGR_NODE_NAME: postgres-primary
+      REPMGR_NODE_NETWORK_NAME: postgres-primary
+      REPMGR_NODE_ID: 1
+      REPMGR_CONNECT_TIMEOUT: 5
+      REPMGR_RECONNECT_ATTEMPTS: 3
+      REPMGR_RECONNECT_INTERVAL: 5
+      # WAL / Streaming replication
+      POSTGRESQL_SYNCHRONOUS_COMMIT_MODE: remote_apply
+      POSTGRESQL_NUM_SYNCHRONOUS_REPLICAS: 1
+    volumes:
+      - postgres_primary_data:/bitnami/postgresql
+    networks:
+      - reliantai-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-reliantai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── PostgreSQL Replica ───────────────────────────────────────────────────
+  postgres-replica:
+    image: bitnami/postgresql-repmgr:15
+    container_name: reliantai-postgres-replica
+    environment:
+      POSTGRESQL_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+      POSTGRESQL_USERNAME: ${POSTGRES_USER:-postgres}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB:-reliantai}
+      # Replication
+      REPMGR_PASSWORD: ${REPMGR_PASSWORD:-repmgrpass}
+      REPMGR_PRIMARY_HOST: postgres-primary
+      REPMGR_PRIMARY_PORT: 5432
+      REPMGR_PARTNER_NODES: "postgres-primary:5432,postgres-replica:5432"
+      REPMGR_NODE_NAME: postgres-replica
+      REPMGR_NODE_NETWORK_NAME: postgres-replica
+      REPMGR_NODE_ID: 2
+      REPMGR_CONNECT_TIMEOUT: 5
+      REPMGR_RECONNECT_ATTEMPTS: 3
+      REPMGR_RECONNECT_INTERVAL: 5
+      REPMGR_PRIMARY_ROLE: standby
+    volumes:
+      - postgres_replica_data:/bitnami/postgresql
+    networks:
+      - reliantai-network
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-reliantai}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── PgPool-II Connection Pooler & Load Balancer ─────────────────────────
+  pgpool:
+    image: bitnami/pgpool:4
+    container_name: reliantai-pgpool
+    ports:
+      - "5432:5432"
+    environment:
+      PGPOOL_BACKEND_NODES: "0:postgres-primary:5432:primary:ALLOW_TO_FAILOVER,1:postgres-replica:5432:standby:ALLOW_TO_FAILOVER"
+      PGPOOL_SR_CHECK_USER: ${POSTGRES_USER:-postgres}
+      PGPOOL_SR_CHECK_PASSWORD: ${POSTGRES_PASSWORD}
+      PGPOOL_SR_CHECK_PERIOD: 10
+      PGPOOL_ENABLE_LOAD_BALANCING: "yes"
+      PGPOOL_MAX_POOL: 32
+      PGPOOL_POSTGRES_USERNAME: ${POSTGRES_USER:-postgres}
+      PGPOOL_POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGPOOL_ADMIN_USERNAME: admin
+      PGPOOL_ADMIN_PASSWORD: ${PGPOOL_ADMIN_PASSWORD:-adminpass}
+      PGPOOL_HEALTH_CHECK_PERIOD: 10
+      PGPOOL_HEALTH_CHECK_TIMEOUT: 5
+      PGPOOL_HEALTH_CHECK_MAX_RETRIES: 3
+      PGPOOL_FAILOVER_ON_BACKEND_ERROR: "yes"
+      PGPOOL_BACKEND_FALLOVER: "yes"
+    depends_on:
+      postgres-primary:
+        condition: service_healthy
+      postgres-replica:
+        condition: service_healthy
+    networks:
+      - reliantai-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+volumes:
+  postgres_primary_data:
+  postgres_replica_data:

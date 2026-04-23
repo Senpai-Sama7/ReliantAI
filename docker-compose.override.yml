@@ -68,13 +68,11 @@ services:
       - LOG_LEVEL=DEBUG
     command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
 
-  # Vault for secrets management (optional for development)
+  # Vault for secrets management (enabled by default in local dev)
   vault:
     build:
       context: ./vault
       dockerfile: Dockerfile
-    profiles:
-      - vault
     container_name: reliantai-vault
     ports:
       - "8200:8200"

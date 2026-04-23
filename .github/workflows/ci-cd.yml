@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 env:
-  REGISTRY: ghcr.io
+  REGISTRY: ghcr
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
@@ -39,12 +39,37 @@ jobs:
       run: isort --check-only .
     
     - name: Security check with bandit
-      run: bandit -r . -f json -o bandit-report.json || true
+      run: bandit -r . -f json -o bandit-report.json
+      # Blocking: fail on severity MEDIUM or higher
     
     - name: Check dependencies with safety
-      run: safety check || true
+      run: safety check --full-report
+      # Blocking: fail on any known vulnerability
 
-  # Job 2: Unit Tests
+  # Job 2: Secrets Detection
+  secrets-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Run gitleaks
+      uses: zricethezav/gitleaks-action@v2
+      with:
+        config-path: .gitleaks.toml
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Run TruffleHog
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+  # Job 3: Unit Tests
   unit-tests:
     runs-on: ubuntu-latest
     services:
@@ -100,10 +125,10 @@ jobs:
         files: ./coverage.xml
         fail_ci_if_error: false
 
-  # Job 3: Integration Tests
+  # Job 4: Integration Tests
   integration-tests:
     runs-on: ubuntu-latest
-    needs: [code-quality, unit-tests]
+    needs: [code-quality, unit-tests, secrets-scan]
     steps:
     - uses: actions/checkout@v4
     
@@ -112,8 +137,9 @@ jobs:
     
     - name: Build and start services
       run: |
-        docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
-        sleep 60
+        cp .env.example .env || true
+        docker compose -f docker-compose.yml -f docker-compose.test.yml up -d --build
+        sleep 90
     
     - name: Run health checks
       run: |
@@ -127,29 +153,47 @@ jobs:
     
     - name: Cleanup
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
 
-  # Job 4: Security Scan
+  # Job 5: Security Scan
   security-scan:
     runs-on: ubuntu-latest
+    needs: [secrets-scan]
     steps:
     - uses: actions/checkout@v4
     
-    - name: Run Trivy vulnerability scanner
+    - name: Run Trivy vulnerability scanner (FS)
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'fs'
         ignore-unfixed: true
         format: 'sarif'
-        output: 'trivy-results.sarif'
+        output: 'trivy-fs-results.sarif'
+        severity: 'CRITICAL,HIGH'
+    
+    - name: Run Trivy vulnerability scanner (Images)
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'image'
+        image-ref: 'reliantai-money:latest'
+        format: 'sarif'
+        output: 'trivy-image-results.sarif'
         severity: 'CRITICAL,HIGH'
     
     - name: Upload Trivy scan results
       uses: github/codeql-action/upload-sarif@v2
       with:
-        sarif_file: 'trivy-results.sarif'
+        sarif_file: 'trivy-fs-results.sarif'
+    
+    - name: Run OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.12.0
+      with:
+        target: 'http://localhost:8000'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a'
+      continue-on-error: true
 
-  # Job 5: Build and Push Docker Images
+  # Job 6: Build and Push Docker Images
   build-and-push:
     runs-on: ubuntu-latest
     needs: [integration-tests, security-scan]
@@ -159,8 +203,31 @@ jobs:
       packages: write
     
     strategy:
+      fail-fast: false
       matrix:
-        service: [money, complianceone, finops360, orchestrator, integration]
+        service:
+          - money
+          - complianceone
+          - finops360
+          - orchestrator
+          - integration
+          - actuator
+          - bap
+          - apex-agents
+          - apex-ui
+          - apex-mcp
+          - acropolis
+          - citadel-ultimate-a-plus
+          - citadel
+          - cleardesk
+          - gen-h
+          - documancer
+          - backupiq
+          - cyberarchitect
+          - sovieren-ai
+          - regenesis
+          - ops-intelligence-backend
+          - ops-intelligence-frontend
     
     steps:
     - uses: actions/checkout@v4
@@ -197,7 +264,40 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
-  # Job 6: Deploy to Staging
+  # Job 7: Generate Client SDKs
+  generate-sdks:
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v3
+
+    - name: Start core services for spec extraction
+      run: |
+        cp .env.example .env || true
+        docker compose up -d money complianceone finops360 orchestrator integration
+        sleep 60
+
+    - name: Generate SDKs
+      run: |
+        chmod +x scripts/generate-sdks.sh
+        ./scripts/generate-sdks.sh ./sdks
+
+    - name: Upload SDK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: reliantai-sdks
+        path: ./sdks/*.tar.gz
+        retention-days: 30
+
+    - name: Cleanup
+      if: always()
+      run: docker compose down -v
+
+  # Job 8: Deploy to Staging
   deploy-staging:
     runs-on: ubuntu-latest
     needs: build-and-push
@@ -212,9 +312,9 @@ jobs:
         echo "Deploying to staging environment..."
         # Add your staging deployment commands here
         # Example: SSH to server and pull new images
-        # ssh user@staging-server "cd /app && docker-compose pull && docker-compose up -d"
+        # ssh user@staging-server "cd /app && docker compose pull && docker compose up -d"
 
-  # Job 7: Production Deployment (manual trigger)
+  # Job 9: Production Deployment (manual trigger)
   deploy-production:
     runs-on: ubuntu-latest
     needs: deploy-staging
@@ -229,7 +329,7 @@ jobs:
         echo "Deploying to production environment..."
         # Add your production deployment commands here
         # Example: SSH to server and pull new images
-        # ssh user@production-server "cd /app && docker-compose pull && docker-compose up -d"
+        # ssh user@production-server "cd /app && docker compose pull && docker compose up -d"
     
     - name: Run post-deployment health checks
       run: |

@@ -10,7 +10,9 @@ datasources:
     jsonData:
       timeInterval: "5s"
       httpMethod: POST
-      
+      manageAlerts: true
+      alertmanagerUid: "alertmanager"
+
   - name: Loki
     type: loki
     access: proxy
@@ -21,3 +23,58 @@ datasources:
         - name: TraceID
           matcherRegex: "traceID=(\\w+)"
           url: "${__value.raw}"
+          datasourceUid: "jaeger"
+        - name: CorrelationID
+          matcherRegex: "correlation_id=(\\w+)"
+          url: "${__value.raw}"
+
+  - name: Jaeger
+    type: jaeger
+    uid: jaeger
+    access: proxy
+    url: http://jaeger:16686
+    editable: false
+    jsonData:
+      tracesToLogs:
+        datasourceUid: loki
+        tags: ["service", "trace_id"]
+        mappedTags: [{ key: "service", value: "service" }]
+        mapTagNamesEnabled: false
+        spanStartTimeShift: "1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: true
+        filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags: [{ key: "service", value: "service" }]
+        queries:
+          - name: "Request rate"
+            query: 'sum(rate(http_requests_total{service="$service"}[5m]))'
+      nodeGraph:
+        enabled: true
+
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      tracesToLogs:
+        datasourceUid: loki
+        tags: ["service", "trace_id"]
+        mappedTags: [{ key: "service", value: "service" }]
+        mapTagNamesEnabled: false
+        spanStartTimeShift: "1h"
+        spanEndTimeShift: "1h"
+        filterByTraceID: true
+        filterBySpanID: false
+      tracesToMetrics:
+        datasourceUid: prometheus
+        tags: [{ key: "service", value: "service" }]
+        queries:
+          - name: "Request rate"
+            query: 'sum(rate(http_requests_total{service="$service"}[5m]))'
+      nodeGraph:
+        enabled: true
+      serviceMap:
+        datasourceUid: prometheus

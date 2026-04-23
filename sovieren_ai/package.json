@@ -1,0 +1,9 @@
+{
+  "name": "sovieren-ai-placeholder",
+  "version": "0.1.0",
+  "description": "ReliantAI sovieren-ai service placeholder",
+  "scripts": {
+    "start": "bun run bun-server.ts"
+  },
+  "dependencies": {}
+}

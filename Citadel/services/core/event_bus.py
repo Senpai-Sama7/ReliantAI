@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 
 # Add ReliantAI root to sys.path for integration.shared
-_RELIANT_ROOT = Path(__file__).resolve().parents[4]
+_RELIANT_ROOT = Path(__file__).resolve().parents[3]
 if str(_RELIANT_ROOT) not in sys.path:
     sys.path.insert(0, str(_RELIANT_ROOT))
 

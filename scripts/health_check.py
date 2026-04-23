@@ -16,8 +16,9 @@ except ImportError:
     print("Error: requests package not installed. Run: pip install requests")
     sys.exit(1)
 
-# Service configuration
+# Service configuration — ALL 20+ platform services
 SERVICES = {
+    # Core critical services
     "money": {
         "url": "http://localhost:8000",
         "health_endpoint": "/health",
@@ -41,7 +42,127 @@ SERVICES = {
         "health_endpoint": "/health",
         "api_key": None,
         "critical": False
-    }
+    },
+    "orchestrator": {
+        "url": "http://localhost:9000",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": True
+    },
+    "nginx": {
+        "url": "http://localhost:80",
+        "health_endpoint": "/nginx-health",
+        "api_key": None,
+        "critical": False
+    },
+    # Infrastructure
+    "vault": {
+        "url": "http://localhost:8200",
+        "health_endpoint": "/v1/sys/health?standbyok=true",
+        "api_key": None,
+        "critical": False
+    },
+    # Analytics & AI
+    "bap": {
+        "url": "http://localhost:8108",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "apex-agents": {
+        "url": "http://localhost:8109",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "apex-ui": {
+        "url": "http://localhost:8112",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "apex-mcp": {
+        "url": "http://localhost:4000",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "acropolis": {
+        "url": "http://localhost:8110",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    # Operations Intelligence
+    "ops-intelligence-backend": {
+        "url": "http://localhost:8095",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "ops-intelligence-frontend": {
+        "url": "http://localhost:5174",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    # Security & Observability
+    "citadel": {
+        "url": "http://localhost:8100",
+        "health_endpoint": "/api/health",
+        "api_key": None,
+        "critical": False
+    },
+    "citadel-ultimate-a-plus": {
+        "url": "http://localhost:8111",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    # Frontends
+    "cleardesk": {
+        "url": "http://localhost:8101",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "gen-h": {
+        "url": "http://localhost:8102",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "regenesis": {
+        "url": "http://localhost:8107",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    # Specialized Services
+    "documancer": {
+        "url": "http://localhost:8103",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "backupiq": {
+        "url": "http://localhost:8104",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "cyberarchitect": {
+        "url": "http://localhost:8105",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
+    "sovieren-ai": {
+        "url": "http://localhost:8106",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": False
+    },
 }
 
 class HealthChecker:
@@ -57,7 +178,10 @@ class HealthChecker:
         try:
             response = requests.get(url, timeout=10)
             
-            if response.status_code == 200:
+            # Vault /sys/health returns 200 or 429 (standby) as healthy
+            is_healthy = response.status_code in (200, 204, 429)
+            
+            if is_healthy:
                 try:
                     data = response.json()
                     status = {
@@ -117,6 +241,8 @@ class HealthChecker:
         """Generate health report"""
         healthy_count = sum(1 for r in self.results.values() if r["status"] == "healthy")
         total_count = len(self.results)
+        critical_services = [n for n, c in SERVICES.items() if c.get("critical")]
+        critical_healthy = sum(1 for n in critical_services if self.results.get(n, {}).get("status") == "healthy")
         
         report = {
             "timestamp": datetime.now().isoformat(),
@@ -124,6 +250,8 @@ class HealthChecker:
                 "total_services": total_count,
                 "healthy": healthy_count,
                 "unhealthy": total_count - healthy_count,
+                "critical_total": len(critical_services),
+                "critical_healthy": critical_healthy,
                 "status": "healthy" if healthy_count == total_count else "degraded" if healthy_count > 0 else "critical"
             },
             "services": self.results
@@ -145,20 +273,27 @@ class HealthChecker:
         
         print(f"\nStatus: {status_emoji} {summary['status'].upper()}")
         print(f"Services: {summary['healthy']}/{summary['total_services']} healthy")
+        print(f"Critical: {summary['critical_healthy']}/{summary['critical_total']} healthy")
         print(f"Timestamp: {report['timestamp']}")
         
         print("\n📋 Service Details:")
         print("-"*60)
         
-        for name, result in report["services"].items():
-            emoji = "✅" if result["status"] == "healthy" else "❌"
-            print(f"  {emoji} {name:15} → {result['status']}")
-            
-            if "response_time" in result:
-                print(f"     └─ Response time: {result['response_time']:.3f}s")
-            
-            if "error" in result:
-                print(f"     └─ Error: {result['error']}")
+        # Group by status for readability
+        healthy = [(n, r) for n, r in report["services"].items() if r["status"] == "healthy"]
+        unhealthy = [(n, r) for n, r in report["services"].items() if r["status"] != "healthy"]
+        
+        if healthy:
+            print("\n  ✅ Healthy Services:")
+            for name, result in healthy:
+                print(f"     {name:25} → {result['status']} ({result.get('response_time', 0):.3f}s)")
+        
+        if unhealthy:
+            print("\n  ❌ Unhealthy Services:")
+            for name, result in unhealthy:
+                print(f"     {name:25} → {result['status']}")
+                if "error" in result:
+                    print(f"        └─ Error: {result['error']}")
         
         if report.get("errors"):
             print("\n❌ Critical Errors:")
@@ -175,9 +310,16 @@ def main():
     parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
     parser.add_argument("-j", "--json", action="store_true", help="Output as JSON")
     parser.add_argument("-q", "--quiet", action="store_true", help="Quiet mode (exit code only)")
+    parser.add_argument("--critical-only", action="store_true", help="Check only critical services")
     args = parser.parse_args()
     
     checker = HealthChecker(verbose=args.verbose)
+    
+    # Filter to critical only if requested
+    if args.critical_only:
+        global SERVICES
+        SERVICES = {k: v for k, v in SERVICES.items() if v.get("critical")}
+    
     report = checker.check_all()
     
     if args.json:

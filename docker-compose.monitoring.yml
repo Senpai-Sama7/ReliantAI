@@ -130,8 +130,60 @@ services:
       - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
     command: -config.file=/etc/promtail/config.yml
 
+  # ── Jaeger — Distributed Tracing (OpenTelemetry) ────────────────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.50
+    container_name: reliantai-jaeger
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+      - "14268:14268"   # Jaeger HTTP thrift
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    networks:
+      - reliantai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ── Tempo — Distributed Tracing (Grafana native) ────────────────────────
+  # Optional: Replace Jaeger with Tempo for tighter Grafana integration.
+  # To use Tempo instead of Jaeger, point OTLP exporters to tempo:4317.
+  tempo:
+    image: grafana/tempo:latest
+    container_name: reliantai-tempo
+    ports:
+      - "3200:3200"     # Tempo HTTP API
+      - "9095:9095"     # Tempo gRPC
+      - "4317:4317"     # OTLP gRPC (shared with Jaeger — pick one)
+    volumes:
+      - ./monitoring/tempo-config.yml:/etc/tempo/tempo.yaml:ro
+      - tempo_data:/tmp/tempo
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    networks:
+      - reliantai-network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
 volumes:
   prometheus_data:
   alertmanager_data:
   grafana_data:
   loki_data:
+  tempo_data:
+
+networks:
+  reliantai-network:
+    external: true

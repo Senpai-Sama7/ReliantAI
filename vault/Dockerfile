@@ -1,5 +1,8 @@
 FROM hashicorp/vault:1.15
 
+# Install curl for Docker health probes (AGENTS.md invariant)
+RUN apk add --no-cache curl
+
 # Copy configuration
 COPY vault-config.hcl /vault/config/vault-config.hcl
 

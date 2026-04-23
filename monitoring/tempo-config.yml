@@ -1,0 +1,68 @@
+# ReliantAI Platform — Tempo Configuration
+# Grafana Tempo — Distributed Tracing Backend
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.monitoring.yml up -d tempo
+#
+# Receivers:
+#   - OTLP gRPC (port 4317) — primary ingestion from Python/Node.js services
+#   - OTLP HTTP (port 4318) — fallback for browsers / curl
+#   - Jaeger Thrift (port 14268) — legacy compatibility
+#
+# Storage: local filesystem (single-node). For production, use S3/GCS/Azure Blob.
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3200
+  grpc_listen_port: 9095
+
+distributor:
+  receivers:
+    jaeger:
+      protocols:
+        thrift_http:
+          endpoint: "0.0.0.0:14268"
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+ingester:
+  max_block_duration: 5m
+  complete_block_timeout: 1h
+  flush_check_period: 10s
+  trace_idle_period: 10s
+
+compactor:
+  compaction:
+    compaction_window: 1h
+    max_compaction_objects: 1000000
+    block_retention: 168h          # 7 days retention
+    compacted_block_retention: 1h
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /tmp/tempo/traces
+    wal:
+      path: /tmp/tempo/wal
+    pool:
+      max_workers: 100
+      queue_depth: 10000
+
+overrides:
+  defaults:
+    ingestion:
+      rate_limit_bytes: 15000000
+      burst_size_bytes: 20000000
+      max_traces_per_user: 100000
+      max_global_traces_per_user: 0
+      max_local_traces_per_user: 0
+      max_attribute_bytes: 10000
+      max_attribute_count: 100
+      max_span_bytes: 10000
+      max_span_count: 100

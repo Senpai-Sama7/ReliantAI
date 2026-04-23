@@ -1,0 +1,6 @@
+# ReliantAI Platform — Load Test Dependencies
+
+locust>=2.24.0
+aiohttp>=3.9.0
+websockets>=12.0
+requests>=2.31.0

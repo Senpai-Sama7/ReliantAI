@@ -26,6 +26,7 @@ from typing import Any, Dict, List
 
 import httpx
 import psycopg2
+from psycopg2.extras import RealDictCursor
 import redis.asyncio as redis
 from fastapi import FastAPI, HTTPException, Security
 from fastapi.security import APIKeyHeader
@@ -72,7 +73,8 @@ def get_timescaledb_conn():
     """Establishes a connection to TimescaleDB."""
     try:
         return psycopg2.connect(
-            host=TS_HOST, user=TS_USER, password=TS_PASSWORD, dbname=TS_DB
+            host=TS_HOST, user=TS_USER, password=TS_PASSWORD, dbname=TS_DB,
+            cursor_factory=RealDictCursor
         )
     except psycopg2.OperationalError as e:
         logger.error(f"Failed to connect to TimescaleDB: {e}", exc_info=True)

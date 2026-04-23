@@ -1,0 +1,17 @@
+# ReliantAI Platform Backup Cron
+# Run daily at 02:00 UTC, verify at 03:00 UTC
+
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Daily backup of all platform databases
+0 2 * * * root cd /opt/reliantai && ./scripts/backup_database.sh >> /var/log/reliantai-backup.log 2>&1
+
+# Daily backup verification
+0 3 * * * root cd /opt/reliantai && ./scripts/backup_database.sh --verify >> /var/log/reliantai-backup-verify.log 2>&1
+
+# Weekly full backup (Sundays at 01:00) — includes all DBs + file archives
+0 1 * * 0 root cd /opt/reliantai && tar czf backups/reliantai-files-$(date +\%Y\%m\%d).tar.gz docker-compose.yml .env nginx/ monitoring/ shared/ integration/ migrations/ >> /var/log/reliantai-backup.log 2>&1
+
+# Cleanup old file backups (retain 90 days)
+0 4 * * 0 root find /opt/reliantai/backups -name "reliantai-files-*.tar.gz" -mtime +90 -delete

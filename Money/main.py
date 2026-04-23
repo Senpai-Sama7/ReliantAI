@@ -18,6 +18,10 @@ import json
 import os
 import re
 import sys
+
+# Shared graceful shutdown
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
+from graceful_shutdown import GracefulShutdownManager
 import threading
 import time
 import uuid
@@ -159,6 +163,7 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     logger.info("HVAC AI Dispatch API shutting down")
+    await GracefulShutdownManager.shutdown_all()
 
 
 # ── App setup ─────────────────────────────────────────────────
@@ -167,7 +172,23 @@ app = FastAPI(
     version="2.0.0",
     description="Multi-agent AI dispatcher for Houston HVAC shops",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
 )
+
+# Apply ReliantAI platform branding to API docs
+from shared.docs_branding import configure_docs_branding
+configure_docs_branding(app, service_name="Money", service_color="#4F46E5")
+
+# Distributed tracing (OpenTelemetry)
+from shared.tracing import configure_tracing
+configure_tracing(service_name="money")
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
 
 # Include billing router
 app.include_router(billing_router)

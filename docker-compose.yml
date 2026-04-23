@@ -1,7 +1,5 @@
 version: '3.8'
-
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: reliantai-postgres
@@ -10,174 +8,269 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
       POSTGRES_DB: ${POSTGRES_DB:-reliantai}
     ports:
-      - "5432:5432"
+    - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
+    - postgres_data:/var/lib/postgresql/data
+    - ./init-scripts:/docker-entrypoint-initdb.d
     networks:
-      - reliantai-network
+    - reliantai-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U ${POSTGRES_USER:-postgres}
       interval: 5s
       timeout: 5s
       retries: 5
-
-  # Money Service (HVAC AI Dispatch)
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+        reservations:
+          cpus: '0.5'
+          memory: 256M
   money:
     build:
       context: ./Money
       dockerfile: Dockerfile
     container_name: reliantai-money
     ports:
-      - "8000:8000"
+    - 8000:8000
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/money
-      - DISPATCH_API_KEY=${DISPATCH_API_KEY:?DISPATCH_API_KEY must be set}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:?GEMINI_API_KEY must be set}
-      - TWILIO_SID=${TWILIO_SID:?TWILIO_SID must be set}
-      - TWILIO_TOKEN=${TWILIO_TOKEN:?TWILIO_TOKEN must be set}
-      - ENV=production
-      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
-      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-placeholder}
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/money
+    - DISPATCH_API_KEY=${DISPATCH_API_KEY:?DISPATCH_API_KEY must be set}
+    - GEMINI_API_KEY=${GEMINI_API_KEY:?GEMINI_API_KEY must be set}
+    - TWILIO_SID=${TWILIO_SID:?TWILIO_SID must be set}
+    - TWILIO_TOKEN=${TWILIO_TOKEN:?TWILIO_TOKEN must be set}
+    - ENV=production
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-placeholder}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - reliantai-network
+    - reliantai-network
+    volumes:
+    - ./shared:/shared:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8000/health
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # ComplianceOne Service
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
   complianceone:
     build:
       context: ./ComplianceOne
       dockerfile: Dockerfile
     container_name: reliantai-complianceone
     ports:
-      - "8001:8001"
+    - 8001:8001
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/complianceone
-      - COMPLIANCEONE_API_KEY=${COMPLIANCEONE_API_KEY:?COMPLIANCEONE_API_KEY must be set}
-      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/complianceone
+    - COMPLIANCEONE_API_KEY=${COMPLIANCEONE_API_KEY:?COMPLIANCEONE_API_KEY must be set}
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - reliantai-network
+    - reliantai-network
+    volumes:
+    - ./shared:/shared:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8001/health
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # FinOps360 Service
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
   finops360:
     build:
       context: ./FinOps360
       dockerfile: Dockerfile
     container_name: reliantai-finops360
     ports:
-      - "8002:8002"
+    - 8002:8002
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finops360
-      - FINOPS360_API_KEY=${FINOPS360_API_KEY:?FINOPS360_API_KEY must be set}
-      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/finops360
+    - FINOPS360_API_KEY=${FINOPS360_API_KEY:?FINOPS360_API_KEY must be set}
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - reliantai-network
+    - reliantai-network
+    volumes:
+    - ./shared:/shared:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8002/health
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # Integration Layer
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
   integration:
     build:
       context: ./integration
       dockerfile: Dockerfile
     container_name: reliantai-integration
     ports:
-      - "8080:8080"
+    - 8080:8080
     environment:
-      - MONEY_URL=http://money:8000
-      - COMPLIANCEONE_URL=http://complianceone:8001
-      - FINOPS360_URL=http://finops360:8002
-      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/integration
+    - MONEY_URL=http://money:8000
+    - COMPLIANCEONE_URL=http://complianceone:8001
+    - FINOPS360_URL=http://finops360:8002
+    - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/integration
     depends_on:
-      - money
-      - complianceone
-      - finops360
+    - money
+    - complianceone
+    - finops360
     networks:
-      - reliantai-network
+    - reliantai-network
+    volumes:
+    - ./shared:/shared:ro
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
-  # Autonomous Orchestrator
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: reliantai-redis
+    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    environment:
+    - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+    - 6379:6379
+    volumes:
+    - redis_data:/data
+    healthcheck:
+      test:
+      - CMD
+      - redis-cli
+      - -a
+      - ${REDIS_PASSWORD}
+      - ping
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+    - reliantai-network
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
   orchestrator:
     build:
       context: ./orchestrator
       dockerfile: Dockerfile
     container_name: reliantai-orchestrator
     ports:
-      - "9000:9000"
+    - 9000:9000
     environment:
-      - MONEY_URL=http://money:8000
-      - COMPLIANCEONE_URL=http://complianceone:8001
-      - FINOPS360_URL=http://finops360:8002
-      - INTEGRATION_URL=http://integration:8080
-      - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
-      - API_KEY=${ORCHESTRATOR_API_KEY:-${API_KEY:?API_KEY must be set}}
-      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    - MONEY_URL=http://money:8000
+    - COMPLIANCEONE_URL=http://complianceone:8001
+    - FINOPS360_URL=http://finops360:8002
+    - INTEGRATION_URL=http://integration:8080
+    - REDIS_URL=redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
+    - API_KEY=${ORCHESTRATOR_API_KEY:-${API_KEY:?API_KEY must be set}}
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
-      - money
-      - complianceone
-      - finops360
-      - redis
+    - money
+    - complianceone
+    - finops360
+    - redis
     networks:
-      - reliantai-network
+    - reliantai-network
+    volumes:
+    - ./shared:/shared:ro
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:9000/health
       interval: 30s
       timeout: 10s
       retries: 3
-
-  # Redis Cache
-  redis:
-    image: redis:alpine
-    container_name: reliantai-redis
-    command: redis-server --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASSWORD}
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - reliantai-network
-
-  # Actuator Service (Scale/Heal Intent Executor)
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
   actuator:
     build:
       context: ./actuator
       dockerfile: Dockerfile
     container_name: reliantai-actuator
     environment:
-      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
-      - COMPOSE_FILE=/workspace/docker-compose.yml
-      - COMPOSE_PROJECT=${COMPOSE_PROJECT:-reliantai}
-      - ACTUATOR_DRY_RUN=${ACTUATOR_DRY_RUN:-true}
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - COMPOSE_FILE=/workspace/docker-compose.yml
+    - COMPOSE_PROJECT=${COMPOSE_PROJECT:-reliantai}
+    - ACTUATOR_DRY_RUN=${ACTUATOR_DRY_RUN:-true}
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - .:/workspace:ro
+    - /var/run/docker.sock:/var/run/docker.sock:ro
+    - .:/workspace:ro
     depends_on:
       redis:
         condition: service_healthy
@@ -185,23 +278,30 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - reliantai-network
-
-  # Nginx Reverse Proxy & API Gateway
+    - reliantai-network
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
   nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: reliantai-nginx
     ports:
-      - "80:80"
-      - "443:443"
+    - 80:80
+    - 443:443
     environment:
-      - NGINX_MODE=production
+    - NGINX_MODE=production
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./dashboard:/usr/share/nginx/html/dashboard:ro
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    - ./nginx/ssl:/etc/nginx/ssl:ro
+    - ./dashboard:/usr/share/nginx/html/dashboard:ro
     depends_on:
       money:
         condition: service_healthy
@@ -212,18 +312,585 @@ services:
       orchestrator:
         condition: service_healthy
     networks:
-      - reliantai-network
+    - reliantai-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80/nginx-health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:80/nginx-health
       interval: 30s
       timeout: 10s
       retries: 3
-
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  vault:
+    build:
+      context: ./vault
+      dockerfile: Dockerfile
+    container_name: reliantai-vault
+    ports:
+    - 8200:8200
+    environment:
+    - VAULT_ADDR=http://0.0.0.0:8200
+    - VAULT_API_ADDR=http://0.0.0.0:8200
+    - 'VAULT_LOCAL_CONFIG={"storage": {"file": {"path": "/vault/data"}}, "listener": {"tcp": {"address": "0.0.0.0:8200", "tls_disable":
+      true}}, "ui": true}'
+    volumes:
+    - vault_data:/vault/data
+    cap_add:
+    - IPC_LOCK
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8200/v1/sys/health?standbyok=true
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  bap:
+    build:
+      context: ./B-A-P
+      dockerfile: Dockerfile
+    container_name: reliantai-bap
+    ports:
+    - 8108:8000
+    environment:
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/bap
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+    - reliantai-network
+    volumes:
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  ops-intelligence-backend:
+    build:
+      context: ./ops-intelligence/backend
+      dockerfile: Dockerfile
+    container_name: reliantai-ops-backend
+    ports:
+    - 8095:8095
+    environment:
+    - AUTH_SERVICE_URL=${AUTH_SERVICE_URL:-http://integration:8080}
+    - EVENT_BUS_URL=${EVENT_BUS_URL:-http://integration:8081}
+    - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY:-change-me-event-bus-api-key}
+    - JWT_SECRET=${JWT_SECRET:-change-in-production}
+    - OPS_DB_PATH=/data/ops_intelligence.db
+    - PORT=8095
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    volumes:
+    - ops-data:/data
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8095/health
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  ops-intelligence-frontend:
+    build:
+      context: ./ops-intelligence/frontend
+      dockerfile: Dockerfile
+    container_name: reliantai-ops-frontend
+    ports:
+    - 5174:80
+    depends_on:
+      ops-intelligence-backend:
+        condition: service_healthy
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:80/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.125'
+          memory: 64M
+  apex-agents:
+    build:
+      context: ./apex/apex-agents
+      dockerfile: Dockerfile
+    container_name: reliantai-apex-agents
+    ports:
+    - 8109:8001
+    environment:
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/apex
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+    - reliantai-network
+    volumes:
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8001/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  apex-ui:
+    build:
+      context: ./apex/apex-ui
+      dockerfile: Dockerfile
+    container_name: reliantai-apex-ui
+    ports:
+    - 8112:3000
+    environment:
+    - NEXT_PUBLIC_AGENT_API_URL=http://apex-agents:8001
+    - NEXT_TELEMETRY_DISABLED=1
+    - NODE_ENV=production
+    depends_on:
+    - apex-agents
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:3000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.125'
+          memory: 64M
+  apex-mcp:
+    build:
+      context: ./apex/apex-mcp
+      dockerfile: Dockerfile
+    container_name: reliantai-apex-mcp
+    ports:
+    - 4000:4000
+    environment:
+    - NODE_ENV=production
+    - APEX_AGENTS_URL=http://apex-agents:8001
+    depends_on:
+    - apex-agents
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:4000/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  acropolis:
+    build:
+      context: ./Acropolis
+      dockerfile: Dockerfile
+    container_name: reliantai-acropolis
+    ports:
+    - 8110:8080
+    - 8113:9090
+    environment:
+    - RUST_LOG=info
+    - AEP_PLUGIN_DIR=/app/plugins
+    - AEP_MODEL_DIR=/app/models
+    - AEP_DATA_DIR=/app/data
+    volumes:
+    - acropolis-data:/app/data
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - acropolis-cli
+      - --version
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  citadel-ultimate-a-plus:
+    build:
+      context: ./citadel_ultimate_a_plus
+      dockerfile: Dockerfile
+    container_name: reliantai-citadel-a-plus
+    ports:
+    - 8111:8888
+    environment:
+    - CITADEL_DB_PATH=/app/workspace/state/lead_queue.db
+    volumes:
+    - citadel-a-plus-data:/app/workspace
+    - ./integration:/integration:ro
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8888/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  citadel:
+    build:
+      context: ./Citadel
+      dockerfile: Dockerfile
+    container_name: reliantai-citadel
+    ports:
+    - 8100:8100
+    environment:
+    - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/citadel
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+    - reliantai-network
+    volumes:
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8100/api/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  cleardesk:
+    build:
+      context: ./ClearDesk
+      dockerfile: Dockerfile
+    container_name: reliantai-cleardesk
+    ports:
+    - 8101:80
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:80/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.125'
+          memory: 64M
+  gen-h:
+    build:
+      context: ./Gen-H
+      dockerfile: Dockerfile
+    container_name: reliantai-gen-h
+    ports:
+    - 8102:80
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:80/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.125'
+          memory: 64M
+  documancer:
+    build:
+      context: ./DocuMancer
+      dockerfile: Dockerfile
+    container_name: reliantai-documancer
+    ports:
+    - 8103:8103
+    environment:
+    - DOCUMANCER_HOST=0.0.0.0
+    - DOCUMANCER_PORT=8103
+    - DOCUMANCER_LOG_LEVEL=INFO
+    - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+    networks:
+    - reliantai-network
+    volumes:
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8103/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  backupiq:
+    build:
+      context: ./BackupIQ
+      dockerfile: Dockerfile
+    container_name: reliantai-backupiq
+    ports:
+    - 8104:8104
+    environment:
+    - PORT=8104
+    - PYTHONUNBUFFERED=1
+    networks:
+    - reliantai-network
+    volumes:
+    - ./integration:/integration:ro
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8104/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  cyberarchitect:
+    build:
+      context: ./CyberArchitect
+      dockerfile: Dockerfile
+    container_name: reliantai-cyberarchitect
+    ports:
+    - 8105:8105
+    environment:
+    - PORT=8105
+    - NODE_ENV=production
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8105/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+  sovieren-ai:
+    build:
+      context: ./sovieren_ai
+      dockerfile: Dockerfile
+    container_name: reliantai-sovieren-ai
+    ports:
+    - 8106:8106
+    environment:
+    - PORT=8106
+    - NODE_ENV=production
+    - DIST_DIR=/app/dist
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8106/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  regenesis:
+    build:
+      context: ./reGenesis
+      dockerfile: Dockerfile
+    container_name: reliantai-regenesis
+    ports:
+    - 8107:80
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:80/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
+        reservations:
+          cpus: '0.125'
+          memory: 64M
 volumes:
-  postgres_data:
-  redis_data:
-  vault_data:
-
+  postgres_data: null
+  redis_data: null
+  vault_data: null
+  ops-data: null
+  acropolis-data: null
+  citadel-a-plus-data: null
 networks:
   reliantai-network:
     driver: bridge

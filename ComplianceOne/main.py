@@ -12,12 +12,15 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 from enum import Enum
 
-from fastapi import FastAPI, HTTPException, Header, Request, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Header, Request, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import sys
 import os
+
+# Ensure shared modules are discoverable
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
 from security_middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
@@ -26,12 +29,34 @@ from security_middleware import (
     verify_api_key
 )
 
+# API Versioning helper
+from api_versioning import include_versioned_router
+
+# Graceful shutdown
+from graceful_shutdown import GracefulShutdownManager
+
 # Database
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import pool
 
-app = FastAPI(title="ComplianceOne", version="1.0.0")
+app = FastAPI(title="ComplianceOne", version="1.0.0", docs_url=None, redoc_url=None)
+
+# Apply ReliantAI platform branding to API docs
+from docs_branding import configure_docs_branding
+configure_docs_branding(app, service_name="ComplianceOne", service_color="#059669")
+
+# Distributed tracing (OpenTelemetry)
+from tracing import configure_tracing
+configure_tracing(service_name="complianceone")
+
+try:
+    from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+    FastAPIInstrumentor.instrument_app(app)
+except ImportError:
+    pass
+
+router = APIRouter()
 
 # SECURITY FIX: Require explicit CORS_ORIGINS — no default wildcard.
 _cors_origins_raw = os.getenv("CORS_ORIGINS", "")
@@ -72,6 +97,7 @@ def get_db_pool():
     if _db_pool is None:
         db_url = os.environ.get("DATABASE_URL", "postgresql://localhost/complianceone")
         _db_pool = psycopg2.pool.ThreadedConnectionPool(1, 10, db_url)
+        GracefulShutdownManager.register_pool(_db_pool, name="complianceone_db")
     return _db_pool
 
 def init_db():
@@ -178,11 +204,15 @@ class ViolationReport(BaseModel):
 async def startup():
     init_db()
 
-@app.get("/health")
+@app.on_event("shutdown")
+async def shutdown():
+    await GracefulShutdownManager.shutdown_all()
+
+@router.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "complianceone", "timestamp": datetime.now(timezone.utc).isoformat()}
 
-@app.post("/frameworks")
+@router.post("/frameworks")
 async def create_framework(data: FrameworkCreate, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -198,7 +228,7 @@ async def create_framework(data: FrameworkCreate, api_key: str = Depends(verify_
     finally:
         pool.putconn(conn)
 
-@app.get("/frameworks")
+@router.get("/frameworks")
 async def list_frameworks():
     pool = get_db_pool()
     conn = pool.getconn()
@@ -210,7 +240,7 @@ async def list_frameworks():
     finally:
         pool.putconn(conn)
 
-@app.post("/controls")
+@router.post("/controls")
 async def create_control(data: ControlCreate, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -228,7 +258,7 @@ async def create_control(data: ControlCreate, api_key: str = Depends(verify_api_
     finally:
         pool.putconn(conn)
 
-@app.get("/frameworks/{framework_id}/controls")
+@router.get("/frameworks/{framework_id}/controls")
 async def list_controls(framework_id: int):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -243,7 +273,7 @@ async def list_controls(framework_id: int):
     finally:
         pool.putconn(conn)
 
-@app.post("/audits")
+@router.post("/audits")
 async def create_audit(data: AuditCreate, api_key: str = Depends(verify_api_key)):
     audit_id = f"AUD-{datetime.now().strftime('%Y%m%d-%H%M%S')}-{hashlib.sha256(str(data.framework_id).encode()).hexdigest()[:8]}"
     pool = get_db_pool()
@@ -260,7 +290,7 @@ async def create_audit(data: AuditCreate, api_key: str = Depends(verify_api_key)
     finally:
         pool.putconn(conn)
 
-@app.get("/audits")
+@router.get("/audits")
 async def list_audits():
     pool = get_db_pool()
     conn = pool.getconn()
@@ -277,7 +307,7 @@ async def list_audits():
     finally:
         pool.putconn(conn)
 
-@app.post("/audits/{audit_id}/complete")
+@router.post("/audits/{audit_id}/complete")
 async def complete_audit(audit_id: str, score: int, findings: Dict[str, Any], api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -294,7 +324,7 @@ async def complete_audit(audit_id: str, score: int, findings: Dict[str, Any], ap
     finally:
         pool.putconn(conn)
 
-@app.post("/evidence")
+@router.post("/evidence")
 async def submit_evidence(data: EvidenceSubmit, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -312,7 +342,7 @@ async def submit_evidence(data: EvidenceSubmit, api_key: str = Depends(verify_ap
     finally:
         pool.putconn(conn)
 
-@app.post("/violations")
+@router.post("/violations")
 async def report_violation(data: ViolationReport, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -328,7 +358,7 @@ async def report_violation(data: ViolationReport, api_key: str = Depends(verify_
     finally:
         pool.putconn(conn)
 
-@app.get("/violations")
+@router.get("/violations")
 async def list_violations(status: Optional[str] = None):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -346,7 +376,7 @@ async def list_violations(status: Optional[str] = None):
     finally:
         pool.putconn(conn)
 
-@app.get("/dashboard")
+@router.get("/dashboard")
 async def compliance_dashboard():
     """Real-time compliance dashboard data"""
     pool = get_db_pool()
@@ -393,6 +423,10 @@ async def compliance_dashboard():
         }
     finally:
         pool.putconn(conn)
+
+# ── API Versioning ─────────────────────────────────────────────────────────
+# Mount routes under both unversioned (backward compatible) and /v1 paths.
+include_versioned_router(app, router, tags=["compliance"])
 
 if __name__ == "__main__":
     import uvicorn

@@ -5,6 +5,7 @@ Enterprise-grade dispatch history + message log.
 
 import json
 import os
+import sys
 import threading
 from datetime import datetime, timezone
 from typing import Optional
@@ -14,6 +15,10 @@ from psycopg2.extras import RealDictCursor
 from psycopg2 import pool
 
 from config import setup_logging
+
+# Shared graceful shutdown
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
+from graceful_shutdown import GracefulShutdownManager
 
 logger = setup_logging("hvac_db")
 
@@ -34,6 +39,7 @@ def get_pool():
             if _pool is None:
                 db_url = get_database_url()
                 _pool = pool.ThreadedConnectionPool(1, 20, dsn=db_url)
+                GracefulShutdownManager.register_pool(_pool, name="money_db")
     return _pool
 
 def close_all_connections() -> None:
