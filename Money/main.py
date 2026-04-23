@@ -138,7 +138,7 @@ async def lifespan(app: FastAPI):
     # Startup
     # Validate production config (blocks deployment with placeholder values)
     try:
-        from shared.security_middleware import validate_production_config
+        from security_middleware import validate_production_config
         validate_production_config()
     except RuntimeError as e:
         logger.error(f"Production configuration validation failed: {e}")

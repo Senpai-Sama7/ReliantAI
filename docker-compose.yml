@@ -14,6 +14,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - reliantai-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres}"]
       interval: 5s
@@ -35,9 +37,13 @@ services:
       - TWILIO_SID=${TWILIO_SID:?TWILIO_SID must be set}
       - TWILIO_TOKEN=${TWILIO_TOKEN:?TWILIO_TOKEN must be set}
       - ENV=production
+      - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-placeholder}
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - reliantai-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -59,6 +65,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - reliantai-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
@@ -80,6 +88,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - reliantai-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 30s
@@ -103,6 +113,8 @@ services:
       - money
       - complianceone
       - finops360
+    networks:
+      - reliantai-network
 
   # Autonomous Orchestrator
   orchestrator:
@@ -125,6 +137,8 @@ services:
       - complianceone
       - finops360
       - redis
+    networks:
+      - reliantai-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s

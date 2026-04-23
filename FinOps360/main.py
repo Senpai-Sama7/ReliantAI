@@ -167,7 +167,7 @@ def init_db():
 
 # Models
 class AccountCreate(BaseModel):
-    provider: str = Field(..., regex="^(aws|azure|gcp)$")
+    provider: str = Field(..., pattern="^(aws|azure|gcp)$")
     account_id: str
     account_name: str
 

@@ -1,7 +1,7 @@
 ReliantAI Master Bug Report — CHECKLIST
 
 ## Current Status
-**103 of 103 bugs fixed (100% complete)** - All bugs fixed!
+**104 of 104 bugs fixed (100% complete)** - All bugs fixed!
 All Severity 1 (Deployment Blockers), Severity 2 (Critical Security), Severity 3 (Critical Runtime Crashes), Severity 5 (Auth & API), Severity 7 (Dead Alerts), Severity 8 (Logic), and Severity 9 (Error Handling) are FULLY FIXED 
 
 SEVERITY 1 — DEPLOYMENT BLOCKERS (System Won't Start)
@@ -118,6 +118,7 @@ SEVERITY 11 — LOW: Config & Best Practice Issues
 - [x] 101. `tests/test_integration_suite.py:280` — assert r.status != 500 allows 404. **FIXED: Changed to assert r.status == 200**
 - [x] 102. `ClearDesk/src/components/ChatPanel.tsx:55` — Sort with undefined comparison. **FIXED: Added ?? 99 fallback for undefined priority**
 - [x] 103. `ClearDesk/src/components/upload/FileUpload.tsx:98` — eslint-disable causes stale closure. **FIXED: Added processFile and isValidDocumentFile to deps, removed eslint-disable**
+- [x] 104. `docker-compose.yml:109-134` — Orchestrator and core services on different Docker networks. Orchestrator cannot resolve `redis:6379` (Error -2 Name or service not known). Core services (money, complianceone, finops360, integration, postgres) had no explicit network, while redis/actuator/nginx were on `reliantai-network`. **FIXED: Added `networks: - reliantai-network` to all services for proper DNS resolution and inter-service communication**
 Summary by Severity
 | Severity | Total | Fixed | Pending |
 |----------|-------|-------|---------|
@@ -126,21 +127,21 @@ Summary by Severity
 | 3 — Critical Runtime Crashes | 11 | 11 | 0 |
 | 4 — Race Conditions / Data Corruption | 8 | 8 | 0 |
 | 5 — Auth & API Contract Breaks | 8 | 8 | 0 |
-| 6 — Infrastructure Config | 10 | 10 | 0 |
+| 6 — Infrastructure Config | 11 | 11 | 0 |
 | 7 — Monitoring Dead Alerts | 5 | 5 | 0 |
 | 8 — Logic & Data Errors | 12 | 12 | 0 |
 | 9 — Missing Error Handling | 9 | 9 | 0 |
 | 10 — Deprecated/Inconsistent APIs | 6 | 6 | 0 |
 | 11 — Low / Best Practice | 18 | 18 | 0 |
-| **TOTAL** | **103** | **103** | **0** |
+| **TOTAL** | **104** | **104** | **0** |
 
-## Fixed (103 bugs)
+## Fixed (104 bugs)
 **Severity 1:** #1, #2, #3, #4, #5, #6  
 **Severity 2:** #7, #8, #9, #10, #11, #12, #13, #14, #15, #16  
 **Severity 3:** #17, #18, #19, #20, #21, #22, #23, #24, #25, #26, #27  
 **Severity 4:** #28, #29, #30, #31, #32, #33, #34, #35  
 **Severity 5:** #36, #37, #38, #39, #40, #41, #42, #43  
-**Severity 6:** #44, #45, #46, #47, #48, #49, #50, #51, #52, #53  
+**Severity 6:** #44, #45, #46, #47, #48, #49, #50, #51, #52, #53, #104  
 **Severity 7:** #54, #55, #56, #57, #58  
 **Severity 8:** #59, #60, #61, #62, #63, #64, #65, #66, #67, #68, #69, #70  
 **Severity 9:** #71, #72, #73, #74, #75, #76, #77, #78, #79  
@@ -167,4 +168,4 @@ All deployment blockers and critical security vulnerabilities have been fixed:
 
 ## Next Priority Fixes (Pending)
 
-All 103 bugs have been fixed. The platform is ready for deployment.
+All 104 bugs have been fixed. The platform is ready for deployment.

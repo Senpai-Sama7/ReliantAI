@@ -43,6 +43,9 @@ COPY . .
 # 7.5. Copy integration directory
 COPY integration ./integration
 
+# 7.6. Copy security middleware
+COPY security_middleware.py .
+
 # 8. Mount static files from built frontend for serving
 RUN mkdir -p /app/static && cp -r frontend/dist/* /app/static/
 
