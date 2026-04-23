@@ -376,6 +376,28 @@ async def is_account_locked(username: str) -> bool:
     return bool(count and int(count) >= 5)
 
 
+async def _emit_audit_with_dlq(**kwargs) -> None:
+    """Wraps emit_audit; on failure logs via structlog and pushes to dlq:audit_log in Redis."""
+    try:
+        await emit_audit(**kwargs)
+    except Exception as exc:
+        logger.error(
+            "audit_emission_failed",
+            error=str(exc),
+            action=kwargs.get("action"),
+            actor=kwargs.get("actor"),
+        )
+        if redis_client is not None:
+            try:
+                import json
+                await redis_client.rpush(
+                    "dlq:audit_log",
+                    json.dumps({k: str(v) for k, v in kwargs.items()} | {"_error": str(exc)}),
+                )
+            except Exception as dlq_exc:
+                logger.error("audit_dlq_push_failed", error=str(dlq_exc))
+
+
 def get_client_identifier(request: Request) -> str:
     """Resolve the client IP, honoring forwarded headers when present."""
     forwarded_for = request.headers.get("x-forwarded-for")
@@ -477,7 +499,7 @@ async def register(
         if req.role not in {Role.TECHNICIAN, Role.OPERATOR}:
             login_failures.labels(reason="role_escalation").inc()
             background_tasks.add_task(
-                emit_audit,
+                _emit_audit_with_dlq,
                 action="register_role_escalation_attempt",
                 actor=req.username,
                 target=req.role.value,
@@ -505,7 +527,7 @@ async def register(
 
         logger.info("user_registered", username=req.username, tenant_id=req.tenant_id)
         background_tasks.add_task(
-            emit_audit,
+            _emit_audit_with_dlq,
             action="user_registered",
             actor=req.username,
             tenant_id=req.tenant_id,
@@ -538,7 +560,7 @@ async def login(
             await track_failed_login(form_data.username)
             login_failures.labels(reason="invalid_credentials").inc()
             background_tasks.add_task(
-                emit_audit,
+                _emit_audit_with_dlq,
                 action="login_failed",
                 actor=form_data.username,
                 source_service="auth_service",
@@ -573,7 +595,7 @@ async def login(
         logger.info("tokens_issued", username=user.username, tenant_id=user.tenant_id)
 
         background_tasks.add_task(
-            emit_audit,
+            _emit_audit_with_dlq,
             action="user_login",
             actor=user.username,
             tenant_id=user.tenant_id,

@@ -515,8 +515,8 @@ def _twilio_skip_allowed() -> bool:
     return skip
 
 
-def _execute_job(run_id: str, message: str, temp: float):
-    """Background task runner with state machine tracking."""
+def _execute_job_sync(run_id: str, message: str, temp: float):
+    """Sync CPU-bound CrewAI dispatch execution — run via asyncio.to_thread, never directly."""
     from state_machine import get_state_machine
 
     sm = get_state_machine()
@@ -570,6 +570,11 @@ def _execute_job(run_id: str, message: str, temp: float):
         update_dispatch_status(run_id, "error", {"error": str(exc)})
         _broadcast_dispatch_event("dispatch_error", {"run_id": run_id, "status": "error",
                                                       "error": str(exc)})
+
+
+async def _execute_job(run_id: str, message: str, temp: float) -> None:
+    """Async wrapper — dispatches heavy CrewAI sync work to a dedicated thread."""
+    await asyncio.to_thread(_execute_job_sync, run_id, message, temp)
 
 
 def _twiml_response(body: str) -> PlainTextResponse:
@@ -689,12 +694,10 @@ async def dispatch(
         )
 
     if payload.async_mode:
-        background_tasks.add_task(
-            _execute_job, run_id, payload.customer_message, payload.outdoor_temp_f
-        )
+        asyncio.create_task(_execute_job(run_id, payload.customer_message, payload.outdoor_temp_f))
         return DispatchResponse(run_id=run_id, status="queued", timestamp=ts)
     else:
-        _execute_job(run_id, payload.customer_message, payload.outdoor_temp_f)
+        await _execute_job(run_id, payload.customer_message, payload.outdoor_temp_f)
         job = job_store[run_id]
         return DispatchResponse(
             run_id=run_id,
@@ -990,7 +993,7 @@ async def _handle_twilio_webhook(
         payload={"channel": channel, "phone": From},
     )
 
-    background_tasks.add_task(_execute_job, run_id, Body, 95.0)  # Default Houston summer temp
+    asyncio.create_task(_execute_job(run_id, Body, 95.0))  # Default Houston summer temp
 
     triage_result = triage_urgency_local(Body, 95.0)
     urgency = triage_result.get("urgency_level", "standard").lower()
