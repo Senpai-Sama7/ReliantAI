@@ -47,10 +47,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     xdg-utils \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install if present
-COPY package.json package-lock.json* ./
-RUN if [ -f package.json ]; then npm ci || npm install; fi
-
 # Copy application code
 COPY . .
 

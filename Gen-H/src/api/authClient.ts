@@ -7,7 +7,9 @@
 import axios from 'axios';
 import type { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE_URL = (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL)
+  ? (() => { throw new Error('VITE_API_BASE_URL must be set in production'); })()
+  : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
 
 export const createAuthClient = (): AxiosInstance => {
   const client = axios.create({

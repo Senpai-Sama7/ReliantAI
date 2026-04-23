@@ -4,7 +4,7 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm install
 
 # ── Stage 2: Build ─────────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
@@ -19,6 +19,7 @@ RUN npm run build
 
 # ── Stage 3: Production runtime (~120MB vs ~1GB) ────────────────────────────────────
 FROM node:20-alpine AS runner
+RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1

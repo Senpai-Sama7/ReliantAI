@@ -28,7 +28,13 @@ except ImportError:
     print("WARNING: JWT validator not available")
 
 # Configuration
-AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://localhost:8080")
+_auth_url = os.getenv("AUTH_SERVICE_URL")
+if os.getenv("ENV", os.getenv("ENVIRONMENT", "")).lower() in ("production", "staging"):
+    if not _auth_url:
+        raise RuntimeError("AUTH_SERVICE_URL must be set in production/staging environments")
+    AUTH_SERVICE_URL = _auth_url
+else:
+    AUTH_SERVICE_URL = _auth_url or "http://localhost:8080"
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 
 # Security scheme

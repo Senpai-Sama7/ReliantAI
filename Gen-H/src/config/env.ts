@@ -2,7 +2,9 @@
 
 export const ENV = {
   // API Configuration
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+  API_BASE_URL: (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) 
+    ? (() => { throw new Error('VITE_API_BASE_URL must be set in production'); })()
+    : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'),
   
   // Admin Configuration
   ADMIN_USER: import.meta.env.VITE_ADMIN_USER || 'admin',
