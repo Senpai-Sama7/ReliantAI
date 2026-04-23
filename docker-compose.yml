@@ -274,16 +274,39 @@ services:
         reservations:
           cpus: '0.5'
           memory: 256M
-  dashboard:
+  nginx:
     image: nginx:alpine
-    container_name: reliantai-dashboard
+    container_name: reliantai-nginx
     ports:
     - 80:80
     volumes:
-    - ./dashboard:/usr/share/nginx/html:ro
-    - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    - ./dashboard:/usr/share/nginx/dashboard:ro
+    - ./console:/usr/share/nginx/console:ro
+    - ./reliant-os/frontend/dist:/usr/share/nginx/os:ro
+    - ./nginx/integrated.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
     - reliantai-network
+    depends_on:
+      money:
+        condition: service_started
+      complianceone:
+        condition: service_started
+      finops360:
+        condition: service_started
+      growthengine:
+        condition: service_started
+      reliant-os-backend:
+        condition: service_started
+      integration:
+        condition: service_started
+      event-bus:
+        condition: service_started
+      mcp-bridge:
+        condition: service_started
+      health-aggregator:
+        condition: service_started
+      orchestrator:
+        condition: service_started
     healthcheck:
       test:
       - CMD
@@ -297,11 +320,11 @@ services:
     deploy:
       resources:
         limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
           cpus: '0.25'
           memory: 128M
-        reservations:
-          cpus: '0.125'
-          memory: 64M
   ops-intelligence:
     build:
       context: ./ops-intelligence
@@ -745,6 +768,91 @@ services:
       - curl
       - -f
       - http://localhost/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  mcp-bridge:
+    build:
+      context: ./integration/mcp-bridge
+      dockerfile: Dockerfile
+    container_name: reliantai-mcp-bridge
+    ports:
+    - 8083:8083
+    environment:
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - MCP_API_KEY=${MCP_API_KEY:-mcp-dev-key}
+    depends_on:
+      redis:
+        condition: service_healthy
+      money:
+        condition: service_started
+      growthengine:
+        condition: service_started
+      complianceone:
+        condition: service_started
+      finops360:
+        condition: service_started
+      orchestrator:
+        condition: service_started
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8083/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+  health-aggregator:
+    build:
+      context: ./integration/health-aggregator
+      dockerfile: Dockerfile
+    container_name: reliantai-health-aggregator
+    ports:
+    - 8086:8086
+    environment:
+    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - ORCHESTRATOR_URL=http://orchestrator:9000
+    - MCP_BRIDGE_URL=http://mcp-bridge:8083
+    depends_on:
+      redis:
+        condition: service_healthy
+      money:
+        condition: service_started
+      complianceone:
+        condition: service_started
+      finops360:
+        condition: service_started
+      orchestrator:
+        condition: service_started
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8086/health
       interval: 30s
       timeout: 10s
       retries: 3
