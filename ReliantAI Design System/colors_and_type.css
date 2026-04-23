@@ -1,0 +1,303 @@
+/**
+ * ReliantAI Design System — Revenue Engine v6
+ * colors_and_type.css
+ *
+ * Single source of truth for all CSS custom properties.
+ * Import this file before any product stylesheet.
+ *
+ * Fonts required (Google Fonts):
+ *   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+ */
+
+/* ─────────────────────────────────────────────────────────
+   BASE TOKENS — Revenue Engine v6
+───────────────────────────────────────────────────────── */
+:root {
+
+  /* Backgrounds */
+  --re-bg:           #020510;   /* deepest — page root */
+  --re-surface:      #060c1a;   /* primary card / panel */
+  --re-surface-hi:   #091424;   /* elevated — modals, hover rows */
+  --re-surface-pop:  #0d1e35;   /* highest — tooltips, dropdowns */
+
+  /* Borders */
+  --re-border:       #0c1a2c;   /* default panel border */
+  --re-border-brt:   #152637;   /* hover / active border */
+
+  /* Text */
+  --re-text-bright:  #ffffff;   /* headings, critical values */
+  --re-text:         #a8c4de;   /* primary body text */
+  --re-text-dim:     #4a6880;   /* labels, secondary info */
+  --re-text-muted:   #1e3348;   /* placeholders, disabled */
+
+  /* Accent Colors — semantic, not decorative */
+  --re-cyan:         #00e5ff;   /* primary CTA, active states, B-A-P */
+  --re-green:        #00ff7a;   /* success, completed, healthy, Integration */
+  --re-gold:         #ffc400;   /* Money service, revenue metrics, premium */
+  --re-red:          #ff3b5c;   /* critical, escalated, LIFE_SAFETY */
+  --re-purple:       #7c5cfc;   /* APEX, AI/ML surfaces */
+  --re-teal:         #00d4aa;   /* ClearDesk, document processing */
+
+  /* Accent Dimmed (for backgrounds / glows) */
+  --re-cyan-dim:     rgba(0, 229, 255, 0.08);
+  --re-green-dim:    rgba(0, 255, 122, 0.08);
+  --re-gold-dim:     rgba(255, 196, 0, 0.08);
+  --re-red-dim:      rgba(255, 59, 92, 0.08);
+  --re-purple-dim:   rgba(124, 92, 252, 0.08);
+  --re-teal-dim:     rgba(0, 212, 170, 0.08);
+
+  /* Accent Glow (for focus rings / active glows) */
+  --re-cyan-glow:    rgba(0, 229, 255, 0.25);
+  --re-green-glow:   rgba(0, 255, 122, 0.25);
+  --re-gold-glow:    rgba(255, 196, 0, 0.25);
+  --re-red-glow:     rgba(255, 59, 92, 0.25);
+  --re-purple-glow:  rgba(124, 92, 252, 0.25);
+  --re-teal-glow:    rgba(0, 212, 170, 0.25);
+
+  /* Service accent aliases */
+  --re-cleardesk:    var(--re-teal);
+  --re-money:        var(--re-gold);
+  --re-bap:          var(--re-cyan);
+  --re-apex:         var(--re-purple);
+  --re-integration:  var(--re-green);
+
+  /* ─── Typography ──────────────────────────────────────────── */
+  --re-font-display: 'Fraunces', Georgia, serif;
+  --re-font-sans:    'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --re-font-mono:    'IBM Plex Mono', 'Fira Code', 'Courier New', monospace;
+
+  /* Type Scale */
+  --re-text-2xs:  10px;
+  --re-text-xs:   11px;
+  --re-text-sm:   12px;
+  --re-text-base: 13px;
+  --re-text-md:   14px;
+  --re-text-lg:   16px;
+  --re-text-xl:   20px;
+  --re-text-2xl:  24px;
+  --re-text-3xl:  32px;
+  --re-text-4xl:  48px;
+  --re-text-5xl:  64px;
+
+  /* Line Heights */
+  --re-leading-tight:  1.2;
+  --re-leading-snug:   1.35;
+  --re-leading-base:   1.5;
+  --re-leading-relaxed:1.65;
+
+  /* Letter Spacing */
+  --re-tracking-tight:  -0.01em;
+  --re-tracking-normal:  0;
+  --re-tracking-wide:    0.04em;
+  --re-tracking-wider:   0.08em;
+  --re-tracking-widest:  0.15em;
+
+  /* ─── Spacing ─────────────────────────────────────────────── */
+  --re-space-1:   4px;
+  --re-space-2:   8px;
+  --re-space-3:   12px;
+  --re-space-4:   16px;
+  --re-space-5:   20px;
+  --re-space-6:   24px;
+  --re-space-8:   32px;
+  --re-space-10:  40px;
+  --re-space-12:  48px;
+  --re-space-16:  64px;
+
+  /* ─── Border Radius ───────────────────────────────────────── */
+  --re-radius-none:  0px;         /* panels, cards, containers */
+  --re-radius-sm:    2px;         /* buttons, badges, inputs */
+  /* Nothing above 2px. Sharp is the brand. */
+
+  /* ─── Transitions ─────────────────────────────────────────── */
+  --re-transition-fast:   150ms ease;
+  --re-transition-normal: 200ms ease;
+  --re-transition-slow:   300ms ease;
+
+  /* ─── Z-Index Scale ───────────────────────────────────────── */
+  --re-z-base:    1;
+  --re-z-sticky:  100;
+  --re-z-overlay: 200;
+  --re-z-modal:   300;
+  --re-z-toast:   400;
+
+  /* ─── Shimmer Animation (skeleton loading) ────────────────── */
+  --re-shimmer-from: rgba(255,255,255,0.02);
+  --re-shimmer-to:   rgba(255,255,255,0.06);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SEMANTIC CSS CUSTOM PROPERTIES
+   Maps tokens to usage context so components stay consistent
+───────────────────────────────────────────────────────── */
+:root {
+
+  /* Page structure */
+  --page-bg:           var(--re-bg);
+  --panel-bg:          var(--re-surface);
+  --panel-bg-hover:    var(--re-surface-hi);
+  --panel-border:      var(--re-border);
+  --panel-border-hover:var(--re-border-brt);
+
+  /* Typography semantic */
+  --heading-color:     var(--re-text-bright);
+  --body-color:        var(--re-text);
+  --label-color:       var(--re-text-dim);
+  --muted-color:       var(--re-text-muted);
+  --link-color:        var(--re-cyan);
+  --link-hover:        var(--re-text-bright);
+  --code-color:        var(--re-teal);
+
+  /* Interactive */
+  --btn-primary-bg:    var(--re-cyan);
+  --btn-primary-text:  var(--re-bg);
+  --btn-secondary-bg:  var(--re-surface-hi);
+  --btn-secondary-text:var(--re-text);
+  --btn-danger-bg:     var(--re-red);
+  --btn-danger-text:   var(--re-text-bright);
+  --input-bg:          var(--re-surface-hi);
+  --input-border:      var(--re-border-brt);
+  --input-focus-ring:  var(--re-cyan-glow);
+
+  /* Status */
+  --status-success:    var(--re-green);
+  --status-warning:    var(--re-gold);
+  --status-danger:     var(--re-red);
+  --status-info:       var(--re-cyan);
+  --status-ai:         var(--re-purple);
+  --status-pending:    var(--re-text-dim);
+
+  /* Table */
+  --table-header-bg:   var(--re-surface-hi);
+  --table-row-bg:      transparent;
+  --table-row-hover:   var(--re-surface-hi);
+  --table-border:      var(--re-border);
+
+  /* Nav / Sidebar */
+  --sidebar-bg:        var(--re-surface);
+  --nav-active-bg:     var(--re-surface-hi);
+  --nav-active-accent: var(--re-cyan);
+  --nav-inactive-text: var(--re-text-dim);
+  --nav-active-text:   var(--re-text-bright);
+}
+
+/* ─────────────────────────────────────────────────────────
+   SEMANTIC HTML ELEMENT STYLES
+   Apply these via class or element selectors in your stylesheet
+───────────────────────────────────────────────────────── */
+
+/* Base reset for ReliantAI surfaces */
+.re-root {
+  background: var(--re-bg);
+  color: var(--re-text);
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-base);
+  line-height: var(--re-leading-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Headings ──────────────────────────────────── */
+.re-h1 {
+  font-family: var(--re-font-display);
+  font-size: var(--re-text-4xl);
+  font-weight: 600;
+  color: var(--re-text-bright);
+  line-height: var(--re-leading-tight);
+  letter-spacing: var(--re-tracking-tight);
+}
+.re-h2 {
+  font-family: var(--re-font-display);
+  font-size: var(--re-text-3xl);
+  font-weight: 600;
+  color: var(--re-text-bright);
+  line-height: var(--re-leading-tight);
+}
+.re-h3 {
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-xl);
+  font-weight: 600;
+  color: var(--re-text-bright);
+  line-height: var(--re-leading-snug);
+}
+.re-h4 {
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-lg);
+  font-weight: 500;
+  color: var(--re-text);
+  line-height: var(--re-leading-snug);
+}
+.re-label {
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-xs);
+  font-weight: 500;
+  color: var(--re-text-dim);
+  letter-spacing: var(--re-tracking-wider);
+  text-transform: uppercase;
+}
+
+/* ─── Body ──────────────────────────────────────── */
+.re-p {
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-base);
+  color: var(--re-text);
+  line-height: var(--re-leading-relaxed);
+}
+.re-p-sm {
+  font-family: var(--re-font-sans);
+  font-size: var(--re-text-sm);
+  color: var(--re-text-dim);
+  line-height: var(--re-leading-base);
+}
+
+/* ─── Code / Data ───────────────────────────────── */
+.re-code {
+  font-family: var(--re-font-mono);
+  font-size: var(--re-text-sm);
+  color: var(--re-teal);
+}
+.re-data {
+  font-family: var(--re-font-mono);
+  font-size: var(--re-text-base);
+  color: var(--re-text-bright);
+  font-weight: 500;
+}
+.re-data-dim {
+  font-family: var(--re-font-mono);
+  font-size: var(--re-text-sm);
+  color: var(--re-text-dim);
+}
+.re-id {
+  font-family: var(--re-font-mono);
+  font-size: var(--re-text-xs);
+  color: var(--re-text-muted);
+  letter-spacing: var(--re-tracking-wide);
+}
+
+/* ─── Shimmer animation ─────────────────────────── */
+@keyframes re-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.re-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--re-surface) 25%,
+    var(--re-surface-hi) 50%,
+    var(--re-surface) 75%
+  );
+  background-size: 200% 100%;
+  animation: re-shimmer 1.5s infinite linear;
+}
+
+/* ─── LIFE_SAFETY pulse ─────────────────────────── */
+@keyframes re-pulse-life-safety {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.7; }
+}
+.re-life-safety-pulse {
+  animation: re-pulse-life-safety 1s ease infinite;
+  background: var(--re-red-dim);
+  border: 1px solid var(--re-red);
+  color: var(--re-red);
+}

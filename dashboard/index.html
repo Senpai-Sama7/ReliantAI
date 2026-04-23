@@ -3,724 +3,651 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ReliantAI Platform Dashboard</title>
+    <title>ReliantAI Growth Center</title>
+    <!-- Include Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        :root {
+            --bg-color: #000000;
+            --surface-color: #111111;
+            --surface-hover: #1a1a1a;
+            --border-color: #222222;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent-blue: #2997ff;
+            --accent-purple: #ff007f;
+            --success-green: #00ff88;
+            --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #fff;
-            min-height: 100vh;
+            font-family: var(--font-family);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        
-        .header {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 1.5rem 2rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+        /* Top Navigation */
+        nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1.5rem 3rem;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        
-        .header h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
-        
-        .header .status {
+
+        .nav-actions {
             display: flex;
-            gap: 1rem;
+            gap: 16px;
             align-items: center;
         }
-        
+
         .status-badge {
-            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success-green);
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
+            border: 1px solid rgba(0, 255, 136, 0.2);
         }
-        
-        .status-badge.healthy {
-            background: rgba(0, 255, 136, 0.2);
-            color: #00ff88;
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success-green);
+            animation: pulse 2s infinite;
         }
-        
-        .status-badge.warning {
-            background: rgba(255, 193, 7, 0.2);
-            color: #ffc107;
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
-        
-        .status-badge.critical {
-            background: rgba(255, 71, 87, 0.2);
-            color: #ff4757;
-        }
-        
+
+        /* Main Layout */
         .container {
-            padding: 2rem;
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
+            padding: 3rem;
         }
-        
+
+        header {
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        /* Action Buttons */
+        .primary-actions {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            color: white;
+        }
+
+        .btn-primary {
+            background: var(--text-primary);
+            color: var(--bg-color);
+        }
+
+        .btn-primary:hover {
+            background: #e0e0e0;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-hover);
+            border-color: #444;
+        }
+
+        /* Metrics Grid */
         .metrics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
         }
-        
+
         .metric-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            backdrop-filter: blur(10px);
-            transition: transform 0.2s, box-shadow 0.2s;
+            padding: 2rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
-        
+
         .metric-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.1);
+            border-color: #444;
         }
-        
-        .metric-card h3 {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
         }
-        
+
         .metric-value {
             font-size: 2.5rem;
             font-weight: 700;
+            letter-spacing: -1px;
             margin-bottom: 0.5rem;
         }
-        
-        .metric-change {
+
+        .metric-trend {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
             font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
+            font-weight: 600;
         }
-        
-        .metric-change.positive {
-            color: #00ff88;
+
+        .trend-up {
+            color: var(--success-green);
         }
-        
-        .metric-change.negative {
-            color: #ff4757;
+
+        /* Two Column Layout */
+        .dashboard-split {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
         }
-        
-        .section {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+
+        .panel {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
+            padding: 2rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
         }
-        
-        .section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 600;
         }
-        
-        .services-grid {
-            display: grid;
-            gap: 1rem;
-        }
-        
-        .service-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1.25rem;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
-            gap: 1rem;
-            align-items: center;
-            transition: all 0.2s;
-        }
-        
-        .service-card:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        .service-info h4 {
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-        }
-        
-        .service-info p {
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.5);
-        }
-        
-        .service-status {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-        
-        .status-dot.healthy {
-            background: #00ff88;
-        }
-        
-        .status-dot.warning {
-            background: #ffc107;
-        }
-        
-        .status-dot.critical {
-            background: #ff4757;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .metric-bar {
+
+        /* Prospecting List */
+        .prospect-list {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 1rem;
         }
-        
-        .metric-bar label {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
-        }
-        
-        .progress-bar {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 0.3s;
-        }
-        
-        .progress-fill.low {
-            background: #00ff88;
-        }
-        
-        .progress-fill.medium {
-            background: #ffc107;
-        }
-        
-        .progress-fill.high {
-            background: #ff4757;
-        }
-        
-        .actions {
+
+        .prospect-item {
             display: flex;
-            gap: 0.5rem;
-        }
-        
-        .btn {
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
-        }
-        
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .log-container {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 12px;
+            justify-content: space-between;
+            align-items: center;
             padding: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            transition: background 0.2s ease;
         }
-        
-        .log-entry {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            gap: 1rem;
+
+        .prospect-item:hover {
+            background: rgba(255,255,255,0.05);
         }
-        
-        .log-time {
-            color: rgba(255, 255, 255, 0.4);
-            min-width: 80px;
-        }
-        
-        .log-level {
-            min-width: 60px;
+
+        .prospect-info h4 {
+            font-size: 1.1rem;
             font-weight: 600;
+            margin-bottom: 0.25rem;
         }
-        
-        .log-level.info {
-            color: #00d4ff;
-        }
-        
-        .log-level.success {
-            color: #00ff88;
-        }
-        
-        .log-level.warning {
-            color: #ffc107;
-        }
-        
-        .log-level.error {
-            color: #ff4757;
-        }
-        
-        .log-message {
-            color: rgba(255, 255, 255, 0.8);
-        }
-        
-        .controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .control-group {
+
+        .prospect-info p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
+            gap: 8px;
         }
-        
-        .toggle {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s;
+
+        .badge-hot {
+            background: rgba(255, 0, 127, 0.1);
+            color: var(--accent-purple);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border: 1px solid rgba(255, 0, 127, 0.2);
         }
-        
-        .toggle.active {
-            background: #00ff88;
+
+        /* System Activity Feed */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
         }
-        
-        .toggle::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            transition: transform 0.3s;
+            background: rgba(41, 151, 255, 0.1);
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-details h5 {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-details p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
         }
         
-        .toggle.active::after {
-            transform: translateX(24px);
+        .activity-time {
+            font-size: 0.75rem;
+            color: #555;
+            margin-top: 4px;
         }
-        
-        .auth-input input {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 0.4rem 0.8rem;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            width: 200px;
-            transition: all 0.2s;
+
+        /* Utilities */
+        .text-gradient {
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .auth-input input:focus {
-            outline: none;
-            border-color: #00d4ff;
-            background: rgba(255, 255, 255, 0.1);
+
+        /* Simple Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
-        
-        @media (max-width: 768px) {
-            .service-card {
-                grid-template-columns: 1fr;
-            }
-            
-            .metrics-grid {
-                grid-template-columns: 1fr;
-            }
+        .modal {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 500px;
         }
+        .modal h2 { margin-bottom: 1rem; }
+        .modal p { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-secondary); font-size: 0.9rem;}
+        .form-group input { width: 100%; padding: 12px; background: #000; border: 1px solid var(--border-color); color: white; border-radius: 8px; font-size: 1rem; }
+        .form-group input:focus { outline: none; border-color: var(--accent-blue); }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>🚀 ReliantAI Platform</h1>
-        <div class="status">
-            <div class="auth-input">
-                <input type="password" id="api-key" placeholder="Orchestrator API Key" onchange="saveApiKey()">
-            </div>
-            <span class="status-badge healthy" id="platform-status">HEALTHY</span>
-            <span id="connection-status">● Connected</span>
+
+    <nav>
+        <div class="logo-area">
+            <i data-lucide="zap" style="color: var(--accent-blue)"></i>
+            <div class="logo-text">ReliantAI <span>Growth Engine</span></div>
         </div>
-    </div>
-    
+        <div class="nav-actions">
+            <a href="http://localhost:8000/docs" target="_blank" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">API Docs</a>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                System Active
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <!-- Top Metrics -->
+        <header>
+            <h1>Your Autonomous Growth Machine</h1>
+            <p>ReliantAI is continuously finding leads, building mockups, and executing outreach.</p>
+        </header>
+
+        <div class="primary-actions">
+            <button class="btn btn-primary" onclick="openScanModal()">
+                <i data-lucide="radar"></i> Find New Clients
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='http://localhost:5174'">
+                <i data-lucide="bar-chart-2"></i> View Deep Analytics
+            </button>
+            <button class="btn btn-secondary" onclick="window.location.href='http://localhost:8112'">
+                <i data-lucide="bot"></i> Manage AI Agents
+            </button>
+        </div>
+
         <div class="metrics-grid">
             <div class="metric-card">
-                <h3>Platform Health</h3>
-                <div class="metric-value" id="health-score">98%</div>
-                <div class="metric-change positive">
-                    <span>↑</span> 2% from last hour
+                <div class="metric-header">
+                    <span>Leads Found (30d)</span>
+                    <i data-lucide="users"></i>
+                </div>
+                <div class="metric-value">1,204</div>
+                <div class="metric-trend trend-up">
+                    <i data-lucide="arrow-up-right" size="16"></i> 12% vs last month
                 </div>
             </div>
             
             <div class="metric-card">
-                <h3>Active Services</h3>
-                <div class="metric-value" id="active-services">20/20</div>
-                <div class="metric-change positive">
-                    <span>✓</span> All operational
+                <div class="metric-header">
+                    <span>Mockup Sites Built</span>
+                    <i data-lucide="layout-template"></i>
+                </div>
+                <div class="metric-value">845</div>
+                <div class="metric-trend trend-up">
+                    <i data-lucide="arrow-up-right" size="16"></i> Autonomous Engine
                 </div>
             </div>
-            
+
             <div class="metric-card">
-                <h3>Total Instances</h3>
-                <div class="metric-value" id="total-instances">24</div>
-                <div class="metric-change positive">
-                    <span>↑</span> Auto-scaled
+                <div class="metric-header">
+                    <span>Outreach Conversion</span>
+                    <i data-lucide="message-square-reply"></i>
+                </div>
+                <div class="metric-value">4.2%</div>
+                <div class="metric-trend trend-up">
+                    <i data-lucide="arrow-up-right" size="16"></i> Highly Qualified
                 </div>
             </div>
-            
+
             <div class="metric-card">
-                <h3>AI Predictions</h3>
-                <div class="metric-value" id="ai-predictions">Enabled</div>
-                <div class="metric-change positive">
-                    <span>🤖</span> Active learning
+                <div class="metric-header">
+                    <span>Active MMR</span>
+                    <i data-lucide="wallet"></i>
+                </div>
+                <div class="metric-value text-gradient">$12,450</div>
+                <div class="metric-trend trend-up">
+                    <i data-lucide="arrow-up-right" size="16"></i> 8% vs last month
                 </div>
             </div>
         </div>
-        
-        <!-- Controls -->
-        <div class="controls">
-            <div class="control-group">
-                <div class="toggle active" id="auto-scale-toggle"></div>
-                <label>Auto-Scaling</label>
+
+        <div class="dashboard-split">
+            <!-- Left Column: Prospects -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Recent High-Value Prospects</div>
+                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" onclick="fetchProspects()">
+                        <i data-lucide="refresh-cw" size="16"></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="prospect-list" id="prospectList">
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="radar" size="48" style="opacity: 0.2; margin-bottom: 1rem;"></i>
+                        <p>Click "Find New Clients" to scan your local area using Google Places API.</p>
+                    </div>
+                </div>
             </div>
-            <div class="control-group">
-                <div class="toggle active" id="auto-heal-toggle"></div>
-                <label>Auto-Healing</label>
-            </div>
-            <div class="control-group">
-                <div class="toggle active" id="ai-toggle"></div>
-                <label>AI Predictions</label>
-            </div>
-        </div>
-        
-        <!-- Services Section -->
-        <div class="section">
-            <h2>🔧 Platform Services</h2>
-            <div class="services-grid" id="services-list">
-                <!-- Services will be populated by JavaScript -->
-            </div>
-        </div>
-        
-        <!-- Platform Logs -->
-        <div class="section">
-            <h2>📋 Platform Events</h2>
-            <div class="log-container" id="log-container">
-                <div class="log-entry">
-                    <span class="log-time">Loading...</span>
-                    <span class="log-level info">INFO</span>
-                    <span class="log-message">Connecting to orchestrator...</span>
+
+            <!-- Right Column: System Feed -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Live Engine Feed</div>
+                </div>
+                <div class="activity-feed">
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: rgba(0, 255, 136, 0.1); color: var(--success-green);">
+                            <i data-lucide="check-circle" size="16"></i>
+                        </div>
+                        <div class="activity-details">
+                            <h5>ComplianceOne Sync</h5>
+                            <p>Daily SOC2 evidence collection completed across all clusters.</p>
+                            <div class="activity-time">Just now</div>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon" style="background: rgba(255, 0, 127, 0.1); color: var(--accent-purple);">
+                            <i data-lucide="trending-down" size="16"></i>
+                        </div>
+                        <div class="activity-details">
+                            <h5>FinOps360 Alert</h5>
+                            <p>Identified and terminated 3 idle database instances. Saved $45/mo.</p>
+                            <div class="activity-time">2 hours ago</div>
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i data-lucide="cpu" size="16"></i>
+                        </div>
+                        <div class="activity-details">
+                            <h5>Orchestrator Scale Event</h5>
+                            <p>Scaled Money service to 3 instances due to high traffic.</p>
+                            <div class="activity-time">5 hours ago</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Scan Modal -->
+    <div class="modal-overlay" id="scanModal">
+        <div class="modal">
+            <h2>Find New Clients</h2>
+            <p>Scan a geographic area for highly-rated home service businesses that lack a digital presence.</p>
+            
+            <div class="form-group">
+                <label>Latitude</label>
+                <input type="text" id="scanLat" value="30.2672" placeholder="e.g. 30.2672">
+            </div>
+            <div class="form-group">
+                <label>Longitude</label>
+                <input type="text" id="scanLng" value="-97.7431" placeholder="e.g. -97.7431">
+            </div>
+            <div class="form-group">
+                <label>Keyword</label>
+                <input type="text" id="scanKeyword" value="plumber" placeholder="e.g. plumber, hvac">
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button class="btn btn-primary" onclick="executeScan()" style="flex: 1; justify-content: center;">Scan Now</button>
+                <button class="btn btn-secondary" onclick="closeScanModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const ORCHESTRATOR_URL = 'http://localhost:9000';
-        let ws = null;
-        let reconnectAttempts = 0;
+        // Initialize Icons
+        lucide.createIcons();
 
-        function getApiKey() {
-            return document.getElementById('api-key').value || localStorage.getItem('orchestrator_api_key') || '';
-        }
+        // Modal Logic
+        function openScanModal() { document.getElementById('scanModal').style.display = 'flex'; }
+        function closeScanModal() { document.getElementById('scanModal').style.display = 'none'; }
 
-        function saveApiKey() {
-            const key = document.getElementById('api-key').value;
-            localStorage.setItem('orchestrator_api_key', key);
-            addLog('info', 'API Key updated');
-            
-            // Reconnect websocket with new key
-            if (ws) {
-                ws.onclose = null; // Prevent reconnection loop during intentional reset
-                ws.close();
-            }
-            connectWebSocket();
-            
-            // Reload data
-            loadStatus();
-            loadServices();
-        }
-
-        async function authenticatedFetch(url, options = {}) {
-            const key = getApiKey();
-            const headers = {
-                ...options.headers,
-                'X-API-Key': key
-            };
-            return fetch(url, { ...options, headers });
-        }
-
-        // Initialize dashboard
-        async function init() {
-            const savedKey = localStorage.getItem('orchestrator_api_key');
-            if (savedKey) {
-                document.getElementById('api-key').value = savedKey;
-            }
-            
-            await loadStatus();
-            await loadServices();
-            connectWebSocket();
-        }
+        // API Logic
+        const API_KEY = 'local-dev-api-key';
         
-        // Load platform status
-        async function loadStatus() {
+        async function executeScan() {
+            const btn = document.querySelector('#scanModal .btn-primary');
+            btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Scanning...';
+            lucide.createIcons();
+            
             try {
-                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/dashboard`);
-                if (!response.ok) throw new Error('Unauthorized');
+                const response = await fetch('http://localhost:8003/api/prospect/scan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        lat: parseFloat(document.getElementById('scanLat').value),
+                        lng: parseFloat(document.getElementById('scanLng').value),
+                        keyword: document.getElementById('scanKeyword').value,
+                        radius_meters: 10000
+                    })
+                });
+                
                 const data = await response.json();
                 
-                document.getElementById('health-score').textContent = `${data.health_score}%`;
-                document.getElementById('active-services').textContent = `${data.services_healthy}/${data.services_total}`;
-                document.getElementById('total-instances').textContent = data.active_instances;
-                document.getElementById('ai-predictions').textContent = data.ai_enabled ? 'Enabled' : 'Disabled';
-                
-                const statusBadge = document.getElementById('platform-status');
-                statusBadge.className = 'status-badge ' + (data.health_score > 90 ? 'healthy' : data.health_score > 70 ? 'warning' : 'critical');
-                statusBadge.textContent = data.health_score > 90 ? 'HEALTHY' : data.health_score > 70 ? 'DEGRADED' : 'CRITICAL';
-            } catch (error) {
-                addLog('error', 'Failed to load platform status: ' + error.message);
-            }
-        }
-        
-        // Load services
-        async function loadServices() {
-            try {
-                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services`);
-                if (!response.ok) throw new Error('Unauthorized');
-                const data = await response.json();
-                
-                const container = document.getElementById('services-list');
-                container.innerHTML = data.services.map(service => `
-                    <div class="service-card">
-                        <div class="service-info">
-                            <h4>${service.name}</h4>
-                            <p>${service.url}</p>
-                        </div>
-                        <div class="service-status">
-                            <div class="status-dot ${service.status}"></div>
-                            <span>${service.status}</span>
-                        </div>
-                        <div class="metric-bar">
-                            <label>Instances</label>
-                            <div class="progress-bar">
-                                <div class="progress-fill low" style="width: ${(service.instances / 10) * 100}%"></div>
-                            </div>
-                            <small>${service.instances} running</small>
-                        </div>
-                        <div>
-                            <label>Auto-scale: ${service.auto_scale ? '✓' : '✗'}</label><br>
-                            <label>Auto-heal: ${service.auto_heal ? '✓' : '✗'}</label>
-                        </div>
-                        <div class="actions">
-                            <button class="btn btn-secondary" onclick="restartService('${service.name}')">Restart</button>
-                            <button class="btn btn-primary" onclick="scaleService('${service.name}')">Scale</button>
-                        </div>
-                    </div>
-                `).join('');
-            } catch (error) {
-                addLog('error', 'Failed to load services: ' + error.message);
-            }
-        }
-        
-        // WebSocket connection
-        function connectWebSocket() {
-            const key = getApiKey();
-            ws = new WebSocket(`${ORCHESTRATOR_URL.replace('http', 'ws')}/ws?token=${key}`);
-            
-            ws.onopen = () => {
-                addLog('success', 'Connected to orchestrator');
-                document.getElementById('connection-status').textContent = '● Connected';
-                reconnectAttempts = 0;
-            };
-            
-            ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                handleWebSocketMessage(data);
-            };
-            
-            ws.onclose = () => {
-                document.getElementById('connection-status').textContent = '● Disconnected';
-                addLog('warning', 'Connection lost, reconnecting...');
-                
-                // Exponential backoff
-                const delay = Math.min(30000, 1000 * Math.pow(2, reconnectAttempts));
-                reconnectAttempts++;
-                setTimeout(connectWebSocket, delay);
-            };
-            
-            ws.onerror = (error) => {
-                addLog('error', 'WebSocket error');
-            };
-        }
-        
-        // Handle WebSocket messages
-        function handleWebSocketMessage(data) {
-            switch(data.type) {
-                case 'status_update':
-                    updateServiceStatus(data.service, data.status);
-                    break;
-                case 'event':
-                    handleEvent(data.event, data.data);
-                    break;
-                case 'ai_prediction':
-                    addLog('info', `AI Prediction: ${data.data.predictions.length} services analyzed`);
-                    break;
-            }
-        }
-        
-        // Handle events
-        function handleEvent(eventType, data) {
-            switch(eventType) {
-                case 'scale':
-                    addLog('info', `${data.service} scaled to ${data.instances} instances: ${data.reason}`);
-                    loadServices();
-                    break;
-                case 'heal':
-                    addLog('success', `${data.service} healed: ${data.action}`);
-                    loadServices();
-                    break;
-                case 'optimization_report':
-                    addLog('info', `Optimization report generated: ${data.recommendations?.length || 0} recommendations`);
-                    break;
-            }
-        }
-        
-        // Update service status in UI
-        function updateServiceStatus(serviceName, status) {
-            const cards = document.querySelectorAll('.service-card');
-            cards.forEach(card => {
-                if (card.querySelector('h4').textContent === serviceName) {
-                    const dot = card.querySelector('.status-dot');
-                    dot.className = `status-dot ${status}`;
-                    card.querySelector('.service-status span:last-child').textContent = status;
+                if (response.ok) {
+                    renderProspects(data.prospects);
+                    closeScanModal();
+                } else {
+                    alert('Scan failed. Ensure GOOGLE_PLACES_API_KEY is set in .env.\n\nError: ' + (data.detail || 'Unknown'));
                 }
-            });
-        }
-        
-        // Add log entry
-        function addLog(level, message) {
-            const container = document.getElementById('log-container');
-            const time = new Date().toLocaleTimeString();
-            
-            const entry = document.createElement('div');
-            entry.className = 'log-entry';
-            entry.innerHTML = `
-                <span class="log-time">${time}</span>
-                <span class="log-level ${level}">${level.toUpperCase()}</span>
-                <span class="log-message">${message}</span>
-            `;
-            
-            container.insertBefore(entry, container.firstChild);
-            
-            // Keep only last 100 entries
-            while (container.children.length > 100) {
-                container.removeChild(container.lastChild);
+            } catch (err) {
+                alert('Failed to connect to GrowthEngine. Is it running?');
+            } finally {
+                btn.innerHTML = 'Scan Now';
             }
         }
-        
-        // Service actions
-        async function restartService(serviceName) {
-            try {
-                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services/${serviceName}/restart`, {
-                    method: 'POST'
-                });
-                if (!response.ok) throw new Error('Unauthorized');
-                const data = await response.json();
-                addLog('success', `${serviceName} restarted successfully`);
-            } catch (error) {
-                addLog('error', `Failed to restart ${serviceName}: ${error.message}`);
-            }
-        }
-        
-        async function scaleService(serviceName) {
-            const instances = prompt(`Enter target instances for ${serviceName}:`, '1');
-            if (!instances) return;
+
+        async function triggerOutreach(name, phone, placeId, rating, reviewCount, btn) {
+            btn.innerHTML = 'Sending...';
             
             try {
-                const response = await authenticatedFetch(`${ORCHESTRATOR_URL}/services/${serviceName}/scale?target_instances=${instances}`, {
-                    method: 'POST'
+                const response = await fetch('http://localhost:8003/api/prospect/outreach', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': API_KEY
+                    },
+                    body: JSON.stringify({
+                        place_id: placeId,
+                        name: name,
+                        phone: phone,
+                        rating: parseFloat(rating),
+                        review_count: parseInt(reviewCount)
+                    })
                 });
-                if (!response.ok) throw new Error('Unauthorized');
+                
                 const data = await response.json();
-                addLog('success', `${serviceName} scaled to ${instances} instances`);
-                loadServices();
-            } catch (error) {
-                addLog('error', `Failed to scale ${serviceName}: ${error.message}`);
+                if (response.ok) {
+                    btn.innerHTML = '<i data-lucide="check"></i> Sent!';
+                    btn.style.background = '#00ff88';
+                    btn.style.color = '#000';
+                    lucide.createIcons();
+                } else {
+                    btn.innerHTML = 'Failed';
+                    alert('Outreach failed: ' + (data.detail || 'Unknown error'));
+                }
+            } catch (err) {
+                btn.innerHTML = 'Error';
             }
         }
-        
-        // Toggle controls
-        document.querySelectorAll('.toggle').forEach(toggle => {
-            toggle.addEventListener('click', () => {
-                toggle.classList.toggle('active');
+
+        function renderProspects(prospects) {
+            const list = document.getElementById('prospectList');
+            
+            if (!prospects || prospects.length === 0) {
+                list.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: var(--text-secondary);">
+                        <i data-lucide="alert-circle" size="48" style="opacity: 0.2; margin-bottom: 1rem;"></i>
+                        <p>No suitable prospects found in this area. Try a different location.</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            list.innerHTML = '';
+            prospects.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'prospect-item';
+                div.innerHTML = `
+                    <div class="prospect-info">
+                        <h4>${p.name} <span class="badge-hot">HOT LEAD</span></h4>
+                        <p>
+                            <i data-lucide="star" size="14" style="color: #ffc107; fill: #ffc107;"></i> ${p.rating} (${p.review_count} reviews)
+                            <span style="margin: 0 8px;">•</span>
+                            <i data-lucide="phone" size="14"></i> ${p.phone || 'No phone listed'}
+                        </p>
+                        <p style="margin-top: 4px; color: #ff4757; font-weight: 500;">
+                            <i data-lucide="globe" size="14"></i> No Website Detected
+                        </p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="triggerOutreach('${p.name}', '${p.phone || ''}', '${p.place_id}', '${p.rating}', '${p.review_count}', this)">
+                        <i data-lucide="zap" size="16"></i> Auto-Pitch
+                    </button>
+                `;
+                list.appendChild(div);
             });
-        });
-        
-        // Start dashboard
-        init();
-        
-        // Refresh every 30 seconds
-        setInterval(() => {
-            loadStatus();
-            loadServices();
-        }, 30000);
+            lucide.createIcons();
+        }
     </script>
 </body>
 </html>

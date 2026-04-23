@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+googlemaps
+python-dotenv
+pydantic
+requests
+structlog

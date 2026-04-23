@@ -1,0 +1,48 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:16px;display:flex;flex-direction:column;gap:8px}
+.alert{padding:10px 14px;border-left:3px solid;font-size:12px;line-height:1.5;display:flex;align-items:flex-start;gap:10px}
+.alert-title{font-weight:600;font-size:12px;margin-bottom:2px}
+.alert-body{color:#a8c4de;font-size:12px}
+.mono{font-family:'IBM Plex Mono',monospace;font-size:11px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.65}}
+</style></head><body>
+
+<div class="alert" style="background:rgba(255,59,92,0.08);border-color:#ff3b5c;animation:pulse 1s ease infinite">
+  <div>
+    <div class="alert-title" style="color:#ff3b5c">⚠ LIFE_SAFETY — 911 Escalated</div>
+    <div class="alert-body">Gas leak detected · 4821 Westheimer Rd · Owner notified · dispatch_id: <span class="mono" style="color:#ff3b5c">DSP-2025-8821</span></div>
+  </div>
+</div>
+
+<div class="alert" style="background:rgba(255,196,0,0.06);border-color:#ffc400">
+  <div>
+    <div class="alert-title" style="color:#ffc400">Warning — Confidence Below Threshold</div>
+    <div class="alert-body">INV-2025-0441 confidence: <span class="mono">0.61</span> · Below 0.70 minimum · Manual review required before approval</div>
+  </div>
+</div>
+
+<div class="alert" style="background:rgba(0,229,255,0.05);border-color:#00e5ff">
+  <div>
+    <div class="alert-title" style="color:#00e5ff">Info — APEX HITL Decision Pending</div>
+    <div class="alert-body">Workflow <span class="mono" style="color:#7c5cfc">wf-a9c3-d812</span> requires human review · Confidence: <span class="mono">0.63</span> · Stakes: HIGH</div>
+  </div>
+</div>
+
+<div class="alert" style="background:rgba(0,255,122,0.05);border-color:#00ff7a">
+  <div>
+    <div class="alert-title" style="color:#00ff7a">Success — Dispatch Completed</div>
+    <div class="alert-body">Tech Rodriguez confirmed on-site · <span class="mono" style="color:#4a6880">dispatch.completed · 14:32:07 UTC</span></div>
+  </div>
+</div>
+
+<div class="alert" style="background:#091424;border-color:#152637">
+  <div>
+    <div class="alert-title" style="color:#4a6880">Offline — Sync Pending</div>
+    <div class="alert-body" style="color:#4a6880">3 documents queued for sync. ClearDesk is in offline mode · <span style="color:#00e5ff;cursor:pointer">Retry connection →</span></div>
+  </div>
+</div>
+
+</body></html>

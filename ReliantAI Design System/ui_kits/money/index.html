@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Money — HVAC AI Dispatch</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body,#root { height:100%; background:#0b0c0e; }
+body { font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:#0b0c0e; } ::-webkit-scrollbar-thumb { background:#1a1c20; }
+@keyframes pulse-ls { 0%,100%{opacity:1}50%{opacity:0.6} }
+@keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+
+const GOLD = '#ffc400';
+const DISPATCHES = [
+  { id:'DSP-2025-8821', customer:'Maria Sanchez',  phone:'+17135550182', issue:'Gas leak suspected — strong smell in unit 4B, elderly resident, no heat',  urgency:'LIFE_SAFETY', tech:'Rodriguez, M.', eta:'8 min',  status:'DISPATCHED', created:'14:28', address:'4821 Westheimer Rd, Houston TX 77056' },
+  { id:'DSP-2025-8820', customer:'James Okafor',   phone:'+17135550291', issue:'AC not cooling — 96°F outside, system running but no cold air, infant in home', urgency:'EMERGENCY', tech:'Williams, T.', eta:'22 min', status:'EN_ROUTE',   created:'14:15', address:'2203 Richmond Ave, Houston TX 77098' },
+  { id:'DSP-2025-8819', customer:'Linda Tran',     phone:'+17135550384', issue:'AC unit making loud grinding noise, started this morning',                      urgency:'URGENT',    tech:'Davis, K.',   eta:'45 min', status:'SCHEDULED',  created:'13:52', address:'5500 Bellaire Blvd, Houston TX 77401' },
+  { id:'DSP-2025-8818', customer:'Robert Chen',    phone:'+17135550477', issue:'Thermostat unresponsive, unit cycling on/off every 2 minutes',                  urgency:'URGENT',    tech:'Martinez, J.',eta:'—',     status:'PENDING',    created:'13:41', address:'3100 Main St, Houston TX 77002' },
+  { id:'DSP-2025-8817', customer:'Sandra Kim',     phone:'+17135550563', issue:'Annual maintenance check — filter replacement and refrigerant check',             urgency:'ROUTINE',   tech:'Williams, T.',eta:'—',     status:'COMPLETED',  created:'11:00', address:'7800 Kirby Dr, Houston TX 77030' },
+  { id:'DSP-2025-8816', customer:'David Morales',  phone:'+17135550659', issue:'Water leak from indoor unit drip pan',                                          urgency:'URGENT',    tech:'Davis, K.',   eta:'—',     status:'COMPLETED',  created:'10:30', address:'1500 Post Oak Blvd, Houston TX 77056' },
+];
+
+const urgencyStyle = {
+  LIFE_SAFETY:{ bg:'rgba(255,59,92,0.12)', color:'#ff3b5c', border:'#ff3b5c' },
+  EMERGENCY:  { bg:'rgba(255,107,53,0.1)', color:'#ff6b35', border:'rgba(255,107,53,0.5)' },
+  URGENT:     { bg:'rgba(255,196,0,0.08)', color:GOLD,      border:'rgba(255,196,0,0.35)' },
+  ROUTINE:    { bg:'rgba(0,255,122,0.06)', color:'#00ff7a', border:'rgba(0,255,122,0.25)' },
+};
+const statusStyle = {
+  DISPATCHED:{ color:'#ff3b5c' }, EN_ROUTE:{ color:GOLD }, SCHEDULED:{ color:'#00e5ff' },
+  PENDING:   { color:'#4a6880' }, COMPLETED:{ color:'#00ff7a' },
+};
+
+const Badge = ({label, s}) => <span style={{fontSize:9,fontWeight:700,padding:'2px 7px',borderRadius:2,background:s.bg,color:s.color,border:`1px solid ${s.border}`,letterSpacing:'0.05em'}}>{label}</span>;
+
+// Agent step trace
+const AgentTrace = ({dispatch}) => {
+  const steps = [
+    { agent:'triage_agent',    label:'Triage',    status: 'done',    output:`urgency: ${dispatch.urgency} · escalate_owner: ${dispatch.urgency==='LIFE_SAFETY'}` },
+    { agent:'intake_agent',    label:'Intake',    status: 'done',    output:`customer: ${dispatch.customer} · issue captured · SMS sent` },
+    { agent:'scheduler_agent', label:'Scheduler', status: dispatch.status==='PENDING'?'running':'done', output: dispatch.status==='PENDING'?'Checking tech availability…':`tech: ${dispatch.tech} · eta: ${dispatch.eta}` },
+    { agent:'dispatch_agent',  label:'Dispatch',  status: ['PENDING','SCHEDULED'].includes(dispatch.status)?'pending':'done', output: ['PENDING','SCHEDULED'].includes(dispatch.status)?'Waiting…':'Dispatch confirmed · SMS sent to customer' },
+    { agent:'followup_agent',  label:'Follow-up', status: dispatch.status==='COMPLETED'?'done':'pending', output: dispatch.status==='COMPLETED'?'Survey sent · 4.8★ received':'Scheduled for post-service' },
+  ];
+  const stColor = {done:'#00ff7a',running:GOLD,pending:'#1e3348'};
+  return (
+    <div style={{marginTop:12}}>
+      <div style={{fontSize:10,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:8}}>CrewAI Agent Trace</div>
+      {steps.map((s,i) => (
+        <div key={s.agent} style={{display:'flex',gap:10,marginBottom:i<steps.length-1?0:0}}>
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',width:16}}>
+            <div style={{width:8,height:8,borderRadius:'50%',background:stColor[s.status],flexShrink:0,marginTop:3,boxShadow:s.status==='running'?`0 0 6px ${GOLD}80`:undefined}}/>
+            {i<steps.length-1 && <div style={{width:1,flex:1,background:'#0c1a2c',margin:'2px 0'}}/>}
+          </div>
+          <div style={{paddingBottom:10}}>
+            <div style={{display:'flex',gap:8,alignItems:'baseline'}}>
+              <span style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:stColor[s.status],fontWeight:500}}>{s.agent}</span>
+              {s.status==='running' && <span style={{fontSize:9,color:GOLD,animation:'spin 1s linear infinite',display:'inline-block'}}>↻</span>}
+            </div>
+            <div style={{fontSize:10,color:'#4a6880',marginTop:1,fontFamily:'IBM Plex Mono,monospace'}}>{s.output}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Dispatch Detail Modal
+const DispatchDetail = ({d, onClose}) => {
+  const [tab, setTab] = React.useState('details');
+  const msgs = [
+    {dir:'in',  text:`Hi, my name is ${d.customer}. ${d.issue}`, ts:'14:28:01'},
+    {dir:'out', text:`Hello ${d.customer.split(' ')[0]}! We've received your request and are dispatching a technician immediately. You'll receive updates via SMS.`, ts:'14:28:05'},
+    {dir:'in',  text:'Thank you! Is there an ETA?', ts:'14:28:42'},
+    {dir:'out', text:`${d.tech} is on the way and should arrive in approximately ${d.eta}. We'll send a confirmation when they're close.`, ts:'14:28:45'},
+  ];
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(11,12,14,0.9)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={onClose}>
+      <div style={{background:'#111318',border:'1px solid #252830',width:620,maxHeight:'88vh',overflow:'hidden',display:'flex',flexDirection:'column',borderRadius:2}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
+        <div style={{padding:'14px 20px',borderBottom:'1px solid #1a1c20',display:'flex',justifyContent:'space-between',alignItems:'flex-start',flexShrink:0}}>
+          <div>
+            <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880',marginBottom:3}}>{d.id}</div>
+            <div style={{fontSize:15,fontWeight:600,color:'#ffffff',marginBottom:6}}>{d.customer}</div>
+            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+              <Badge label={d.urgency} s={urgencyStyle[d.urgency]}/>
+              <span style={{fontSize:10,fontFamily:'IBM Plex Mono,monospace',color:statusStyle[d.status].color}}>{d.status}</span>
+            </div>
+          </div>
+          <div onClick={onClose} style={{cursor:'pointer',color:'#4a6880',padding:4}}><i data-lucide="x" style={{width:15,height:15}}/></div>
+        </div>
+
+        {/* Tabs */}
+        <div style={{display:'flex',borderBottom:'1px solid #1a1c20',flexShrink:0}}>
+          {['details','messages','agents'].map(t => (
+            <div key={t} onClick={()=>setTab(t)} style={{padding:'9px 16px',fontSize:11,cursor:'pointer',color:tab===t?'#ffffff':'#4a6880',borderBottom:tab===t?`2px solid ${GOLD}`:'2px solid transparent',transition:'all 150ms',textTransform:'capitalize'}}>{t}</div>
+          ))}
+        </div>
+
+        {/* Content */}
+        <div style={{flex:1,overflow:'auto',padding:'16px 20px'}}>
+          {tab==='details' && (
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 24px'}}>
+              {[['Customer',d.customer],['Phone',d.phone],['Address',d.address],['Technician',d.tech],['ETA',d.eta],['Created',d.created]].map(([k,v])=>(
+                <div key={k}><div style={{fontSize:10,color:'#4a6880',marginBottom:3}}>{k}</div><div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:12,color:'#a8c4de'}}>{v}</div></div>
+              ))}
+              <div style={{gridColumn:'1/-1'}}><div style={{fontSize:10,color:'#4a6880',marginBottom:3}}>Issue Summary</div><div style={{fontSize:12,color:'#a8c4de',lineHeight:1.6}}>{d.issue}</div></div>
+            </div>
+          )}
+          {tab==='messages' && (
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {msgs.map((m,i)=>(
+                <div key={i} style={{display:'flex',justifyContent:m.dir==='out'?'flex-end':'flex-start'}}>
+                  <div style={{maxWidth:'75%',padding:'8px 12px',background:m.dir==='out'?`rgba(255,196,0,0.08)`:'#1a1c20',border:`1px solid ${m.dir==='out'?'rgba(255,196,0,0.2)':'#252830'}`,borderRadius:2}}>
+                    <div style={{fontSize:12,color:'#a8c4de',lineHeight:1.5,marginBottom:3}}>{m.text}</div>
+                    <div style={{fontSize:9,color:'#4a6880',fontFamily:'IBM Plex Mono,monospace'}}>{m.ts} · {m.dir==='out'?'outbound SMS':'inbound SMS'}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          {tab==='agents' && <AgentTrace dispatch={d}/>}
+        </div>
+
+        {/* Actions */}
+        <div style={{padding:'12px 20px',borderTop:'1px solid #1a1c20',display:'flex',gap:8,flexShrink:0}}>
+          <button style={{background:GOLD,color:'#0b0c0e',border:'none',padding:'7px 14px',fontSize:12,fontWeight:700,borderRadius:2,cursor:'pointer'}}>Update Status</button>
+          <button style={{background:'transparent',color:'#a8c4de',border:'1px solid #252830',padding:'7px 14px',fontSize:12,borderRadius:2,cursor:'pointer'}}>Resend SMS</button>
+          <button style={{background:'transparent',color:'#a8c4de',border:'1px solid #252830',padding:'7px 14px',fontSize:12,borderRadius:2,cursor:'pointer'}}>Add Note</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MoneyAdmin = () => {
+  const [selected, setSelected] = React.useState(null);
+  const [tick, setTick] = React.useState(0);
+  const hasLifeSafety = DISPATCHES.some(d=>d.urgency==='LIFE_SAFETY'&&d.status!=='COMPLETED');
+
+  React.useEffect(() => { lucide.createIcons(); });
+  React.useEffect(() => { const t = setInterval(()=>setTick(n=>n+1),5000); return ()=>clearInterval(t); }, []);
+
+  const stats = [
+    {label:'Total Today', val:DISPATCHES.length, color:'#ffffff'},
+    {label:'Pending',     val:DISPATCHES.filter(d=>d.status==='PENDING').length, color:'#4a6880'},
+    {label:'Active',      val:DISPATCHES.filter(d=>['DISPATCHED','EN_ROUTE','SCHEDULED'].includes(d.status)).length, color:GOLD},
+    {label:'Completed',   val:DISPATCHES.filter(d=>d.status==='COMPLETED').length, color:'#00ff7a'},
+    {label:'Emergency',   val:DISPATCHES.filter(d=>['LIFE_SAFETY','EMERGENCY'].includes(d.urgency)).length, color:'#ff3b5c'},
+  ];
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100vh',background:'#0b0c0e'}}>
+      {/* Top bar */}
+      <div style={{background:'#111318',borderBottom:'1px solid #1a1c20',padding:'0 20px',height:48,display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:8,height:8,background:GOLD,borderRadius:'50%',boxShadow:`0 0 6px ${GOLD}80`}}/>
+          <span style={{fontSize:14,fontWeight:700,color:'#ffffff'}}>Money</span>
+          <span style={{fontSize:11,color:'#4a6880',marginLeft:4}}>HVAC AI Dispatch</span>
+        </div>
+        <div style={{flex:1}}/>
+        <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880'}}>Updated {tick>0?`${tick*5}s`:'just now'} ago</div>
+        <div style={{width:6,height:6,borderRadius:'50%',background:'#00ff7a',boxShadow:'0 0 4px #00ff7a80'}}/>
+      </div>
+
+      {/* LIFE_SAFETY banner */}
+      {hasLifeSafety && (
+        <div style={{background:'rgba(255,59,92,0.08)',borderBottom:'1px solid #ff3b5c',padding:'10px 20px',display:'flex',alignItems:'center',gap:12,animation:'pulse-ls 1s ease infinite',flexShrink:0}}>
+          <i data-lucide="alert-triangle" style={{width:16,height:16,color:'#ff3b5c',flexShrink:0}}/>
+          <div>
+            <span style={{fontSize:12,fontWeight:700,color:'#ff3b5c'}}>LIFE_SAFETY — 911 Escalated · Owner Notified</span>
+            <span style={{fontSize:11,color:'#ff3b5c',marginLeft:12,fontFamily:'IBM Plex Mono,monospace'}}>DSP-2025-8821 · 4821 Westheimer Rd · Rodriguez, M. en route</span>
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
+      <div style={{display:'flex',borderBottom:'1px solid #1a1c20',flexShrink:0}}>
+        {stats.map(s=>(
+          <div key={s.label} style={{flex:1,padding:'12px 20px',borderRight:'1px solid #1a1c20'}}>
+            <div style={{fontSize:9,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:5}}>{s.label}</div>
+            <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:22,fontWeight:600,color:s.color}}>{s.val}</div>
+          </div>
+        ))}
+        <div style={{flex:1,padding:'12px 20px'}}>
+          <div style={{fontSize:9,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:5}}>Houston Weather</div>
+          <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:14,fontWeight:600,color:'#ff3b5c'}}>96°F <span style={{fontSize:10,color:'#4a6880'}}>· surge active</span></div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div style={{flex:1,overflow:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead>
+            <tr style={{background:'#111318',position:'sticky',top:0,zIndex:1}}>
+              {['Dispatch ID','Customer','Issue','Urgency','Technician','ETA','Status','Created'].map(h=>(
+                <th key={h} style={{padding:'8px 14px',textAlign:'left',fontSize:9,fontWeight:500,color:'#4a6880',letterSpacing:'0.07em',textTransform:'uppercase',borderBottom:'1px solid #1a1c20',whiteSpace:'nowrap'}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {DISPATCHES.map(d=>(
+              <tr key={d.id} onClick={()=>setSelected(d)}
+                style={{borderBottom:'1px solid #1a1c20',cursor:'pointer',transition:'background 100ms'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#111318'}
+                onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:GOLD}}>{d.id}</td>
+                <td style={{padding:'9px 14px',fontSize:12,color:'#a8c4de'}}>{d.customer}</td>
+                <td style={{padding:'9px 14px',fontSize:11,color:'#a8c4de',maxWidth:220}}><div style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{d.issue}</div></td>
+                <td style={{padding:'9px 14px'}}><Badge label={d.urgency} s={urgencyStyle[d.urgency]}/></td>
+                <td style={{padding:'9px 14px',fontSize:11,color:'#4a6880'}}>{d.tech}</td>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:'#a8c4de'}}>{d.eta}</td>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:statusStyle[d.status].color}}>{d.status}</td>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880'}}>{d.created}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {selected && <DispatchDetail d={selected} onClose={()=>setSelected(null)}/>}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<MoneyAdmin/>);
+</script>
+</body>
+</html>

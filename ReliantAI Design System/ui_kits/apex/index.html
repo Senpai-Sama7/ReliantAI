@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>APEX — Autonomous Agent OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body,#root { height:100%; background:#020510; }
+body { font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:#020510; } ::-webkit-scrollbar-thumb { background:#0c1a2c; }
+@keyframes pulse-p { 0%,100%{opacity:1;box-shadow:0 0 6px #7c5cfc60}50%{opacity:0.7;box-shadow:0 0 12px #7c5cfc80} }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes slide-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+
+const PURPLE = '#7c5cfc';
+
+const PENDING_DECISIONS = [
+  { id:'wf-a9c3-d812', tier:'T3', confidence:0.63, stakes:'HIGH',   domain_novelty:0.41, aleatoric:0.28, epistemic:0.35, input:'Analyze Q2 revenue pipeline and identify top 3 at-risk accounts. Draft outreach email for each.', recommended:'APPROVE', layers:['L1 ✓ analyze','L2 ✓ calibration-gate','L3 ⟳ dispatch','L4 — quality-review'] },
+  { id:'wf-b14f-c291', tier:'T4', confidence:0.44, stakes:'HIGH',   domain_novelty:0.91, aleatoric:0.41, epistemic:0.53, input:'Evaluate acquisition target: ClearPath HVAC Management SaaS — competitor intelligence, financial signals, strategic fit.', recommended:'REJECT', layers:['L1 ✓ analyze','L2 ✗ calibration-gate','L3 — dispatch','L4 — quality-review'] },
+  { id:'wf-c88d-e047', tier:'T2', confidence:0.77, stakes:'MEDIUM', domain_novelty:0.22, aleatoric:0.14, epistemic:0.09, input:'Generate weekly operations summary for Douglas Mitchell covering all active services and key metrics.', recommended:'APPROVE', layers:['L1 ✓ analyze','L2 ✓ calibration-gate','L3 ✓ dispatch','L4 ⟳ quality-review'] },
+];
+
+const TIER_STYLE = {
+  T1:{ color:'#00e5ff', bg:'rgba(0,229,255,0.08)', border:'rgba(0,229,255,0.25)', label:'Reflexive' },
+  T2:{ color:'#ffc400', bg:'rgba(255,196,0,0.08)',  border:'rgba(255,196,0,0.25)',  label:'Deliberative' },
+  T3:{ color:'#ff3b5c', bg:'rgba(255,59,92,0.08)',  border:'rgba(255,59,92,0.25)',  label:'Contested' },
+  T4:{ color:PURPLE,   bg:'rgba(124,92,252,0.1)', border:'rgba(124,92,252,0.35)', label:'Unknown', pulse:true },
+};
+
+// Uncertainty Gauge — aleatoric + epistemic split
+const UncertaintyGauge = ({ aleatoric, epistemic, confidence }) => {
+  const total = aleatoric + epistemic;
+  const W = 160, H = 10;
+  const aleW = (aleatoric / (total || 1)) * W * (1 - confidence);
+  const epiW = (epistemic / (total || 1)) * W * (1 - confidence);
+  const confW = confidence * W;
+
+  return (
+    <div style={{marginTop:8}}>
+      <div style={{fontSize:9,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.07em',marginBottom:5}}>Uncertainty Breakdown</div>
+      {/* Bar */}
+      <div style={{width:W,height:H,background:'#0c1a2c',display:'flex',borderRadius:1,overflow:'hidden',marginBottom:6}}>
+        <div style={{width:confW,background:confidence>=0.9?'#00e5ff':confidence>=0.65?'#ffc400':'#ff3b5c',transition:'width 400ms'}}/>
+        <div style={{width:aleW,background:'rgba(255,59,92,0.5)',transition:'width 400ms'}}/>
+        <div style={{width:epiW,background:`rgba(124,92,252,0.5)`,transition:'width 400ms'}}/>
+      </div>
+      <div style={{display:'flex',gap:12}}>
+        <div style={{display:'flex',alignItems:'center',gap:4}}>
+          <div style={{width:8,height:8,borderRadius:1,background:confidence>=0.9?'#00e5ff':confidence>=0.65?'#ffc400':'#ff3b5c'}}/>
+          <span style={{fontFamily:'IBM Plex Mono,monospace',fontSize:9,color:'#4a6880'}}>conf <span style={{color:'#a8c4de'}}>{confidence.toFixed(2)}</span></span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:4}}>
+          <div style={{width:8,height:8,borderRadius:1,background:'rgba(255,59,92,0.7)'}}/>
+          <span style={{fontFamily:'IBM Plex Mono,monospace',fontSize:9,color:'#4a6880'}}>ale <span style={{color:'#ff3b5c'}}>{aleatoric.toFixed(2)}</span></span>
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:4}}>
+          <div style={{width:8,height:8,borderRadius:1,background:`rgba(124,92,252,0.7)`}}/>
+          <span style={{fontFamily:'IBM Plex Mono,monospace',fontSize:9,color:'#4a6880'}}>epi <span style={{color:PURPLE}}>{epistemic.toFixed(2)}</span></span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Layer trace
+const LayerTrace = ({ layers }) => {
+  const colors = {'✓':'#00ff7a','✗':'#ff3b5c','⟳':'#ffc400','—':'#1e3348'};
+  return (
+    <div style={{display:'flex',gap:6,marginTop:8,flexWrap:'wrap'}}>
+      {layers.map((l,i) => {
+        const sym = l.split(' ')[1];
+        const color = colors[sym] || '#4a6880';
+        return (
+          <div key={i} style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color,background:'rgba(255,255,255,0.02)',border:`1px solid ${color}30`,padding:'2px 7px',borderRadius:1}}>
+            {l}
+            {sym==='⟳' && <span style={{marginLeft:4,display:'inline-block',animation:'spin 1s linear infinite'}}>↻</span>}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// Decision card
+const DecisionCard = ({ d, onApprove, onReject }) => {
+  const ts = TIER_STYLE[d.tier];
+  const [reasoning, setReasoning] = React.useState('');
+  const [decided, setDecided] = React.useState(null);
+
+  return (
+    <div style={{background:'#060c1a',border:`1px solid ${decided?'#0c1a2c':PURPLE+'40'}`,marginBottom:12,animation:'slide-in 200ms ease',transition:'border 200ms'}}>
+      {/* Header */}
+      <div style={{padding:'12px 16px',borderBottom:'1px solid #0c1a2c',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div>
+          <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880',marginBottom:4}}>{d.id}</div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <span style={{fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:2,background:ts.bg,color:ts.color,border:`1px solid ${ts.border}`,letterSpacing:'0.04em',animation:ts.pulse?'pulse-p 2s ease infinite':undefined}}>
+              {d.tier} · {ts.label}
+            </span>
+            <span style={{fontSize:10,color:'#4a6880'}}>stakes: <span style={{color:d.stakes==='HIGH'?'#ff3b5c':'#ffc400',fontFamily:'IBM Plex Mono,monospace'}}>{d.stakes}</span></span>
+          </div>
+        </div>
+        <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:d.confidence>=0.65?'#ffc400':'#ff3b5c',fontWeight:600}}>
+          conf: {d.confidence.toFixed(2)}
+        </div>
+      </div>
+
+      {/* Input + uncertainty */}
+      <div style={{padding:'12px 16px',borderBottom:'1px solid #0c1a2c'}}>
+        <div style={{fontSize:11,color:'#4a6880',marginBottom:4}}>Input</div>
+        <div style={{fontSize:12,color:'#a8c4de',lineHeight:1.6,marginBottom:8}}>{d.input}</div>
+        <UncertaintyGauge aleatoric={d.aleatoric} epistemic={d.epistemic} confidence={d.confidence}/>
+        <LayerTrace layers={d.layers}/>
+      </div>
+
+      {/* Actions */}
+      {!decided ? (
+        <div style={{padding:'12px 16px',display:'flex',gap:8,alignItems:'flex-end',flexWrap:'wrap'}}>
+          <div style={{flex:1,minWidth:200}}>
+            <div style={{fontSize:10,color:'#4a6880',marginBottom:4}}>Reasoning (optional)</div>
+            <input value={reasoning} onChange={e=>setReasoning(e.target.value)}
+              placeholder={`Recommended: ${d.recommended}`}
+              style={{width:'100%',background:'#091424',border:'1px solid #152637',color:'#a8c4de',fontSize:11,padding:'6px 10px',borderRadius:2,outline:'none',fontFamily:'IBM Plex Sans,sans-serif'}}/>
+          </div>
+          <button onClick={()=>{onApprove(d.id,reasoning);setDecided('approved');}}
+            style={{background:'rgba(0,255,122,0.1)',color:'#00ff7a',border:'1px solid rgba(0,255,122,0.3)',padding:'7px 16px',fontSize:11,fontWeight:600,borderRadius:2,cursor:'pointer'}}>
+            Approve
+          </button>
+          <button onClick={()=>{onReject(d.id,reasoning);setDecided('rejected');}}
+            style={{background:'rgba(255,59,92,0.08)',color:'#ff3b5c',border:'1px solid rgba(255,59,92,0.3)',padding:'7px 16px',fontSize:11,fontWeight:600,borderRadius:2,cursor:'pointer'}}>
+            Reject
+          </button>
+        </div>
+      ) : (
+        <div style={{padding:'10px 16px',display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:6,height:6,borderRadius:'50%',background:decided==='approved'?'#00ff7a':'#ff3b5c'}}/>
+          <span style={{fontSize:11,color:decided==='approved'?'#00ff7a':'#ff3b5c',fontFamily:'IBM Plex Mono,monospace'}}>
+            {decided.toUpperCase()} · {new Date().toLocaleTimeString()}
+          </span>
+          {reasoning && <span style={{fontSize:11,color:'#4a6880'}}>— "{reasoning}"</span>}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// APEX App
+const ApexApp = () => {
+  const [view, setView] = React.useState('hitl');
+  const [decisions, setDecisions] = React.useState(PENDING_DECISIONS);
+  const [log, setLog] = React.useState([]);
+
+  React.useEffect(() => { lucide.createIcons(); });
+
+  const handleApprove = (id, reason) => setLog(l=>[{id,action:'APPROVED',reason,ts:new Date().toLocaleTimeString()},...l]);
+  const handleReject  = (id, reason) => setLog(l=>[{id,action:'REJECTED',reason,ts:new Date().toLocaleTimeString()},...l]);
+
+  const views = ['hitl','workflows','agents','memory','tools'];
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100vh'}}>
+      {/* Top bar */}
+      <div style={{background:'#060c1a',borderBottom:'1px solid #0c1a2c',padding:'0 20px',height:48,display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <svg width="16" height="20" viewBox="0 0 16 24" fill="none">
+            <polygon points="8,2 14,22 8,17 2,22" stroke={PURPLE} strokeWidth="1.5" fill="none" strokeLinejoin="round"/>
+          </svg>
+          <span style={{fontSize:14,fontWeight:700,color:'#ffffff'}}>APEX</span>
+          <span style={{fontSize:11,color:'#4a6880'}}>Autonomous Agent OS</span>
+        </div>
+        <div style={{flex:1}}/>
+        {views.map(v=>(
+          <div key={v} onClick={()=>setView(v)} style={{fontSize:12,color:view===v?'#ffffff':'#4a6880',cursor:'pointer',padding:'4px 0',borderBottom:view===v?`2px solid ${PURPLE}`:'2px solid transparent',transition:'all 150ms',textTransform:'capitalize'}}>{v==='hitl'?'HITL Review':v.charAt(0).toUpperCase()+v.slice(1)}</div>
+        ))}
+        <div style={{display:'flex',alignItems:'center',gap:6,marginLeft:8}}>
+          <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880'}}>SSE</div>
+          <div style={{width:6,height:6,borderRadius:'50%',background:'#00ff7a',boxShadow:'0 0 4px #00ff7a80'}}/>
+        </div>
+      </div>
+
+      {view==='hitl' && (
+        <div style={{flex:1,display:'flex',overflow:'hidden'}}>
+          {/* Decision queue */}
+          <div style={{flex:1,overflow:'auto',padding:20,borderRight:'1px solid #0c1a2c'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+              <div style={{fontSize:16,fontWeight:700,color:'#ffffff'}}>HITL Decision Queue</div>
+              <div style={{background:'rgba(255,59,92,0.1)',color:'#ff3b5c',border:'1px solid rgba(255,59,92,0.25)',fontSize:10,fontWeight:700,padding:'2px 8px',borderRadius:2}}>{decisions.length} pending</div>
+            </div>
+            {decisions.map(d=>(
+              <DecisionCard key={d.id} d={d} onApprove={handleApprove} onReject={handleReject}/>
+            ))}
+          </div>
+
+          {/* Audit log */}
+          <div style={{width:280,overflow:'auto',padding:16,flexShrink:0}}>
+            <div style={{fontSize:12,fontWeight:600,color:'#ffffff',marginBottom:12}}>Audit Log</div>
+            {log.length === 0 ? (
+              <div style={{fontSize:11,color:'#4a6880'}}>No decisions recorded yet.</div>
+            ) : log.map((l,i)=>(
+              <div key={i} style={{padding:'8px 10px',borderBottom:'1px solid #0c1a2c',marginBottom:4}}>
+                <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#4a6880',marginBottom:2}}>{l.ts}</div>
+                <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:l.action==='APPROVED'?'#00ff7a':'#ff3b5c',marginBottom:2}}>{l.action}</div>
+                <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:9,color:'#1e3348'}}>{l.id}</div>
+                {l.reason && <div style={{fontSize:10,color:'#4a6880',marginTop:2}}>"{l.reason}"</div>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {view==='workflows' && (
+        <div style={{flex:1,overflow:'auto',padding:24}}>
+          <div style={{fontSize:16,fontWeight:700,color:'#ffffff',marginBottom:16}}>Workflow Runner</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:20}}>
+            {[['T1 Reflexive','>0.92 conf, low stakes','#00e5ff'],['T2 Deliberative','0.65–0.92','#ffc400'],['T3 Contested','<0.65 or high stakes','#ff3b5c'],['T4 Unknown','domain novelty >0.85',PURPLE]].map(([tier,desc,color])=>(
+              <div key={tier} style={{background:'#060c1a',border:`1px solid ${color}20`,padding:'12px 14px'}}>
+                <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:11,fontWeight:600,color,marginBottom:3}}>{tier}</div>
+                <div style={{fontSize:11,color:'#4a6880'}}>{desc}</div>
+              </div>
+            ))}
+          </div>
+          <div style={{background:'#060c1a',border:'1px solid #0c1a2c',padding:16,maxWidth:560}}>
+            <div style={{fontSize:12,fontWeight:600,color:'#ffffff',marginBottom:12}}>New Workflow</div>
+            <textarea placeholder="Enter workflow input prompt…"
+              style={{width:'100%',height:80,background:'#091424',border:'1px solid #152637',color:'#a8c4de',fontSize:12,padding:'8px 12px',borderRadius:2,outline:'none',fontFamily:'IBM Plex Sans,sans-serif',resize:'none',marginBottom:10}}/>
+            <button style={{background:PURPLE,color:'#ffffff',border:'none',padding:'8px 18px',fontSize:12,fontWeight:600,borderRadius:2,cursor:'pointer'}}>Run Workflow →</button>
+          </div>
+        </div>
+      )}
+
+      {(view==='agents'||view==='memory'||view==='tools') && (
+        <div style={{flex:1,display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:12}}>
+          <div style={{width:40,height:2,background:PURPLE}}/>
+          <div style={{fontSize:18,fontWeight:700,color:'#ffffff',textTransform:'capitalize'}}>{view}</div>
+          <div style={{fontSize:12,color:'#4a6880',maxWidth:320,textAlign:'center',lineHeight:1.6}}>
+            {view==='agents'&&'Registered specialist agents: Research, Creative, Analytics, Sales. View status, last invoked, tool calls, success rate.'}
+            {view==='memory'&&'Semantic memory search and save. POST /memory/search · POST /memory/save. Top-k results with similarity scores.'}
+            {view==='tools'&&'MCP Tool Bus — 15+ integrations: HubSpot, Notion, Stripe, Composio, Cloudflare KV. Circuit breaker status per tool.'}
+          </div>
+          <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:10,color:'#1e3348'}}>/apex/{view}</div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ApexApp/>);
+</script>
+</body>
+</html>

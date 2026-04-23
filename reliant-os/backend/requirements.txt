@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+pydantic
+requests
+google-generativeai
+hvac
+docker
+python-multipart

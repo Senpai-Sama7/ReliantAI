@@ -46,26 +46,26 @@ PRICING = {
         "dispatches_per_month": 10,
         "features": ["10 dispatches/month", "Basic analytics", "Email support"],
     },
-    "starter": {
-        "name": "Starter",
-        "price": 99,
-        "price_id": os.environ.get("STRIPE_STARTER_PRICE_ID", ""),
+    "digital_presence": {
+        "name": "Digital Presence",
+        "price": 149,
+        "price_id": os.environ.get("STRIPE_DIGITAL_PRESENCE_PRICE_ID", ""),
+        "dispatches_per_month": 0,
+        "features": ["ReliantAI.org Auto-Generated Website (AEO/GEO/SEO optimized)", "Managed Google Business Profile Sync", "Automated review collection"],
+    },
+    "growth_automation": {
+        "name": "Growth & Automation",
+        "price": 499,
+        "price_id": os.environ.get("STRIPE_GROWTH_AUTOMATION_PRICE_ID", ""),
         "dispatches_per_month": 100,
-        "features": ["100 dispatches/month", "Advanced analytics", "Priority support", "API access"],
+        "features": ["Everything in Digital Presence", "Smart SMS triage & automated dispatching", "Ops-Intelligence basic dashboarding", "Missed call text-back"],
     },
-    "professional": {
-        "name": "Professional",
-        "price": 299,
-        "price_id": os.environ.get("STRIPE_PROFESSIONAL_PRICE_ID", ""),
-        "dispatches_per_month": 500,
-        "features": ["500 dispatches/month", "Real-time analytics", "24/7 support", "API access", "Custom integrations"],
-    },
-    "enterprise": {
-        "name": "Enterprise",
-        "price": 999,
-        "price_id": os.environ.get("STRIPE_ENTERPRISE_PRICE_ID", ""),
+    "enterprise_os": {
+        "name": "Enterprise OS",
+        "price": 1499,
+        "price_id": os.environ.get("STRIPE_ENTERPRISE_OS_PRICE_ID", ""),
         "dispatches_per_month": -1,  # Unlimited
-        "features": ["Unlimited dispatches", "White-glove onboarding", "Dedicated account manager", "Custom development", "SLA guarantee"],
+        "features": ["Everything in Growth & Automation", "FinOps360 cloud/fleet cost optimization", "ComplianceOne certification tracking", "Dedicated 24/7 AI agents (CrewAI)"],
     },
 }
 

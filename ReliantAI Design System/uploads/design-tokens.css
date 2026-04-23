@@ -1,0 +1,508 @@
+Build the most complete, implementation-ready product prototype possible for
+ReliantAI — a production-grade, AI-native digital operations suite for
+business operators and technical teams.
+
+═══════════════════════════════════════════════════════
+DESIGN SYSTEM (INHERIT EXACTLY — DO NOT DEVIATE)
+═══════════════════════════════════════════════════════
+
+Use the attached design-tokens.css as the source of truth. The Revenue
+Engine v6 theme governs the entire product.
+
+Exact token values to inherit:
+
+Backgrounds:
+  --re-bg: #020510
+  --re-surface: #060c1a
+  --re-surface-hi: #091424
+  --re-surface-pop: #0d1e35
+
+Borders:
+  --re-border: #0c1a2c
+  --re-border-brt: #152637
+
+Text:
+  --re-text: #a8c4de
+  --re-text-dim: #4a6880
+  --re-text-muted: #1e3348
+  --re-text-bright: #ffffff
+
+Accents (semantic use — do not scatter):
+  --re-cyan: #00e5ff      → primary interactive, CTAs, active states
+  --re-green: #00ff7a     → success, completed, healthy status
+  --re-gold: #ffc400      → Money service, revenue metrics, premium tier
+  --re-red: #ff3b5c       → critical, escalated, LIFE_SAFETY alerts
+  --re-purple: #7c5cfc    → APEX agent system, AI/ML surfaces
+  --re-teal: #00d4aa      → ClearDesk, document processing, confidence scores
+
+Typography:
+  --re-font-display: 'Fraunces'     → headings only
+  --re-font-sans: 'IBM Plex Sans'   → all body, UI, labels
+  --re-font-mono: 'IBM Plex Mono'   → all data values, IDs, codes, metrics
+
+Border radius: Sharp. --re-radius-none: 0, --re-radius-sm: 2px.
+No rounded corners except 2px on interactive elements.
+
+Transitions:
+  --re-transition-fast: 150ms ease
+  --re-transition-normal: 200ms ease
+  --re-transition-slow: 300ms ease
+
+Visual tone: Enterprise command center. Deep navy-black surfaces.
+Disciplined accent use. Monospace data everywhere. Feels expensive,
+precise, and production-grade — not startup-pretty.
+
+Never use: purple gradients, glowing orbs, rounded cards, centered
+feature grids, icon-in-colored-circle patterns, or cookie-cutter SaaS
+layouts. Every design decision must look like it was made by a senior
+product designer at a serious infrastructure company.
+
+═══════════════════════════════════════════════════════
+PRODUCT IDENTITY
+═══════════════════════════════════════════════════════
+
+Product: ReliantAI — Digital Operations Suite
+Owner: Douglas Mitchell, Houston TX
+Tagline: "Leads contacted in seconds. Not hours."
+Business hook: HBR research — leads contacted within 60 min are 7×
+more likely to qualify. ReliantAI responds in seconds vs. industry
+average 24–48 hours.
+
+Services to prototype:
+  • ClearDesk    — AI-powered AR document processing (🟢 Active customer)
+  • Money        — HVAC AI dispatch system (🟡 Tested)
+  • B-A-P        — Business analytics platform (🟡 Tested)
+  • APEX         — 5-layer autonomous agent OS (🟡 Tested)
+  • Integration Layer — Shared auth + event bus + observability
+
+═══════════════════════════════════════════════════════
+BUILD ALL OF THE FOLLOWING AS ONE CONNECTED SYSTEM
+═══════════════════════════════════════════════════════
+
+────────────────────────────────────────────────────
+1. RELIANTAI MARKETING SITE
+────────────────────────────────────────────────────
+
+Homepage:
+- Hero: Full-viewport, cinematic. Lead stat front and center:
+  "7× more likely to qualify. Seconds, not hours." Dark editorial
+  style matching Money's existing Ken Burns hero concept.
+- Narrative section: What ReliantAI is, why it exists, who it serves
+- Services overview: ClearDesk, Money, B-A-P, APEX — each with its
+  own accent color from the token set, brief value prop, status badge
+- Proof section: Metrics, HBR stat, real business outcomes
+- Integration logos: Twilio, Anthropic Claude, Google Gemini, Stripe,
+  Composio, Cloudflare, Vercel, HubSpot, Notion
+- CTA: "Request Access" / "Book a Demo"
+
+Product pages (one per service):
+- /cleardesk: AR document processing, AI analysis, escalation system
+- /money: HVAC dispatch automation, CrewAI multi-agent, 7× stat
+- /bap: Business analytics, ETL, AI insights, forecast engine
+- /apex: 5-layer probabilistic agent OS, HITL, uncertainty visualization
+
+Pricing page:
+- Per-service or suite pricing tiers
+- Show usage-based and seat-based models
+
+Contact / Demo Request:
+- Form with business type, service interest, urgency
+
+────────────────────────────────────────────────────
+2. RELIANTAI COMMAND CENTER (Unified Admin Shell)
+────────────────────────────────────────────────────
+
+This is the biggest gap in your current product: there is no single
+dashboard showing all services. Build it.
+
+App shell:
+- Left sidebar: ReliantAI logo (inline SVG), nav items for each
+  service (ClearDesk, Money, B-A-P, APEX, Integration, Settings,
+  Billing, Admin), collapse to icons on narrow viewports
+- Top bar: Global search, notifications badge, active alerts,
+  user avatar + org name, service health indicator row
+- Command palette: Cmd+K — search across services, recent dispatches,
+  recent documents, recent agent runs
+- Dark mode only (this product has no light mode)
+
+Platform overview dashboard:
+- Service health cards: ClearDesk, Money, B-A-P, APEX, Integration
+  Layer — each showing status (operational/degraded/down), last event,
+  key metric
+- Live event stream: Real-time events from Redis/Kafka event bus
+  (dispatch.completed, document.escalated, agent.hitl_required, etc.)
+  Show: event_id, event_type, source, timestamp, payload preview
+- Alert feed: Critical items requiring attention across all services
+- System metrics strip: Kong gateway requests/sec, Redis queue depth,
+  Kafka consumer lag, Postgres connections
+
+────────────────────────────────────────────────────
+3. CLEARDESK — AR DOCUMENT PROCESSING
+────────────────────────────────────────────────────
+
+Inherit the ClearDesk theme:
+  bg: #0A0A0F, surface: #111118, accent: #00FF94 (teal from token set)
+  Fonts: Syne headings, DM Sans body, JetBrains Mono for data
+  Priority: critical #FF4444, high #FF8C00, medium #FFB800, low #8E8EA0
+  Status: pending #8E8EA0, processing #3B82F6, review #8B5CF6,
+          completed #00FF94, escalated #FF4444
+
+Screens to build (all using real component names):
+
+/cleardesk/dashboard:
+- StatsOverview component: totalDocuments, processedCount,
+  escalatedCount, pendingCount, criticalCount — monospace values
+- FilterPanel component: status | type | priority | assignee | search
+  | dateRange filters — pill-style active filter display
+- Document grid: DocumentCard components — filename, documentType,
+  priority badge, status badge, actionDeadline, assignee, confidence
+  score as a 0–1 value in monospace
+- Bulk action toolbar: appears on multi-select — bulk status update,
+  bulk assign
+- Empty state: No documents yet — animated, warm, with upload CTA
+
+/cleardesk/documents:
+- Full table view of all Document entities
+- Columns: filename, type, status, priority, customer name (extracted),
+  invoice number, amount, due date, confidence, assignee, created at
+- Row click opens DocumentDetail modal
+
+DocumentDetail modal (from DocumentDetail.tsx):
+- Full extracted data display: all ExtractedData fields in a structured
+  card with monospace values
+- Escalation reasons with severity badges: blocking (red), warning
+  (amber), informational (muted)
+- Dual-language summaries: English summary + Spanish summary_es side
+  by side or tabbed
+- Actions: Update status, assign, add notes, export
+- Confidence meter: visual 0–1 gauge with color thresholds
+
+/cleardesk/upload:
+- Drag and drop zone: PDF, PNG, JPG, WEBP, DOCX, XLSX, CSV, EML,
+  TXT, JSON, MD
+- Processing states: idle → extracting text → analyzing with Claude
+  Sonnet 4 → saving → completed
+- Live confidence score appearing during analysis
+
+ChatPanel (slide-in from right):
+- Claude Haiku 4.5 assistant
+- Suggested prompts: "What needs attention?", "Show escalated items",
+  "Most overdue customers", "Draft a collections email for [customer]"
+- Message history with timestamps
+- Smart context injection indicator: "Using 12 documents as context"
+
+ExportPanel:
+- Filter summary display
+- Export format selection (CSV, JSON, PDF report)
+- Generate summary report button
+
+────────────────────────────────────────────────────
+4. MONEY — HVAC AI DISPATCH
+────────────────────────────────────────────────────
+
+Use Money's existing visual language: #0B0C0E bg, gold accents (#ffc400)
+Inherit the GSAP/Lenis scroll concept from the existing marketing site.
+
+/money (customer-facing marketing site):
+- Reproduce and refine the existing sections:
+  Hero (Ken Burns), NarrativeText, CardStack (Attract→Qualify→Convert),
+  BreathSection (cinematic metrics), ZigZagGrid (Clarify→Capture→Run→
+  Optimize), Footer
+- Make it feel like a premium B2B service, not a startup template
+
+/money/admin/login:
+- Session-based auth, CSRF-protected
+- Minimal, centered, dark — same token system
+
+/money/admin (AdminDashboard):
+- Metrics header: total dispatches | pending | completed | emergency
+  (use re-red for emergency count)
+- Dispatch table: dispatch_id, customer_name, customer_phone,
+  issue_summary, urgency badge (LIFE_SAFETY=red, EMERGENCY=orange,
+  URGENT=yellow, ROUTINE=green), tech_name, eta, status, created_at
+- Auto-refresh indicator ("Updated 3s ago")
+- LIFE_SAFETY alert banner at top when any active LIFE_SAFETY dispatch
+  exists — red, full-width, pulsing, "911 escalated — owner notified"
+- Weather alert strip: Houston temp-triggered emergency indicator
+- Row click → DispatchDetailModal
+
+DispatchDetailModal:
+- Full dispatch record: all dispatches table fields
+- Message thread: messages table (inbound/outbound SMS/WhatsApp)
+- CrewAI agent trace: triage → intake → scheduler → dispatch → followup
+  as a timeline with status per agent step
+- Actions: update status, add notes, resend SMS
+
+BillingPanel:
+- Stripe subscription management
+- Current plan, next billing date, usage meters
+- Upgrade / cancel actions
+
+CrewAI Agent Monitor (new screen — biggest gap):
+- Real-time view of the 5-agent workflow for active dispatches
+- Agent cards: triage_agent, intake_agent, scheduler_agent,
+  dispatch_agent, followup_agent
+- Each shows: current status, last tool called, last output preview
+- Tool call log: triage_urgency, check_tech_availability,
+  dispatch_to_tech, send_customer_update, escalate_to_owner
+
+────────────────────────────────────────────────────
+5. B-A-P — BUSINESS ANALYTICS PLATFORM
+────────────────────────────────────────────────────
+
+/bap/dashboard:
+- Dataset inventory: all Dataset entities — name, file_type,
+  row_count, column_count, file_size, status, created_at
+- ETLJob queue: active jobs with status (pending/running/completed/
+  failed), progress indicator, started_at, error_message on hover
+- AI Insights feed: latest AIInsight records — insight_type badge
+  (summary/forecast/anomaly), confidence score, content preview
+- System metrics: Redis cache hit rate, Celery worker queue depth,
+  Prometheus metrics strip
+
+/bap/datasets:
+- Upload new dataset: CSV, Excel, JSON drag-and-drop
+- Dataset list table with all fields from Dataset entity
+- Row click → dataset detail with ProcessedDataset view
+
+/bap/pipeline:
+- ETL job builder
+- Visual pipeline: upload → validate → transform → load → insights
+- ETLJob entity status tracker with error handling display
+
+/bap/insights:
+- Full AIInsight list with type filtering
+- Forecast charts (Recharts)
+- Anomaly detection visualization
+- Confidence threshold filter
+
+/bap/analytics:
+- Query builder against ProcessedDataset records
+- Chart output: bar, line, scatter using Recharts
+- Export results
+
+────────────────────────────────────────────────────
+6. APEX — AUTONOMOUS PROBABILISTIC EXECUTION SYSTEM
+────────────────────────────────────────────────────
+
+Use --re-purple: #7c5cfc as the primary accent for all APEX surfaces.
+This is your most technically complex and most impressive service.
+
+/apex/dashboard (HITL Dashboard — from apex-ui):
+- Pending HITL decisions panel: GET /workflow/pending results
+  For each decision: confidence score, stakes level, domain_novelty,
+  input summary, recommended action
+  UncertaintyGauge component: aleatoric + epistemic split visualization
+  Approve / Reject buttons with reasoning text field
+  SSE stream connection status indicator
+- Completed workflows: GET /workflow/completed results
+  Timeline of completed runs with layer trace
+- Active executions: In-progress workflow/run jobs with layer progress
+
+/apex/workflows:
+- New workflow runner: POST /workflow/run input form
+- Execution tier auto-selector display:
+  T1 Reflexive (>0.92 confidence, low stakes) → cyan
+  T2 Deliberative (0.65–0.92) → gold
+  T3 Contested (<0.65 or high stakes) → red
+  T4 Unknown (domain_novelty >0.85) → purple pulse
+- Layer-by-layer execution trace:
+  L1 analyze → L2 calibration-gate → L3 dispatch → L4 quality-review
+  With confidence score output at each layer
+
+/apex/agents:
+- Registered specialist agents: Research, Creative, Analytics, Sales
+- Per-agent: status, last invoked, tool calls used, success rate
+- Register new agent form
+
+/apex/memory:
+- Memory search: POST /memory/search semantic query interface
+  Show top-k results with similarity scores in monospace
+- Save memory: POST /memory/save form
+- Memory entry list with embedding metadata
+
+/apex/tools (MCP Tool Bus):
+- GET /tools — registered tool list: 15+ integrations
+  HubSpot, Notion, Stripe, etc. with circuit breaker status
+  (CLOSED=green, OPEN=red, HALF_OPEN=yellow)
+- POST /tools/call — manual tool execution interface
+- Tool call history log
+
+/apex/hitl (HITL Review Center):
+- Full-screen review interface for contested decisions
+- Decision queue with priority ordering
+- Detail view: full A2A message payload, uncertainty breakdown,
+  agent reasoning chain, recommended action with confidence
+- Batch approve/reject for T2 decisions
+- Audit log of past human decisions
+
+────────────────────────────────────────────────────
+7. INTEGRATION LAYER OPERATIONS
+────────────────────────────────────────────────────
+
+/integration/overview:
+- Service registry: all registered services with health status
+- Kong API Gateway metrics: requests/sec, error rate, latency p50/p99
+- Prometheus metrics panels (embed Grafana-style charts)
+- Jaeger trace explorer integration point
+
+/integration/events:
+- Live event stream from Redis Streams + Kafka
+- Event schema display: event_id, event_type, source, timestamp,
+  payload, correlation_id
+- Filter by event_type, source service, time range
+- Dead Letter Queue viewer with retry action
+
+/integration/auth:
+- Active JWT sessions
+- Service-to-service token registry
+- OAuth2 client management
+
+/integration/sagas:
+- Active saga transactions
+- Saga entity display: saga_id, status, steps, current_step
+- PENDING/RUNNING/COMPLETED/FAILED/COMPENSATING status badges
+- Compensation log viewer
+
+────────────────────────────────────────────────────
+8. PLATFORM SETTINGS, BILLING, ADMIN
+────────────────────────────────────────────────────
+
+/settings/organization:
+- Org profile, owner info (Douglas Mitchell, Houston TX), logo upload
+- API keys management: generate, rotate, revoke
+- Webhook configuration: escalation flags to Slack/Teams/email
+  (listed in ClearDesk roadmap)
+
+/settings/integrations:
+- Connected services: Twilio, Anthropic Claude API, Google Gemini,
+  Stripe, Composio, Cloudflare Workers KV, Vercel Blob, HubSpot, Notion
+- Connection status per integration, last tested timestamp
+- API key fields, webhook URL configuration
+
+/settings/team:
+- User management: B-A-P User entity (username, email, full_name,
+  is_active, is_superuser, created_at, last_login)
+- Invite user flow
+- Role assignment: processor, manager, admin, superuser
+- Role-based views toggle (ClearDesk roadmap item)
+
+/billing:
+- Current plan per service
+- Usage meters: API calls, documents processed, dispatches,
+  agent runs, storage
+- Stripe invoice history
+- Seat management
+- Upgrade paths
+
+/admin/audit-log:
+- Cross-service audit trail
+- Event: service, user, action, target_entity, timestamp, ip
+
+────────────────────────────────────────────────────
+9. FULL STATE COVERAGE (MANDATORY FOR EVERY SCREEN)
+────────────────────────────────────────────────────
+
+For each major screen, show:
+- Loading: Skeleton loader matching screen layout (shimmer animation)
+- Empty: Warm message + animated element + primary action CTA
+- Populated: Full realistic data using exact entity field names
+- Validation error: Inline, specific, next to the field
+- Success: Inline confirmation, not just a toast
+- Warning: Banner with actionable message
+- Critical alert: LIFE_SAFETY red pulse banner in Money
+- Destructive confirm: "Delete dataset" → explicit confirm dialog
+- Permission error: "You don't have access. Request access →"
+- Offline fallback: for ClearDesk localStorage sync
+
+────────────────────────────────────────────────────
+10. REALISTIC SAMPLE DATA
+────────────────────────────────────────────────────
+
+Use believable, realistic data that matches entity schemas:
+
+ClearDesk documents: Use real-looking invoice numbers (INV-2025-0441),
+customer names (Martinez HVAC Supply Co., Gulf Coast Medical Group),
+amounts matching priority thresholds ($52,400 for critical, $8,900 for
+high, $2,100 for medium), due dates within 30 days.
+
+Money dispatches: Houston addresses, real-sounding issue summaries
+("AC not cooling, 96°F outside, elderly resident"), urgency matching
+weather-aware logic, tech names.
+
+APEX workflows: Realistic input prompts, confidence scores at each
+tier boundary (0.93 for T1, 0.78 for T2, 0.61 for T3), uncertainty
+splits (aleatoric: 0.22, epistemic: 0.41).
+
+B-A-P datasets: Real business dataset names ("Q2_Revenue_Pipeline.csv",
+"Houston_HVAC_Service_Calls_2025.xlsx"), realistic row/column counts.
+
+────────────────────────────────────────────────────
+11. IMPLEMENTATION-AWARE CONSTRAINTS
+────────────────────────────────────────────────────
+
+Component naming: Use exact component names from the codebase:
+ClearDesk: Layout, Dashboard, StatsOverview, FilterPanel, DocumentCard,
+DocumentDetail, ExportPanel, ChatPanel, SettingsPanel, HelpPanel
+Money: Hero, NarrativeText, CardStack, BreathSection, ZigZagGrid,
+AdminDashboard, BillingPanel, DispatchDetailModal
+API routes: Reference real endpoints in labels and descriptions
+(/api/analyze, POST /dispatch, /workflow/hitl/{decision_id}, etc.)
+
+Stack context:
+ClearDesk uses React 19 + TypeScript + Vite + Tailwind 4 + Recharts
+Money backend is FastAPI + CrewAI + PostgreSQL + Twilio
+B-A-P uses FastAPI + SQLAlchemy + Celery + Redis + Recharts
+APEX UI is Next.js 15 App Router + TypeScript
+
+When referencing charts, use Recharts component patterns.
+When showing data tables, use patterns compatible with Tailwind 4.
+When showing agent traces, structure them as LangGraph node outputs.
+
+────────────────────────────────────────────────────
+12. ALTERNATIVES TO GENERATE
+────────────────────────────────────────────────────
+
+Show 3 alternative layouts for:
+1. ReliantAI homepage hero — one stat-forward, one narrative-forward,
+   one product-demo-forward
+2. Platform command center dashboard — one service-grid layout, one
+   event-stream-primary layout, one alert-triage layout
+3. APEX HITL review screen — one queue-first, one decision-detail-first,
+   one uncertainty-visualization-first
+
+────────────────────────────────────────────────────
+13. PRIORITY ORDER
+────────────────────────────────────────────────────
+
+Build in this sequence:
+1. Design system validation — confirm Revenue Engine v6 tokens render
+   correctly across all surface levels
+2. ReliantAI homepage + ClearDesk dashboard (highest business priority
+   — active prospective customer)
+3. Money admin portal + CrewAI agent monitor
+4. Platform Command Center (biggest current gap)
+5. APEX HITL dashboard + uncertainty visualization
+6. B-A-P analytics + ETL pipeline
+7. Integration layer operations
+8. Settings, billing, admin
+
+────────────────────────────────────────────────────
+14. HANDOFF REQUIREMENTS
+────────────────────────────────────────────────────
+
+This prototype must be ready for direct handoff to Claude Code.
+- Preserve all design decisions and rationale in chat history
+- Name every reusable component using the codebase naming conventions
+- Structure every screen so it maps directly to a React Router or
+  Next.js App Router route
+- Reference exact API endpoints from the actual codebase
+- When export is triggered, produce a Claude Code handoff bundle
+  that includes this chat, the design files, and a README mapping
+  each screen to its implementation route and component tree
+
+Quality bar:
+This should look and feel like the internal design review prototype
+for a $10M ARR B2B infrastructure company. Not a startup demo.
+Not a Dribbble concept. A real system that a technical founder would
+show to an enterprise buyer with confidence.

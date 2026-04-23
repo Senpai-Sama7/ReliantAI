@@ -1,0 +1,47 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.label{font-size:10px;color:#4a6880;width:100px;flex-shrink:0}
+.btn{font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:600;padding:8px 16px;border:none;cursor:pointer;border-radius:2px;transition:all 150ms ease;letter-spacing:0.02em}
+.btn-sm{padding:5px 12px;font-size:11px}
+</style></head><body>
+
+<div class="row">
+  <div class="label">Primary</div>
+  <button class="btn" style="background:#00e5ff;color:#020510">Request Access</button>
+  <button class="btn btn-sm" style="background:#00e5ff;color:#020510">Deploy</button>
+  <button class="btn" style="background:#00e5ff;color:#020510;opacity:0.4;cursor:not-allowed">Disabled</button>
+</div>
+
+<div class="row">
+  <div class="label">Secondary</div>
+  <button class="btn" style="background:#091424;color:#a8c4de;border:1px solid #152637">View Details</button>
+  <button class="btn btn-sm" style="background:#091424;color:#a8c4de;border:1px solid #152637">Export</button>
+  <button class="btn" style="background:#091424;color:#4a6880;border:1px solid #0c1a2c;cursor:not-allowed">Disabled</button>
+</div>
+
+<div class="row">
+  <div class="label">Danger</div>
+  <button class="btn" style="background:#ff3b5c;color:#ffffff">Delete Dataset</button>
+  <button class="btn btn-sm" style="background:rgba(255,59,92,0.1);color:#ff3b5c;border:1px solid rgba(255,59,92,0.3)">Revoke</button>
+</div>
+
+<div class="row">
+  <div class="label">Ghost / Text</div>
+  <button class="btn" style="background:transparent;color:#00e5ff;padding:8px 4px">View All →</button>
+  <button class="btn" style="background:transparent;color:#4a6880;padding:8px 4px">Cancel</button>
+  <button class="btn" style="background:transparent;color:#ff3b5c;padding:8px 4px">Remove</button>
+</div>
+
+<div class="row">
+  <div class="label">Service-tinted</div>
+  <button class="btn btn-sm" style="background:rgba(0,212,170,0.1);color:#00d4aa;border:1px solid rgba(0,212,170,0.3)">ClearDesk</button>
+  <button class="btn btn-sm" style="background:rgba(255,196,0,0.1);color:#ffc400;border:1px solid rgba(255,196,0,0.3)">Money</button>
+  <button class="btn btn-sm" style="background:rgba(124,92,252,0.1);color:#7c5cfc;border:1px solid rgba(124,92,252,0.3)">APEX</button>
+  <button class="btn btn-sm" style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.3)">B-A-P</button>
+</div>
+
+</body></html>

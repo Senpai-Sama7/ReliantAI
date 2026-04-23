@@ -1,0 +1,54 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.label{font-size:10px;color:#4a6880;width:110px;flex-shrink:0}
+.badge{font-size:11px;font-weight:500;padding:3px 8px;border-radius:2px;font-family:'IBM Plex Sans',sans-serif;letter-spacing:0.02em}
+.mono{font-family:'IBM Plex Mono',monospace}
+</style></head><body>
+
+<div class="row">
+  <div class="label">Status</div>
+  <span class="badge" style="background:rgba(0,255,122,0.1);color:#00ff7a;border:1px solid rgba(0,255,122,0.25)">COMPLETED</span>
+  <span class="badge" style="background:rgba(0,229,255,0.1);color:#00e5ff;border:1px solid rgba(0,229,255,0.25)">PROCESSING</span>
+  <span class="badge" style="background:rgba(255,196,0,0.1);color:#ffc400;border:1px solid rgba(255,196,0,0.25)">PENDING</span>
+  <span class="badge" style="background:rgba(255,59,92,0.1);color:#ff3b5c;border:1px solid rgba(255,59,92,0.25)">ESCALATED</span>
+  <span class="badge" style="background:rgba(74,104,128,0.15);color:#4a6880;border:1px solid rgba(74,104,128,0.25)">INACTIVE</span>
+</div>
+
+<div class="row">
+  <div class="label">Urgency (Money)</div>
+  <span class="badge" style="background:rgba(255,59,92,0.15);color:#ff3b5c;border:1px solid #ff3b5c">LIFE_SAFETY</span>
+  <span class="badge" style="background:rgba(255,59,92,0.08);color:#ff6b35;border:1px solid rgba(255,107,53,0.4)">EMERGENCY</span>
+  <span class="badge" style="background:rgba(255,196,0,0.1);color:#ffc400;border:1px solid rgba(255,196,0,0.3)">URGENT</span>
+  <span class="badge" style="background:rgba(0,255,122,0.08);color:#00ff7a;border:1px solid rgba(0,255,122,0.25)">ROUTINE</span>
+</div>
+
+<div class="row">
+  <div class="label">Priority (ClearDesk)</div>
+  <span class="badge" style="background:rgba(255,59,92,0.1);color:#ff4444;border:1px solid rgba(255,68,68,0.3)">CRITICAL</span>
+  <span class="badge" style="background:rgba(255,140,0,0.1);color:#ff8c00;border:1px solid rgba(255,140,0,0.3)">HIGH</span>
+  <span class="badge" style="background:rgba(255,184,0,0.1);color:#ffb800;border:1px solid rgba(255,184,0,0.3)">MEDIUM</span>
+  <span class="badge" style="background:rgba(142,142,160,0.1);color:#8e8ea0;border:1px solid rgba(142,142,160,0.2)">LOW</span>
+</div>
+
+<div class="row">
+  <div class="label">APEX Tier</div>
+  <span class="badge mono" style="background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)">T1 Reflexive</span>
+  <span class="badge mono" style="background:rgba(255,196,0,0.08);color:#ffc400;border:1px solid rgba(255,196,0,0.2)">T2 Deliberative</span>
+  <span class="badge mono" style="background:rgba(255,59,92,0.08);color:#ff3b5c;border:1px solid rgba(255,59,92,0.2)">T3 Contested</span>
+  <span class="badge mono" style="background:rgba(124,92,252,0.1);color:#7c5cfc;border:1px solid rgba(124,92,252,0.3)">T4 Unknown</span>
+</div>
+
+<div class="row">
+  <div class="label">Service marks</div>
+  <span class="badge" style="background:rgba(0,212,170,0.08);color:#00d4aa;border:1px solid rgba(0,212,170,0.2)">ClearDesk</span>
+  <span class="badge" style="background:rgba(255,196,0,0.08);color:#ffc400;border:1px solid rgba(255,196,0,0.2)">Money</span>
+  <span class="badge" style="background:rgba(124,92,252,0.08);color:#7c5cfc;border:1px solid rgba(124,92,252,0.2)">APEX</span>
+  <span class="badge" style="background:rgba(0,229,255,0.08);color:#00e5ff;border:1px solid rgba(0,229,255,0.2)">B-A-P</span>
+  <span class="badge" style="background:rgba(0,255,122,0.08);color:#00ff7a;border:1px solid rgba(0,255,122,0.2)">Integration</span>
+</div>
+
+</body></html>

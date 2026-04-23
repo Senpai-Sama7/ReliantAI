@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:16px;align-items:center}
+.label{font-size:10px;color:#4a6880;font-family:'IBM Plex Mono',monospace;width:120px;flex-shrink:0}
+.demo{background:#060c1a;border:1px solid #0c1a2c;color:#a8c4de;font-size:12px;padding:8px 14px}
+</style></head><body>
+<div class="row">
+  <div class="label">radius-none · 0px<br>panels · cards</div>
+  <div class="demo" style="border-radius:0">Panel / Card surface</div>
+  <div class="demo" style="border-radius:0;background:#091424">Elevated surface</div>
+</div>
+<div class="row">
+  <div class="label">radius-sm · 2px<br>buttons · badges · inputs</div>
+  <div style="background:#00e5ff;color:#020510;font-size:12px;font-weight:600;padding:8px 16px;border-radius:2px">Request Access</div>
+  <div style="background:rgba(0,229,255,0.08);color:#00e5ff;font-size:11px;font-weight:500;padding:3px 8px;border-radius:2px;border:1px solid rgba(0,229,255,0.3)">OPERATIONAL</div>
+  <div style="background:#060c1a;border:1px solid #152637;color:#a8c4de;font-size:12px;padding:8px 14px;border-radius:2px">Input field</div>
+</div>
+<div class="row">
+  <div class="label">border weight<br>always 1px</div>
+  <div class="demo" style="border:1px solid #0c1a2c">default · #0c1a2c</div>
+  <div class="demo" style="border:1px solid #152637">hover · #152637</div>
+  <div class="demo" style="border:1px solid #00e5ff">active · --re-cyan</div>
+</div>
+</body></html>

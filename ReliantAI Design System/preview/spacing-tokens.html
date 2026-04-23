@@ -1,0 +1,27 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;gap:6px;align-items:flex-end}
+.item{display:flex;flex-direction:column;align-items:center;gap:6px}
+.bar{background:#00e5ff;opacity:0.15;width:32px}
+.bar-active{opacity:0.6}
+.label{font-family:'IBM Plex Mono',monospace;font-size:9px;color:#4a6880;text-align:center}
+.px{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#a8c4de;font-weight:500;text-align:center}
+</style></head><body>
+<div class="item"><div class="bar" style="height:4px"></div><div class="px">4</div><div class="label">–1</div></div>
+<div class="item"><div class="bar" style="height:8px"></div><div class="px">8</div><div class="label">–2</div></div>
+<div class="item"><div class="bar bar-active" style="height:12px"></div><div class="px">12</div><div class="label">–3</div></div>
+<div class="item"><div class="bar bar-active" style="height:16px"></div><div class="px">16</div><div class="label">–4</div></div>
+<div class="item"><div class="bar bar-active" style="height:20px"></div><div class="px">20</div><div class="label">–5</div></div>
+<div class="item"><div class="bar bar-active" style="height:24px"></div><div class="px">24</div><div class="label">–6</div></div>
+<div class="item"><div class="bar" style="height:32px"></div><div class="px">32</div><div class="label">–8</div></div>
+<div class="item"><div class="bar" style="height:40px"></div><div class="px">40</div><div class="label">–10</div></div>
+<div class="item"><div class="bar" style="height:48px"></div><div class="px">48</div><div class="label">–12</div></div>
+<div class="item"><div class="bar" style="height:64px"></div><div class="px">64</div><div class="label">–16</div></div>
+<div style="margin-left:16px;border-left:1px solid #0c1a2c;padding-left:16px;font-size:11px;color:#4a6880;line-height:2">
+  <div>Base unit: <span style="color:#00e5ff;font-family:'IBM Plex Mono',monospace">4px</span></div>
+  <div>Common: 8 · 12 · 16 · 20 · 24</div>
+  <div>Section: 32 · 48 · 64</div>
+</div>
+</body></html>

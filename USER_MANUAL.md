@@ -7,9 +7,12 @@ Welcome to the **ReliantAI Platform**. This manual is designed to provide you wi
 ## 📑 Table of Contents
 
 1. [Platform Overview](#1-platform-overview)
-2. [Core Concepts & Architecture](#2-core-concepts--architecture)
-3. [Service Deep Dives](#3-service-deep-dives)
+2. [Getting Started](#2-getting-started)
+3. [Reliant JIT OS](#3-reliant-jit-os)
+4. [Core Concepts & Architecture](#4-core-concepts--architecture)
+5. [Service Deep Dives](#5-service-deep-dives)
    - [💰 Money (Revenue & Dispatch)](#-money-revenue--dispatch)
+   - [🚀 GrowthEngine (Lead Generation)](#-growthengine-lead-generation)
    - [🛡️ ComplianceOne (Governance)](#-complianceone-governance)
    - [💸 FinOps360 (Cost Optimization)](#-finops360-cost-optimization)
    - [🧠 Orchestrator (Platform Brain)](#-orchestrator-platform-brain)
@@ -17,9 +20,9 @@ Welcome to the **ReliantAI Platform**. This manual is designed to provide you wi
    - [🏢 Gen-H (Lead Gen)](#-gen-h-lead-gen)
    - [📊 Ops-Intelligence & Citadel](#-ops-intelligence--citadel)
    - [🔌 Integration & Auth (Event Bus)](#-integration--auth-event-bus)
-4. [Deployment & Operations](#4-deployment--operations)
-5. [API & Authentication](#5-api--authentication)
-6. [Troubleshooting Guide](#6-troubleshooting-guide)
+6. [Deployment & Operations](#6-deployment--operations)
+7. [API & Authentication](#7-api--authentication)
+8. [Troubleshooting Guide](#8-troubleshooting-guide)
 
 ---
 
@@ -31,10 +34,149 @@ ReliantAI is an enterprise-grade, event-driven microservices ecosystem. It is de
 - **Autonomous Dispatching:** SMS messages from customers are triaged by AI (CrewAI + Gemini) and automatically routed to technicians.
 - **Self-Healing Infrastructure:** The platform monitors its own CPU/Memory metrics and uses predictive algorithms (Holt-Winters) to scale services up or down dynamically.
 - **Strict Data Isolation:** Every service has its own dedicated PostgreSQL database. Services communicate *only* via HTTP REST or the Redis Event Bus.
+- **Zero-Configuration Setup:** The new Reliant JIT OS eliminates `.env` files entirely — just enter API keys in the browser wizard.
 
 ---
 
-## 2. Core Concepts & Architecture
+## 2. Getting Started
+
+### Prerequisites
+- Docker (24.0+)
+- Docker Compose (2.20+)
+- Modern web browser
+
+### Quick Start (Zero-Configuration)
+
+The easiest way to get started is using the Reliant JIT OS:
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-org/ReliantAI.git
+cd ReliantAI
+
+# 2. Start the entire platform
+docker compose up -d
+
+# 3. Open the JIT OS interface
+# http://localhost:8085
+```
+
+### First-Time Setup
+
+When you open http://localhost:8085 for the first time:
+
+1. You'll see the **Initialization Wizard**
+2. Enter your API keys (Gemini, Stripe, Twilio, Google Places)
+3. Click **"Initialize Platform"**
+4. The system automatically configures everything
+
+**No `.env` files. No manual editing. No documentation to read first.**
+
+### Manual Setup (Advanced)
+
+If you prefer traditional configuration:
+
+```bash
+# 1. Copy and edit environment variables
+cp .env.example .env
+# Edit .env with your API keys
+
+# 2. Run the deployment script
+./scripts/deploy.sh local
+
+# 3. Verify all services are healthy
+./scripts/health_check.py -v
+```
+
+---
+
+## 3. Reliant JIT OS
+
+The **Reliant JIT OS** is your AI-powered operations center. It's a chat-based interface that lets you control the entire platform using natural language.
+
+### Access
+- **URL:** http://localhost:8085
+- **No login required** (local development)
+
+### AI Modes
+
+| Mode | Icon | Purpose | Best For |
+|------|------|---------|----------|
+| **Auto** | ⚡ | Mixed tasks | General questions, combined operations |
+| **Support** | 💬 | Help & guidance | Learning the platform, how-to questions |
+| **Engineer** | 💻 | Code generation | Adding features, fixing bugs, refactoring |
+| **Sales** | 💰 | Lead generation | Finding prospects, sending outreach |
+
+### Common Tasks
+
+**Check System Status:**
+```
+"What's the system status?"
+"Show me all running services"
+"Are there any errors?"
+```
+
+**Find Leads:**
+```
+"Find HVAC companies in Atlanta with 4+ stars"
+"Search for dentists in Chicago without websites"
+"Generate a list of 50 plumbers in Houston"
+```
+
+**Modify Code:**
+```
+"Add a refund endpoint to Money service"
+"Fix the healthcheck in dashboard"
+"Update pricing for enterprise customers"
+```
+
+**Generate Reports:**
+```
+"Generate a compliance report for SOC2"
+"Show me cloud cost analysis for last month"
+"Create a system health report"
+```
+
+### Security
+
+The JIT OS has built-in safety guardrails:
+
+- ✅ **Can modify** application code
+- ✅ **Can read** logs and metrics
+- ✅ **Can generate** reports and analyses
+- ❌ **Cannot delete** system files
+- ❌ **Cannot format** disks
+- ❌ **Cannot shutdown** the server
+
+All AI-generated code is validated before execution. Dangerous commands are automatically blocked.
+
+### Execution History
+
+Every AI operation is logged:
+- **Timestamp** — when it happened
+- **Prompt** — what you asked
+- **Code Hash** — security fingerprint
+- **Status** — success / error / blocked
+- **Duration** — how long it took
+
+Access this via the **"Execution History"** button in the left sidebar.
+
+### Troubleshooting JIT OS
+
+| Problem | Solution |
+|---------|----------|
+| "Connection failed" | Wait 10s, refresh, check `docker compose ps` |
+| "Gemini API Key not set" | Complete setup wizard at http://localhost:8085 |
+| Code blocked | Rephrase request, use specific paths |
+| High memory usage | Restart containers: `docker compose restart` |
+
+For complete JIT OS documentation, see:
+- `reliant-os/USER_MANUAL.md` — Detailed user guide
+- `reliant-os/README.md` — Technical API documentation
+
+---
+
+## 4. Core Concepts & Architecture
 
 To use or develop on ReliantAI, you must understand three core patterns:
 
@@ -49,34 +191,51 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 
 ---
 
-## 3. Service Deep Dives
+## 5. Service Deep Dives
 
 ### 💰 Money (Revenue & Dispatch)
 **Purpose:** Handles incoming customer requests, job dispatching, and billing.
+**Port:** 8000
 **Key Features:**
-- **Twilio SMS Webhook:** Receives SMS messages.
+- **Twilio SMS Webhook:** Receives SMS messages from customers.
 - **AI Triage:** Uses CrewAI agents and Gemini to assess emergency levels (e.g., "My AC is leaking!" -> Emergency).
-- **Stripe Integration:** Handles customer invoicing.
+- **Stripe Integration:** Handles customer invoicing and subscriptions.
+- **AI-Controllable:** Yes — JIT OS can modify billing code, generate invoices, handle refunds.
+
+### 🚀 GrowthEngine (Lead Generation)
+**Purpose:** Autonomous lead generation using Google Places API.
+**Port:** 8003
+**Key Features:**
+- **Smart Filtering:** Finds businesses by rating, review count, and website presence.
+- **Outreach Automation:** Generates personalized SMS pitches via Twilio.
+- **CRM Integration:** Automatically adds leads to the Money service database.
+- **AI-Controllable:** Yes — JIT OS can scan for leads, filter prospects, send messages.
 
 ### 🛡️ ComplianceOne (Governance)
 **Purpose:** Continuously tracks organizational compliance against frameworks like SOC2, HIPAA, and GDPR.
+**Port:** 8001
 **Key Features:**
 - **Automated Evidence Collection:** Ingests events from other services to prove compliance (e.g., user access logs).
 - **Gap Analysis:** Identifies missing controls and generates remediation reports.
+- **AI-Controllable:** Yes — JIT OS can generate compliance reports, check control status.
 
 ### 💸 FinOps360 (Cost Optimization)
 **Purpose:** Analyzes cloud provider infrastructure costs.
+**Port:** 8002
 **Key Features:**
 - **Right-Sizing:** Recommends downgrading underutilized instances.
 - **Automated Tagging:** Integrates with AWS/Azure/GCP to apply compliance tags to cloud resources.
 - **Anomaly Detection:** Alerts on sudden spikes in cloud spending.
+- **AI-Controllable:** Yes — JIT OS can analyze costs, generate savings reports.
 
 ### 🧠 Orchestrator (Platform Brain)
 **Purpose:** The autonomic nervous system of the platform.
+**Port:** 9000
 **Key Features:**
 - **Six Async Loops:** Continuously runs loops for Health, Metrics, Scaling, Healing, AI Predictions, and Reporting.
 - **Docker API Integration:** Automatically scales up containers (`docker scale`) when load increases.
 - **WebSocket Feeds:** Pushes live system metrics to the dashboard.
+- **AI-Controllable:** Yes — JIT OS can scale services, check health, view metrics.
 
 ### 🤖 Apex Framework (AI Agents)
 **Purpose:** A comprehensive suite for deploying, managing, and interacting with AI agents.
@@ -87,6 +246,7 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 
 ### 🏢 Gen-H (Lead Gen)
 **Purpose:** High-conversion templating library and lead generation for home service professionals.
+**Port:** 8040
 **Key Features:**
 - Pre-built, customizable UI templates.
 - Lead capture forms routed directly into the `Money` service CRM.
@@ -99,6 +259,7 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 
 ### 🔌 Integration & Auth (Event Bus)
 **Purpose:** The central nervous system.
+**Port:** 8080 (Auth), 8081 (Event Bus)
 **Key Features:**
 - **Event Bus (`:8081`):** Redis-backed pub/sub system with strict 64KB payload validation.
 - **Auth Server (`:8080`):** Issues and validates JWTs using RS256 asymmetric keys.
@@ -106,12 +267,13 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 
 ---
 
-## 4. Deployment & Operations
+## 6. Deployment & Operations
 
 ### Local Development
 To spin up the entire platform locally:
+
 ```bash
-# 1. Setup environment variables
+# 1. Setup environment variables (or use JIT OS wizard)
 cp .env.example .env
 
 # 2. Run the deployment script
@@ -119,10 +281,14 @@ cp .env.example .env
 
 # 3. Verify Health
 ./scripts/health_check.py -v
+
+# 4. Open JIT OS
+# http://localhost:8085
 ```
 
 ### Production Deployment
 Production deployments use `docker-compose.yml` merged with `docker-compose.prod.yml` (if applicable), enforcing strict security, HSTS, and TLS.
+
 ```bash
 ./scripts/deploy.sh production
 ```
@@ -131,13 +297,15 @@ Production deployments use `docker-compose.yml` merged with `docker-compose.prod
 - **View Logs:** `docker compose logs -f <service_name>`
 - **Restart a Service:** `docker compose restart <service_name>`
 - **Manually Scale:** `docker compose up -d --scale money=3`
+- **JIT OS Control:** Just type "Scale up Money service" in the chat interface
 
 ---
 
-## 5. API & Authentication
+## 7. API & Authentication
 
 ### Authentication Flow
-All public endpoints are protected by `SecurityHeadersMiddleware` and `RateLimitMiddleware`. 
+All public endpoints are protected by `SecurityHeadersMiddleware` and `RateLimitMiddleware`.
+
 1. Obtain a token via `POST /api/auth/login`.
 2. Pass the token in the `Authorization: Bearer <token>` header.
 3. Services validate the JWT locally using the public key provided by the Auth Service.
@@ -145,25 +313,48 @@ All public endpoints are protected by `SecurityHeadersMiddleware` and `RateLimit
 ### Cross-Origin Resource Sharing (CORS)
 CORS is strictly enforced. In `.env`, ensure `CORS_ORIGINS` accurately reflects your frontend domains (e.g., `https://app.reliantai.com`). Wildcards (`*`) are prohibited in production.
 
+### JIT OS API
+The JIT OS provides its own API for programmatic access:
+
+- `GET /api/os/status` — Check configuration status
+- `POST /api/os/setup` — Initialize with API keys
+- `POST /api/os/chat` — Send message to AI
+- `GET /api/os/execution-history` — View audit log
+
+See `reliant-os/README.md` for complete API documentation.
+
 ---
 
-## 6. Troubleshooting Guide
+## 8. Troubleshooting Guide
 
-**1. Service X shows as `(unhealthy)` in Docker**
+**1. JIT OS shows "Connection to Core AI failed"**
+- **Cause:** Backend container not running or nginx proxy misconfigured.
+- **Fix:** `docker compose ps | grep reliant-os`. Check logs: `docker compose logs -f reliant-os-backend`.
+
+**2. Service X shows as `(unhealthy)` in Docker**
 - **Cause:** The Docker healthcheck failed.
 - **Fix:** Check the logs: `docker compose logs <service>`. Ensure the service is actually listening on the port. Verify that the `.env` variables are correctly populated.
 
-**2. Authentication returns 503 Unavailable**
+**3. Authentication returns 503 Unavailable**
 - **Cause:** The service cannot reach the `integration` Auth Server, or the JWT public key is missing.
 - **Fix:** Ensure the `integration` container is healthy. Check the `AUTH_SERVICE_URL` variable.
 
-**3. "invalid command line string" for Redis**
+**4. "invalid command line string" for Redis**
 - **Cause:** Historically an issue with empty passwords in compose files.
 - **Fix:** Ensure your repository is up to date (this was resolved in v3.0). Ensure `.env` is loaded correctly.
 
-**4. Event Bus Payload Errors**
+**5. Event Bus Payload Errors**
 - **Cause:** You attempted to publish a message larger than 64KB.
 - **Fix:** Truncate large strings or offload large payloads to a blob store (S3/GCS) and pass the URI in the event instead.
 
+**6. JIT OS Code Execution Blocked**
+- **Cause:** AI generated potentially dangerous code.
+- **Fix:** Read the block reason in execution output. Rephrase request to avoid dangerous operations. Use specific paths.
+
+**7. Lost Secret Vault After Restart**
+- **Cause:** Docker volume not mounted or deleted.
+- **Fix:** Re-enter keys in setup wizard. To prevent: backup volume regularly with `docker cp`.
+
 ---
-*For further assistance, please consult the `Bug-Report.md` registry or reach out to the platform engineering team.*
+
+*For further assistance, please consult the `Bug-Report.md` registry, the JIT OS chat interface, or reach out to the platform engineering team.*
