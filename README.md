@@ -275,16 +275,21 @@ curl http://localhost:8085/health
 
 | Document | Purpose | Audience |
 |----------|---------|----------|
-| `README.md` | This file — platform overview | Everyone |
-| `CLAUDE.md` | **Claude Code context** — architecture, constraints, codebase health | Developers using Claude Code |
-| `reliant-os/README.md` | Technical API docs for JIT OS | Developers building features |
-| `reliant-os/USER_MANUAL.md` | User-friendly guide for JIT OS | Non-technical operators |
-| `USER_MANUAL.md` | Platform-wide service documentation | Platform operators |
-| `MASTER_AUDIT_CONSOLIDATED.md` | Complete audit history & remediation | Compliance, security teams |
-| `Bug-Report.md` | Known issues & fixes registry | Support, developers |
+| `README.md` | This file — platform overview & quickstart | Everyone |
+| `CLAUDE.md` | **Developer reference** — architecture, codebase intelligence, health status | Developers (especially Claude Code) |
+| `USER_MANUAL.md` | Platform-wide service documentation & operations | Platform operators |
+| `reliant-os/USER_MANUAL.md` | User guide for Reliant JIT OS | Non-technical operators |
+| `Bug-Report.md` | Known issues, bugs, and fixes | Support & developers |
 | `AGENTS.md` | AI agent development guidelines | Agent developers |
+| `GEMINI.md` | Gemini AI integration & configuration | AI/LLM developers |
+| `MASTER_AUDIT_CONSOLIDATED.md` | Audit history & security remediation (all resolved) | Compliance & security teams |
+| `CONTRIBUTING.md` | Contribution guidelines & development process | Contributors |
+| `CHANGELOG.md` | Version history & release notes | Release managers |
 
-**For Claude Code Users:** Start with `CLAUDE.md` — it contains architectural blueprints, development commands, semantic code intelligence, and current codebase health status.
+**Start Here:** 
+- **For Claude Code:** Read `CLAUDE.md` for architecture, codebase health, and development commands
+- **For Operations:** Read `README.md` then `USER_MANUAL.md`
+- **For Development:** Read `CLAUDE.md` then `CONTRIBUTING.md`
 
 ---
 
