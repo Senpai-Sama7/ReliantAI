@@ -157,7 +157,7 @@ class _FakeCursor:
             self.rowcount = 1
             return
         if "count(*)" in normalized and "customer_events" in normalized:
-            self._last_result = [(self._store.get("dispatch_count", 0),)]
+            self._last_result = [{"count": self._store.get("dispatch_count", 0)}]
             self.rowcount = 1
             return
         if "from customers where api_key" in normalized:
@@ -210,7 +210,9 @@ class _FakeConn:
         self.committed = False
         self.rolled_back = False
 
-    def cursor(self, cursor_factory=None):  # noqa: ARG002 — accepted for RealDictCursor
+    def cursor(self, cursor_factory=None):
+        # Respect cursor_factory parameter for RealDictCursor compatibility
+        # Always returns dict-like objects to match production RealDictCursor behavior
         return _FakeCursor(self._store)
 
     def commit(self) -> None:
