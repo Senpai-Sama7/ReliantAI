@@ -113,19 +113,20 @@ def set_env_var(content, key, value):
 def backup_file(path):
     if not os.path.exists(path):
         return None
-    ts = datetime.datetime.utcnow().strftime("%Y%m%dT%H%M%SZ")
+    ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     bak = f"{path}.bak.{ts}"
     shutil.copy2(path, bak)
     return bak
 
 def create_empty_file(path):
-    # Safely create an empty file (portable)
-    open(path, "a", encoding="utf-8").close()
+    # Safely create an empty file (portable), truncate if it already exists
+    open(path, "w", encoding="utf-8").close()
 
 def run_setup(unattended=False):
     print_header()
 
-    project_root = os.path.dirname(os.path.abspath(__file__))
+    # Go up two levels: scripts/setup_wizard.py → scripts → ReliantAI (project root)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     env_file = os.path.join(project_root, ".env")
     env_example = os.path.join(project_root, ".env.example")
 
@@ -161,10 +162,10 @@ def run_setup(unattended=False):
     if content is None:
         content = ""
 
-    # For each key, extract current default from file if present
+    # For each key, extract current default from file if present (stop at # comment)
     current_values = {}
     for key, prompt_text, is_secret in ENV_KEYS_TO_PROMPT:
-        m = re.search(rf"^\s*{re.escape(key)}\s*=\s*(.*)$", content, re.MULTILINE)
+        m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
         current_values[key] = (m.group(1).strip() if m and m.group(1) is not None else "")
 
     # Prompt user

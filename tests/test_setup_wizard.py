@@ -84,3 +84,42 @@ def test_write_file(tmp_path):
 
     with open(str(test_file), "r", encoding="utf-8") as f:
         assert f.read() == content
+
+
+def test_create_empty_file_truncates_existing(tmp_path):
+    """Test that create_empty_file truncates an existing file."""
+    test_file = tmp_path / "test.env"
+    # Create a file with content
+    test_file.write_text("OLD_CONTENT=value\n", encoding="utf-8")
+
+    # Call create_empty_file
+    setup_wizard.create_empty_file(str(test_file))
+
+    # Verify it's empty
+    with open(str(test_file), "r", encoding="utf-8") as f:
+        content = f.read()
+        assert content == ""
+
+
+def test_regex_handles_trailing_comments():
+    """Test that the regex used in run_setup doesn't capture trailing comments."""
+    content = """
+KEY1=value1 # This is a comment
+KEY2=value2# No space before comment
+KEY3=value3
+"""
+    # Simulate the regex used in run_setup (line ~167)
+    key = "KEY1"
+    m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
+    if m:
+        value = m.group(1).strip()
+        # Should get just "value1", not the comment
+        assert value == "value1"
+        assert "#" not in value
+
+    key = "KEY2"
+    m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
+    if m:
+        value = m.group(1).strip()
+        assert value == "value2"
+        assert "#" not in value

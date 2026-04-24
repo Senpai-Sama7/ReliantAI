@@ -36,7 +36,8 @@ def ask(prompt_text, default="", is_secret=False):
 def run_setup():
     print_header()
 
-    project_root = os.path.dirname(os.path.abspath(__file__))
+    # Go up two levels: scripts/legacy_setup_cli.py → scripts → ReliantAI (project root)
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     env_file = os.path.join(project_root, ".env")
     env_example = os.path.join(project_root, ".env.example")
 
