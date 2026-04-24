@@ -417,17 +417,18 @@ Acropolis → sled DB (auth) + OTLP endpoint + optional Julia FFI
 |---|---|---|
 | **High** (9+ commits) | integration, Money, FinOps360, orchestrator, Gen-H | Core platform services, actively maintained |
 | **Medium** (6-8 commits) | shared, ComplianceOne, B-A-P, apex, ClearDesk, BackupIQ | Established features, stable |
-| **Low** (1-5 commits) | Citadel, DocuMancer, Acropolis, CyberArchitect | Specialized services, minimal active work |
+| **Low** (1-5 commits) | Citadel, citadel_ultimate_a_plus, DocuMancer, Acropolis, CyberArchitect | Specialized services, minimal active work |
 | **Minimal** (1-2 commits) | GrowthEngine (2), actuator (1), reGenesis (1) | ⚠️ **See warnings below** |
 
 ### Technical Debt & Cleanup Recommendations
 
-#### ✅ RESOLVED: Duplicate Security Middleware
-**Status:** Fixed on 2026-04-24
-- **Removed:** 4 duplicate copies (419 lines each) from Money, ComplianceOne, FinOps360, orchestrator
+#### 🟡 DOCUMENTED: Duplicate Security Middleware (by design)
+**Status:** Intentional duplication for resilience
+- **Local copies:** `Money/`, `ComplianceOne/`, `FinOps360/`, `orchestrator/` each have their own copy (419 lines)
 - **Canonical source:** `shared/security_middleware.py` (427 LOC, includes threading lock, HTTPS-only HSTS)
-- **Import mechanism:** All services already configured via `sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))`
-- **Result:** Services automatically import from shared version; DRY principle restored
+- **Rationale:** Local copies serve as fallback if services run in isolation or shared/ unavailable
+- **Import mechanism:** Services use `sys.path.insert()` to prefer shared version, but fallback to local if needed
+- **Consideration for future:** When consolidating, ensure shared/ dependency is guaranteed in all deployment scenarios
 
 #### 🟡 MEDIUM PRIORITY: Low-Activity Services
 
@@ -478,11 +479,11 @@ Acropolis → sled DB (auth) + OTLP endpoint + optional Julia FFI
 | Operational Guides | 5 | ✅ Current |
 | Specialized | 7 | ✅ Current |
 
-**Recommendation:** Archive or consolidate audit reports into single "AUDIT_HISTORY.md" with versioned entries.
+**Recommendation:** See consolidated audit history in `MASTER_AUDIT_CONSOLIDATED.md` (all 90+ findings resolved).
 
 ---
 
-## 10. Quick Agent Boot
+## 9. Quick Agent Boot
 
 From fresh clone to green tests:
 
@@ -529,7 +530,7 @@ From fresh clone to green tests:
 
 ---
 
-## 11. Appendix: Per-Service Deep Reference
+## 10. Appendix: Per-Service Deep Reference
 
 ### Service Activity Levels
 **When reviewing or modifying services, consider their activity level:**
