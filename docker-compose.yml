@@ -278,7 +278,7 @@ services:
           cpus: '0.5'
           memory: 256M
   nginx:
-    image: nginx:alpine
+    image: nginx:1.25-alpine
     container_name: reliantai-nginx
     entrypoint: ["/bin/sh", "-c", "exec nginx -g 'daemon off;'"]
     ports:
