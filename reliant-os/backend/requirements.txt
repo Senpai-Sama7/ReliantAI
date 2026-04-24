@@ -2,7 +2,9 @@ fastapi
 uvicorn
 pydantic
 requests
+httpx
 google-generativeai
 hvac
 docker
 python-multipart
+redis

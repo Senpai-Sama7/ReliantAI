@@ -215,6 +215,57 @@ const Divider = ({ label, style={} }) => (
 
 // ── Logo ─────────────────────────────────────────────────────────
 // Custom monogram: concentric chevrons suggesting "layered reliability"
+const ToastContext = React.createContext(null);
+
+const useToast = () => {
+  const ctx = React.useContext(ToastContext);
+  if (!ctx) throw new Error('useToast must be inside ToastProvider');
+  return ctx;
+};
+
+const ToastProvider = ({ children }) => {
+  const [toasts, setToasts] = React.useState([]);
+  const idRef = React.useRef(0);
+  const show = React.useCallback((message, opts={}) => {
+    const id = ++idRef.current;
+    const toast = { id, message, tone: opts.tone || 'info', duration: opts.duration || 4000 };
+    setToasts(prev => [...prev, toast]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, toast.duration);
+    return id;
+  }, []);
+  const dismiss = React.useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+  return <ToastContext.Provider value={{ show, dismiss }}>
+    {children}
+    <div style={{position:'fixed', bottom:20, right:20, zIndex:90, display:'flex', flexDirection:'column', gap:8, maxWidth:340, width:'calc(100vw - 40px)'}}>
+      {toasts.map(t => {
+        const tones = {
+          info:    { c:'#00e5ff', bg:'rgba(0,229,255,0.08)', bd:'rgba(0,229,255,0.25)' },
+          success: { c:'#00ff7a', bg:'rgba(0,255,122,0.08)', bd:'rgba(0,255,122,0.25)' },
+          warning: { c:'#ffc400', bg:'rgba(255,196,0,0.08)', bd:'rgba(255,196,0,0.25)' },
+          error:   { c:'#ff3b5c', bg:'rgba(255,59,92,0.1)',  bd:'rgba(255,59,92,0.35)' },
+        };
+        const tone = tones[t.tone] || tones.info;
+        return <div
+          key={t.id}
+          style={{
+            background:'#060c1a', border:`1px solid ${tone.bd}`, borderLeft:`3px solid ${tone.c}`,
+            borderRadius:2, padding:'10px 14px', boxShadow:'0 8px 24px rgba(0,0,0,0.4)',
+            display:'flex', alignItems:'flex-start', gap:10,
+            animation:'slide-up 240ms ease-out',
+          }}
+        >
+          <div style={{flex:1, fontSize:12, color:'#ffffff', lineHeight:1.5}}>{t.message}</div>
+          <i data-lucide="x" onClick={()=>dismiss(t.id)} style={{width:14, height:14, color:'#4a6880', cursor:'pointer', flexShrink:0, marginTop:1}}/>
+        </div>;
+      })}
+    </div>
+  </ToastContext.Provider>;
+};
+
 const Logo = ({ size=22, showWord=true, wordSize=15 }) => (
   <div style={{display:'flex', alignItems:'center', gap:10}}>
     <svg width={size} height={size*1.1} viewBox="0 0 24 26" fill="none" style={{flexShrink:0}}>
@@ -228,4 +279,4 @@ const Logo = ({ size=22, showWord=true, wordSize=15 }) => (
   </div>
 );
 
-Object.assign(window, { cx, CountUp, Badge, Btn, Panel, PanelHeader, MetricTile, ConfBar, Sparkline, Kbd, EmptyState, Skel, Tabs, Input, Divider, Logo });
+Object.assign(window, { cx, CountUp, Badge, Btn, Panel, PanelHeader, MetricTile, ConfBar, Sparkline, Kbd, EmptyState, Skel, Tabs, Input, Divider, Logo, ToastContext, useToast, ToastProvider });

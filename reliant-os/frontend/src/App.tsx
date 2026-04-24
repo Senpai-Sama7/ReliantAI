@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Terminal, Settings, MessageSquare, Code, Zap, Key, Shield, Clock, History, Bot, User, DollarSign } from 'lucide-react';
+import { Terminal, Settings, MessageSquare, Code, Zap, Key, Shield, Clock, History, Bot, User, DollarSign, Radio, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type AIMode = 'auto' | 'chat' | 'code' | 'sales';
@@ -10,6 +10,23 @@ interface Message {
   execution?: string[];
   executionTime?: number;
   mode?: AIMode;
+  mcpResults?: Array<{
+    tool: string;
+    parameters: Record<string, any>;
+    result: any;
+    execution_time_ms: number;
+  }>;
+}
+
+interface PlatformEvent {
+  event: string;
+  channel: string;
+  timestamp: string;
+  service?: string;
+  healthy?: boolean;
+  error?: string;
+  tool?: string;
+  status?: string;
 }
 
 export default function App() {
@@ -194,9 +211,30 @@ function Desktop() {
   const [mode, setMode] = useState<AIMode>('auto');
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
+  const [events, setEvents] = useState<PlatformEvent[]>([]);
+  const [showEvents, setShowEvents] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // SSE event stream connection
+  useEffect(() => {
+    const eventSource = new EventSource('/api/os/events/stream');
+    eventSource.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.event === 'connected') return;
+        setEvents(prev => [data, ...prev].slice(0, 100));
+      } catch (err) {
+        console.error('Failed to parse SSE event', err);
+      }
+    };
+    eventSource.onerror = () => {
+      // Auto-reconnect is handled by EventSource
+      console.warn('SSE connection error');
+    };
+    return () => eventSource.close();
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -217,7 +255,8 @@ function Desktop() {
         content: data.reply,
         execution: data.execution_results,
         executionTime: data.execution_time_ms,
-        mode: data.mode
+        mode: data.mode,
+        mcpResults: data.mcp_results
       }]);
     } catch (err) {
       setMessages(prev => [...prev, { role: 'system', content: 'Connection to Core AI failed. Please check system status.' }]);
@@ -283,6 +322,13 @@ function Desktop() {
         ))}
 
         <div style={{ marginTop: 'auto', borderTop: '1px solid #1a1a1a', paddingTop: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button onClick={() => setShowEvents(!showEvents)} style={{
+            display: 'flex', alignItems: 'center', gap: '10px', padding: '10px',
+            borderRadius: '8px', border: 'none', background: showEvents ? 'rgba(0,212,255,0.1)' : 'transparent',
+            color: showEvents ? '#00d4ff' : '#888', cursor: 'pointer'
+          }}>
+            <Radio size={16} /> Live Events {events.length > 0 && <span style={{ marginLeft: 'auto', background: '#00d4ff', color: '#000', borderRadius: '10px', padding: '2px 6px', fontSize: '0.7rem' }}>{events.length}</span>}
+          </button>
           <button onClick={loadHistory} style={{
             display: 'flex', alignItems: 'center', gap: '10px', padding: '10px',
             borderRadius: '8px', border: 'none', background: 'transparent', color: '#888', cursor: 'pointer'
@@ -351,6 +397,34 @@ function Desktop() {
                 <pre style={{ whiteSpace: 'pre-wrap', margin: 0, fontFamily: 'inherit', color: '#e0e0e0' }}>{m.content}</pre>
               </div>
               
+              {m.mcpResults && m.mcpResults.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  style={{
+                    marginTop: '8px', background: '#050508', border: '1px solid #2a2a5a',
+                    padding: '12px', borderRadius: '8px', maxWidth: '85%', width: '100%'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#00d4ff', fontSize: '0.8rem' }}>
+                    <Zap size={14} /> MCP Tool Executions
+                  </div>
+                  {m.mcpResults.map((mcp, idx) => (
+                    <div key={idx} style={{
+                      margin: '4px 0', padding: '8px', background: '#0a0a1f',
+                      borderRadius: '4px', borderLeft: `3px solid ${mcp.result?.status === 'error' ? '#ff4444' : '#00d4ff'}`
+                    }}>
+                      <div style={{ fontSize: '0.8rem', color: '#00d4ff', fontWeight: 'bold' }}>{mcp.tool}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#666' }}>{JSON.stringify(mcp.parameters)}</div>
+                      <pre style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: '#888', whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                        {JSON.stringify(mcp.result, null, 2)}
+                      </pre>
+                      <div style={{ fontSize: '0.7rem', color: '#555', marginTop: '4px' }}>{mcp.execution_time_ms}ms</div>
+                    </div>
+                  ))}
+                </motion.div>
+              )}
+
               {m.execution && m.execution.length > 0 && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
@@ -425,6 +499,52 @@ function Desktop() {
           </div>
         </div>
       </div>
+
+      {/* Live Events Panel */}
+      <AnimatePresence>
+        {showEvents && (
+          <motion.div
+            initial={{ x: 300, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 300, opacity: 0 }}
+            style={{
+              width: '350px', background: '#0a0a0a', borderLeft: '1px solid #1a1a1a',
+              padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Activity size={18} color="#00d4ff" /> Live Event Stream
+              </h3>
+              <button onClick={() => setShowEvents(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>✕</button>
+            </div>
+
+            {events.length === 0 && <div style={{ color: '#666' }}>Waiting for platform events...</div>}
+
+            {events.map((ev, i) => (
+              <div key={i} style={{
+                padding: '10px', borderRadius: '6px', background: '#0f0f1a',
+                border: '1px solid #1a1a2e', marginBottom: '6px', fontSize: '0.8rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span style={{
+                    width: '6px', height: '6px', borderRadius: '50%',
+                    background: ev.healthy === false ? '#ff4444' : ev.healthy === true ? '#00ff88' : '#00d4ff'
+                  }} />
+                  <span style={{ color: '#00d4ff', fontWeight: 'bold' }}>{ev.event_type || ev.event || 'event'}</span>
+                  <span style={{ color: '#555', marginLeft: 'auto', fontSize: '0.7rem' }}>
+                    {ev.timestamp ? new Date(ev.timestamp).toLocaleTimeString() : 'now'}
+                  </span>
+                </div>
+                {ev.service && <div style={{ color: '#888' }}>Service: {ev.service}</div>}
+                {ev.tool && <div style={{ color: '#888' }}>Tool: {ev.tool}</div>}
+                {ev.error && <div style={{ color: '#ff8844' }}>{ev.error}</div>}
+                {ev.status && <div style={{ color: '#888' }}>Status: {ev.status}</div>}
+              </div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* History Panel */}
       <AnimatePresence>

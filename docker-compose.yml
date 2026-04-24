@@ -145,13 +145,13 @@ services:
           memory: 256M
   integration:
     build:
-      context: ./integration
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: integration/Dockerfile
     container_name: reliantai-integration
     ports:
     - 8080:8080
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY:?EVENT_BUS_API_KEY must be set}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -183,9 +183,10 @@ services:
     command:
     - sh
     - -c
-    - redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    - if [ -z "$REDIS_PASSWORD" ]; then redis-server --appendonly yes; else redis-server
+      --appendonly yes --requirepass "$REDIS_PASSWORD"; fi
     ports:
-    - 6379:6379
+    - ${REDIS_PORT:-6380}:6379
     volumes:
     - redis_data:/data
     networks:
@@ -193,7 +194,8 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - redis-cli -a ${REDIS_PASSWORD} ping | grep PONG
+      - if [ -z "$REDIS_PASSWORD" ]; then redis-cli ping | grep PONG; else redis-cli
+        -a "$REDIS_PASSWORD" ping | grep PONG; fi
       interval: 5s
       timeout: 3s
       retries: 5
@@ -208,13 +210,14 @@ services:
           memory: 128M
   event-bus:
     build:
-      context: ./integration/event-bus
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: integration/event-bus/Dockerfile
     container_name: reliantai-event-bus
     ports:
     - 8081:8081
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
+    - REDIS_HOST=redis
     - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY:?EVENT_BUS_API_KEY must be set}
     depends_on:
       redis:
@@ -247,7 +250,7 @@ services:
     ports:
     - 9000:9000
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - ORCHESTRATOR_API_KEY=${ORCHESTRATOR_API_KEY:?ORCHESTRATOR_API_KEY must be set}
     volumes:
     - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -277,13 +280,15 @@ services:
   nginx:
     image: nginx:alpine
     container_name: reliantai-nginx
+    entrypoint: ["/bin/sh", "-c", "exec nginx -g 'daemon off;'"]
     ports:
-    - 80:80
+    - ${NGINX_PORT:-8880}:80
     volumes:
     - ./dashboard:/usr/share/nginx/dashboard:ro
     - ./console:/usr/share/nginx/console:ro
     - ./reliant-os/frontend/dist:/usr/share/nginx/os:ro
     - ./nginx/integrated.conf:/etc/nginx/conf.d/default.conf:ro
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     networks:
     - reliantai-network
     depends_on:
@@ -400,7 +405,7 @@ services:
     ports:
     - 8060:8060
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - SENTINEL_API_KEY=${SENTINEL_API_KEY:?SENTINEL_API_KEY must be set}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -434,7 +439,7 @@ services:
     ports:
     - 8070:8070
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - APEX_API_KEY=${APEX_API_KEY:?APEX_API_KEY must be set}
     - CORS_ORIGINS=${CORS_ORIGINS:?CORS_ORIGINS must be set}
     depends_on:
@@ -466,7 +471,7 @@ services:
       dockerfile: Dockerfile
     container_name: reliantai-actuator
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - COMPOSE_FILE=docker-compose.yml
     - COMPOSE_PROJECT=reliantai
     volumes:
@@ -788,7 +793,7 @@ services:
     ports:
     - 8083:8083
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - MCP_API_KEY=${MCP_API_KEY:-mcp-dev-key}
     depends_on:
       redis:
@@ -831,7 +836,7 @@ services:
     ports:
     - 8086:8086
     environment:
-    - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    - REDIS_URL=${REDIS_URL}
     - ORCHESTRATOR_URL=http://orchestrator:9000
     - MCP_BRIDGE_URL=http://mcp-bridge:8083
     depends_on:

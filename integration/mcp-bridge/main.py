@@ -17,24 +17,34 @@ from dataclasses import dataclass, asdict
 from datetime import datetime
 
 import httpx
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
+import secrets as _secrets
+
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, Security
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 import redis.asyncio as aioredis
 
 app = FastAPI(title="ReliantAI MCP Bridge", version="1.0.0")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost,http://localhost:3000,http://localhost:8085")
+_origins = [o.strip() for o in CORS_ORIGINS.split(",") if o.strip()]
+if "*" not in _origins:
+    from fastapi.middleware.cors import CORSMiddleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # ── Configuration ───────────────────────────────────────────────
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
-MCP_API_KEY = os.environ.get("MCP_API_KEY", "mcp-dev-key")
+MCP_API_KEY = os.environ.get("MCP_API_KEY", "")
 REGISTRY_URL = os.environ.get("REGISTRY_URL", "http://service-registry:8082")
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+_redis_pool: aioredis.Redis | None = None
 
 # ── Data Models ─────────────────────────────────────────────────
 
@@ -82,9 +92,18 @@ class MCPDiscoveryRequest(BaseModel):
 _tools: Dict[str, MCPTool] = {}
 _tool_history: List[Dict] = []
 
-def _require_api_key():
-    """Placeholder — in production, validate Bearer token."""
-    pass
+async def _get_redis() -> aioredis.Redis:
+    global _redis_pool
+    if _redis_pool is None:
+        _redis_pool = aioredis.from_url(REDIS_URL, decode_responses=True)
+    return _redis_pool
+
+async def verify_api_key(api_key: str = Security(_api_key_header)) -> str:
+    if not MCP_API_KEY:
+        raise HTTPException(status_code=503, detail="MCP API key not configured. Set MCP_API_KEY environment variable.")
+    if not api_key or not _secrets.compare_digest(api_key, MCP_API_KEY):
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    return api_key
 
 # ── Core MCP Endpoints ──────────────────────────────────────────
 
@@ -106,7 +125,7 @@ async def list_tools(
     return tools
 
 @app.post("/mcp/tools/call", response_model=MCPToolResult)
-async def call_tool(call: MCPToolCall, background: BackgroundTasks):
+async def call_tool(call: MCPToolCall, background: BackgroundTasks, _auth: str = Depends(verify_api_key)):
     """Execute a tool call against the target service."""
     start = time.time()
     
@@ -184,21 +203,18 @@ async def tool_history(limit: int = 50):
     return _tool_history[-limit:]
 
 @app.post("/mcp/register")
-async def register_tool(tool: MCPTool):
-    """Register a new tool (called by services on startup)."""
+async def register_tool(tool: MCPTool, _auth: str = Depends(verify_api_key)):
     _tools[tool.name] = tool
-    # Also publish to Redis for multi-instance sync
     try:
-        r = aioredis.from_url(REDIS_URL)
+        r = await _get_redis()
         await r.setex(f"mcp:tool:{tool.name}", 3600, json.dumps(tool.dict()))
         await r.publish("mcp:registry:update", json.dumps({"tool": tool.name, "action": "register"}))
-        await r.close()
     except Exception:
-        pass  # Redis is best-effort for registry sync
+        pass
     return {"status": "registered", "tool": tool.name}
 
 @app.post("/mcp/unregister")
-async def unregister_tool(name: str):
+async def unregister_tool(name: str, _auth: str = Depends(verify_api_key)):
     """Unregister a tool (called by services on shutdown)."""
     if name in _tools:
         del _tools[name]
@@ -220,11 +236,9 @@ async def _log_tool_call(call: MCPToolCall, status: str, exec_time: int, result:
     if len(_tool_history) > 1000:
         _tool_history.pop(0)
     
-    # Publish to event bus
     try:
-        r = aioredis.from_url(REDIS_URL)
+        r = await _get_redis()
         await r.publish("events:mcp:tool_call", json.dumps(entry))
-        await r.close()
     except Exception:
         pass
 

@@ -11,28 +11,51 @@ publishes health change events to the event bus. Self-healing loop runs every 60
 import asyncio
 import json
 import os
+import secrets as _secrets
 import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
 import httpx
 import redis.asyncio as aioredis
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi.security import APIKeyHeader
 
 app = FastAPI(title="ReliantAI Health Aggregator", version="1.0.0")
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-# ── Configuration ───────────────────────────────────────────────
+CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost,http://localhost:3000,http://localhost:8085")
+_origins = [o.strip() for o in CORS_ORIGINS.split(",") if o.strip()]
+if "*" not in _origins:
+    from fastapi.middleware.cors import CORSMiddleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+HEAL_API_KEY = os.environ.get("HEAL_API_KEY", "")
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379")
 ORCHESTRATOR_URL = os.environ.get("ORCHESTRATOR_URL", "http://orchestrator:9000")
 MCP_BRIDGE_URL = os.environ.get("MCP_BRIDGE_URL", "http://mcp-bridge:8083")
+
+_redis_pool: aioredis.Redis | None = None
+
+async def _get_redis() -> aioredis.Redis:
+    global _redis_pool
+    if _redis_pool is None:
+        _redis_pool = aioredis.from_url(REDIS_URL, decode_responses=True)
+    return _redis_pool
+
+async def verify_heal_api_key(api_key: str = Security(_api_key_header)) -> str:
+    if not HEAL_API_KEY:
+        raise HTTPException(status_code=503, detail="Heal API key not configured. Set HEAL_API_KEY environment variable.")
+    if not api_key or not _secrets.compare_digest(api_key, HEAL_API_KEY):
+        raise HTTPException(status_code=401, detail="Invalid or missing API key for heal endpoint")
+    return api_key
 
 # Service registry — all services that expose /health
 SERVICES = [
@@ -43,15 +66,9 @@ SERVICES = [
     {"name": "reliant-os-backend", "url": "http://reliant-os-backend:8004/health", "critical": True},
     {"name": "integration", "url": "http://integration:8080/health", "critical": True},
     {"name": "event-bus", "url": "http://event-bus:8081/health", "critical": True},
+    {"name": "mcp-bridge", "url": "http://mcp-bridge:8083/health", "critical": True},
     {"name": "orchestrator", "url": "http://orchestrator:9000/health", "critical": True},
-    {"name": "ops-intelligence", "url": "http://ops-intelligence:8050/health", "critical": False},
-    {"name": "gen-h", "url": "http://gen-h:8040/health", "critical": False},
-    {"name": "sentinel", "url": "http://sentinel:8060/health", "critical": False},
-    {"name": "apex", "url": "http://apex:8070/health", "critical": False},
-    {"name": "cyberarchitect", "url": "http://cyberarchitect:8090/health", "critical": False},
-    {"name": "primus", "url": "http://primus:8088/health", "critical": False},
-    {"name": "acropolis", "url": "http://acropolis:8089/health", "critical": False},
-    {"name": "citadelaplus", "url": "http://citadelaplus:8086/health", "critical": False},
+    {"name": "nginx", "url": "http://nginx:80/health", "critical": True},
 ]
 
 # ── State ───────────────────────────────────────────────────────
@@ -91,7 +108,7 @@ async def service_health(service: str):
     return _health_state[service]
 
 @app.post("/health/heal/{service}")
-async def heal_service(service: str):
+async def heal_service(service: str, _auth: str = Depends(verify_heal_api_key)):
     """Trigger self-healing for a specific service."""
     result = await _self_heal(service)
     return result
@@ -173,14 +190,12 @@ async def _health_check_loop():
             _health_state = new_state
             _last_check = datetime.utcnow()
             
-            # Store in Redis
             try:
-                r = aioredis.from_url(REDIS_URL)
+                r = await _get_redis()
                 await r.setex("health:aggregate", 60, json.dumps({
                     "timestamp": _last_check.isoformat(),
                     "services": _health_state,
                 }))
-                await r.close()
             except Exception:
                 pass
             
@@ -203,9 +218,8 @@ async def _publish_health_event(service: str, healthy: bool, error: Optional[str
         "timestamp": datetime.utcnow().isoformat(),
     }
     try:
-        r = aioredis.from_url(REDIS_URL)
+        r = await _get_redis()
         await r.publish("events:health", json.dumps(event))
-        await r.close()
     except Exception:
         pass
 

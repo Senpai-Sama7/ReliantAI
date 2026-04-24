@@ -110,6 +110,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             return results[2] > self.requests_per_minute
         except Exception as e:
             self.logger.warning(f"Redis rate limit error: {e}")
+            self._redis = None
             return False
 
     def _check_local(self, ip: str, now: float) -> bool:

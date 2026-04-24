@@ -19,7 +19,7 @@ const CommandPalette = ({ open, onClose, routes, onGo }) => {
     return () => window.removeEventListener('keydown', h);
   }, [open, items, sel]);
   if (!open) return null;
-  return <div onClick={onClose} style={{position:'fixed', inset:0, background:'rgba(2,5,16,0.85)', zIndex:100, backdropFilter:'blur(6px)', display:'flex', alignItems:'flex-start', justifyContent:'center', paddingTop:'12vh'}}>
+  return <div className="re-cmd-palette" onClick={onClose} style={{position:'fixed', inset:0, background:'rgba(2,5,16,0.85)', zIndex:100, backdropFilter:'blur(6px)', display:'flex', alignItems:'flex-start', justifyContent:'center', paddingTop:'12vh'}}>
     <div onClick={e=>e.stopPropagation()} style={{width:560, background:'#060c1a', border:'1px solid #152637', borderRadius:2, boxShadow:'0 16px 48px rgba(0,0,0,0.6)'}}>
       <div style={{padding:'14px 18px', borderBottom:'1px solid #0c1a2c', display:'flex', alignItems:'center', gap:10}}>
         <i data-lucide="search" style={{width:16, height:16, color:'#00e5ff'}}/>
@@ -73,12 +73,12 @@ const useLiveEvents = () => {
 
 const EventFeed = ({ collapsed, onToggle }) => {
   const feed = useLiveEvents();
-  if (collapsed) return <div onClick={onToggle} style={{width:36, borderLeft:'1px solid #0c1a2c', background:'#060c1a', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', paddingTop:14, gap:12}}>
+  if (collapsed) return <div className="re-event-feed" onClick={onToggle} style={{width:36, borderLeft:'1px solid #0c1a2c', background:'#060c1a', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', paddingTop:14, gap:12}}>
     <i data-lucide="activity" style={{width:14, height:14, color:'#00e5ff'}}/>
     <div style={{writingMode:'vertical-rl', transform:'rotate(180deg)', fontSize:10, color:'#4a6880', letterSpacing:'0.1em', textTransform:'uppercase'}}>Event Stream</div>
     <div style={{width:6, height:6, borderRadius:'50%', background:'#00ff7a', animation:'pulse 1.6s ease infinite', marginTop:'auto', marginBottom:14}}/>
   </div>;
-  return <div style={{width:300, borderLeft:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column'}}>
+  return <div className="re-event-feed" style={{width:300, borderLeft:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column'}}>
     <div style={{padding:'11px 14px', borderBottom:'1px solid #0c1a2c', display:'flex', alignItems:'center', gap:8}}>
       <div style={{width:6, height:6, borderRadius:'50%', background:'#00ff7a', animation:'pulse 1.6s ease infinite'}}/>
       <div style={{fontSize:11, fontWeight:600, color:'#ffffff', letterSpacing:'0.04em'}}>EVENT STREAM</div>
@@ -108,7 +108,7 @@ const EventFeed = ({ collapsed, onToggle }) => {
 const Sidebar = ({ current, onGo, routes, expanded, onToggle }) => {
   const groups = [...new Set(routes.map(r => r.group))];
   const [openG, setOpenG] = useState({ Platform:true, ClearDesk:true, Money:true, APEX:true, 'B-A-P':true, Marketing:false, Admin:false });
-  if (!expanded) return <div style={{width:52, borderRight:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column', alignItems:'center', paddingTop:14, gap:4}}>
+  if (!expanded) return <div className="re-sidebar" style={{width:52, borderRight:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column', alignItems:'center', paddingTop:14, gap:4}}>
     <div onClick={onToggle} style={{cursor:'pointer', padding:8}}>
       <Logo size={20} showWord={false}/>
     </div>
@@ -130,7 +130,7 @@ const Sidebar = ({ current, onGo, routes, expanded, onToggle }) => {
       </div>
     ))}
   </div>;
-  return <div style={{width:224, borderRight:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column', overflow:'hidden'}}>
+  return <div className="re-sidebar" style={{width:224, borderRight:'1px solid #0c1a2c', background:'#060c1a', display:'flex', flexDirection:'column', overflow:'hidden'}}>
     <div style={{padding:'14px 16px', borderBottom:'1px solid #0c1a2c', display:'flex', alignItems:'center', justifyContent:'space-between'}}>
       <div onClick={()=>onGo('/console/home')} style={{cursor:'pointer'}}><Logo size={20} wordSize={14}/></div>
       <i data-lucide="panel-left-close" onClick={onToggle} style={{width:14, height:14, color:'#4a6880', cursor:'pointer'}}/>
@@ -175,10 +175,11 @@ const Sidebar = ({ current, onGo, routes, expanded, onToggle }) => {
 };
 
 // ── Top bar ────────────────────────────────────────────────────
-const TopBar = ({ current, routes, onGo, onCmd }) => {
+const TopBar = ({ current, routes, onGo, onCmd, isMobile, onMenuClick }) => {
   const route = routes.find(r => r.path === current) || { label:'—', group:'' };
-  return <div style={{height:44, borderBottom:'1px solid #0c1a2c', background:'#060c1a', display:'flex', alignItems:'center', padding:'0 16px', gap:16}}>
-    <div style={{display:'flex', alignItems:'center', gap:8, fontSize:11, color:'#4a6880', fontFamily:'IBM Plex Mono,monospace'}}>
+  return <div className="re-top-bar" style={{height:44, borderBottom:'1px solid #0c1a2c', background:'#060c1a', display:'flex', alignItems:'center', padding:'0 16px', gap:16}}>
+    {isMobile && <i data-lucide="menu" onClick={onMenuClick} style={{width:18, height:18, color:'#a8c4de', cursor:'pointer'}}/>}
+    <div className="re-breadcrumb" style={{display:'flex', alignItems:'center', gap:8, fontSize:11, color:'#4a6880', fontFamily:'IBM Plex Mono,monospace'}}>
       <span>reliant.ai</span>
       <i data-lucide="chevron-right" style={{width:10, height:10}}/>
       <span>{route.group}</span>
@@ -186,12 +187,12 @@ const TopBar = ({ current, routes, onGo, onCmd }) => {
       <span style={{color:'#ffffff'}}>{route.label}</span>
     </div>
     <div style={{flex:1}}/>
-    <div onClick={onCmd} style={{display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'#091424', border:'1px solid #0c1a2c', borderRadius:2, cursor:'pointer', minWidth:260}}>
+    <div className="re-cmd-trigger" onClick={onCmd} style={{display:'flex', alignItems:'center', gap:10, padding:'6px 12px', background:'#091424', border:'1px solid #0c1a2c', borderRadius:2, cursor:'pointer', minWidth:260}}>
       <i data-lucide="search" style={{width:13, height:13, color:'#4a6880'}}/>
       <span style={{fontSize:11, color:'#4a6880', flex:1}}>Jump to anything…</span>
       <Kbd>⌘K</Kbd>
     </div>
-    <div style={{display:'flex', alignItems:'center', gap:4, padding:'4px 10px', background:'#091424', borderRadius:2, border:'1px solid #0c1a2c'}}>
+    <div className="re-status-pill" style={{display:'flex', alignItems:'center', gap:4, padding:'4px 10px', background:'#091424', borderRadius:2, border:'1px solid #0c1a2c'}}>
       <div style={{width:6, height:6, borderRadius:'50%', background:'#00ff7a', animation:'pulse 1.6s ease infinite'}}/>
       <span style={{fontSize:10, color:'#a8c4de', fontFamily:'IBM Plex Mono,monospace'}}>all systems</span>
     </div>
@@ -213,13 +214,27 @@ const Router = ({ current, routes }) => {
 };
 
 // ── App ────────────────────────────────────────────────────────
+const useWindowWidth = () => {
+  const [w, setW] = useState(window.innerWidth);
+  useEffect(() => {
+    const onResize = () => setW(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  return w;
+};
+
 const App = () => {
   const [current, setCurrent] = useState(() => localStorage.getItem('re:route') || '/console/home');
-  const [sideEx, setSideEx] = useState(true);
-  const [feedEx, setFeedEx] = useState(() => window.innerWidth > 1400);
+  const width = useWindowWidth();
+  const isMobile = width <= 768;
+  const isTablet = width <= 1024;
+  const [sideEx, setSideEx] = useState(!isTablet);
+  const [sideMobileOpen, setSideMobileOpen] = useState(false);
+  const [feedEx, setFeedEx] = useState(width > 1400);
   const [cmdOpen, setCmdOpen] = useState(false);
 
-  const go = useCallback((p) => { setCurrent(p); localStorage.setItem('re:route', p); }, []);
+  const go = useCallback((p) => { setCurrent(p); localStorage.setItem('re:route', p); if (isMobile) setSideMobileOpen(false); }, [isMobile]);
 
   useEffect(() => {
     const h = (e) => {
@@ -247,17 +262,30 @@ const App = () => {
     </div>;
   }
 
-  return <div style={{display:'flex', height:'100vh', overflow:'hidden'}}>
-    <Sidebar current={current} onGo={go} routes={routes} expanded={sideEx} onToggle={()=>setSideEx(s=>!s)}/>
-    <div style={{flex:1, display:'flex', flexDirection:'column', minWidth:0}}>
-      <TopBar current={current} routes={routes} onGo={go} onCmd={()=>setCmdOpen(true)}/>
-      <div style={{flex:1, overflowY:'auto', background:'#020510'}}>
-        <Router current={current} routes={routes}/>
+  return <ToastProvider>
+    <div style={{display:'flex', height:'100vh', overflow:'hidden'}}>
+      {/* Mobile sidebar overlay */}
+      {isMobile && sideMobileOpen && <div className="re-sidebar-overlay" onClick={()=>setSideMobileOpen(false)}/>}
+
+      {isMobile ? (
+        <div className={`re-sidebar-mobile ${sideMobileOpen ? 're-open' : ''}`} style={{position:'fixed', left:0, top:0, bottom:0, zIndex:40, transform:sideMobileOpen?'translateX(0)':'translateX(-100%)', transition:'transform 200ms ease'}}>
+          <Sidebar current={current} onGo={go} routes={routes} expanded={true} onToggle={() => setSideMobileOpen(false)}/>
+        </div>
+      ) : (
+        <Sidebar current={current} onGo={go} routes={routes} expanded={sideEx} onToggle={() => setSideEx(s=>!s)}/>
+      )}
+
+      <div style={{flex:1, display:'flex', flexDirection:'column', minWidth:0}}>
+        <TopBar current={current} routes={routes} onGo={go} onCmd={()=>setCmdOpen(true)} isMobile={isMobile} onMenuClick={()=>setSideMobileOpen(true)}/>
+        <div className="re-main" style={{flex:1, overflowY:'auto', background:'#020510'}}>
+          <Router current={current} routes={routes}/>
+        </div>
       </div>
+
+      {!isTablet && <EventFeed collapsed={!feedEx} onToggle={()=>setFeedEx(e=>!e)}/>}
+      <CommandPalette open={cmdOpen} onClose={()=>setCmdOpen(false)} routes={routes} onGo={go}/>
     </div>
-    <EventFeed collapsed={!feedEx} onToggle={()=>setFeedEx(e=>!e)}/>
-    <CommandPalette open={cmdOpen} onClose={()=>setCmdOpen(false)} routes={routes} onGo={go}/>
-  </div>;
+  </ToastProvider>;
 };
 
 window.ReliantApp = App;

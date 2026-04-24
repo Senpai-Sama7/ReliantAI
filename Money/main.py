@@ -48,10 +48,11 @@ from fastapi.responses import (
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from twilio.request_validator import RequestValidator
+from twilio.rest import Client as TwilioClient
 
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
-from config import DISPATCH_API_KEY, TWILIO_TOKEN, ENV, setup_logging
+from config import DISPATCH_API_KEY, TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM_PHONE, ENV, setup_logging
 from database import (
     init_db,
     save_dispatch,
@@ -177,11 +178,11 @@ app = FastAPI(
 )
 
 # Apply ReliantAI platform branding to API docs
-from shared.docs_branding import configure_docs_branding
+from docs_branding import configure_docs_branding
 configure_docs_branding(app, service_name="Money", service_color="#4F46E5")
 
 # Distributed tracing (OpenTelemetry)
-from shared.tracing import configure_tracing
+from tracing import configure_tracing
 configure_tracing(service_name="money")
 
 try:
@@ -489,6 +490,12 @@ class DispatchResponse(BaseModel):
 
 class ErrorResponse(BaseModel):
     detail: str
+
+
+class SMSDispatchRequest(BaseModel):
+    to: str = Field(..., min_length=10, max_length=20, description="E.164 phone number")
+    body: str = Field(..., min_length=1, max_length=1000, description="SMS message body")
+    correlation_id: Optional[str] = Field(default=None, max_length=64)
 
 
 # ── Helpers ───────────────────────────────────────────────────
@@ -1031,6 +1038,66 @@ async def whatsapp_webhook(
     Configure in Twilio Console: Messaging → WhatsApp Sandbox → Webhook URL.
     """
     return await _handle_twilio_webhook(request, background_tasks, From, Body, MessageSid, "whatsapp")
+
+
+@app.post("/api/dispatch/sms")
+async def dispatch_sms(
+    payload: SMSDispatchRequest,
+    request: Request,
+    x_api_key: str = Header(default=None),
+):
+    """
+    API-driven outbound SMS dispatch (used by GrowthEngine outreach and JIT OS).
+    Authenticates via X-API-Key, applies rate limiting, sends via Twilio.
+    """
+    await _authorize_request(x_api_key, request)
+    _rate_limit(_rate_bucket(request, "sms_outbound"))
+
+    # Per-destination rate limit: max 5 SMS per number per hour
+    dest_key = f"sms_dest:{payload.to}"
+    now_ts = time.time()
+    if dest_key not in rate_limit_store:
+        rate_limit_store[dest_key] = deque(maxlen=100)
+    dest_queue = rate_limit_store[dest_key]
+    while dest_queue and now_ts - dest_queue[0] > 3600:
+        dest_queue.popleft()
+    if len(dest_queue) >= 5:
+        raise HTTPException(status_code=429, detail="Rate limit: max 5 SMS per destination per hour")
+    dest_queue.append(now_ts)
+
+    if not TWILIO_SID or not TWILIO_TOKEN or not TWILIO_FROM_PHONE:
+        raise HTTPException(status_code=503, detail="Twilio credentials not configured")
+
+    try:
+        client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
+        msg = client.messages.create(
+            body=payload.body,
+            from_=TWILIO_FROM_PHONE,
+            to=payload.to,
+        )
+        log_message(
+            direction="outbound",
+            phone=payload.to,
+            body=payload.body,
+            sms_sid=msg.sid,
+            correlation_id=payload.correlation_id,
+        )
+        return {
+            "status": "sent",
+            "sms_sid": msg.sid,
+            "to": payload.to,
+            "correlation_id": payload.correlation_id,
+        }
+    except Exception as e:
+        logger.error("Outbound SMS dispatch failed: %s", str(e))
+        log_message(
+            direction="outbound",
+            phone=payload.to,
+            body=payload.body,
+            error=str(e),
+            correlation_id=payload.correlation_id,
+        )
+        raise HTTPException(status_code=500, detail=f"Failed to send SMS: {str(e)}")
 
 
 # ── Premium Admin Dashboard (De-AI'd FAANG Refactor) ──────────
