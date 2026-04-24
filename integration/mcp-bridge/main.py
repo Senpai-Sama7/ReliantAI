@@ -105,6 +105,37 @@ async def verify_api_key(api_key: str = Security(_api_key_header)) -> str:
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
     return api_key
 
+
+def _validate_endpoint(endpoint: str) -> tuple[bool, str]:
+    """Validate endpoint to prevent SSRF attacks."""
+    from urllib.parse import urlparse
+    parsed = urlparse(endpoint)
+    
+    # Block dangerous schemes
+    if parsed.scheme.lower() not in ('http', 'https'):
+        return False, f"Invalid scheme: {parsed.scheme}. Only http/https allowed."
+    
+    # Block localhost/private IPs
+    hostname = parsed.hostname or ""
+    if hostname in ('localhost', '127.0.0.1', '0.0.0.0', '::1'):
+        return False, "Localhost addresses not allowed."
+    
+    # Block link-local and metadata endpoints
+    if hostname.startswith(('169.254.', 'metadata.google.', 'metadata.azure.')):
+        return False, "Metadata endpoints not allowed."
+    
+    # Block private IP ranges (RFC 1918)
+    private_patterns = ('10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.2', '172.30.', '172.31.',
+                       '192.168.', '127.')
+    if any(hostname.startswith(p) for p in private_patterns):
+        return False, "Private IP addresses not allowed."
+    
+    # Block all-port ranges
+    if parsed.port and parsed.port > 10000 and not hostname:
+        return False, "High port ranges may indicate internal services."
+    
+    return True, "OK"
+
 # ── Core MCP Endpoints ──────────────────────────────────────────
 
 @app.get("/health")
@@ -154,11 +185,20 @@ async def call_tool(call: MCPToolCall, background: BackgroundTasks, _auth: str =
     
     # Execute the tool call
     try:
+        # Resolve URL template with parameters
+        resolved_url = tool.endpoint
+        for param_name, param_value in call.parameters.items():
+            placeholder = f"{{{param_name}}}"
+            if placeholder in resolved_url:
+                resolved_url = resolved_url.replace(placeholder, str(param_value))
+                del call.parameters[param_name]
+                break
+        
         async with httpx.AsyncClient(timeout=tool.timeout_ms / 1000) as client:
             if tool.method.upper() == "GET":
-                response = await client.get(tool.endpoint, params=call.parameters)
+                response = await client.get(resolved_url, params=call.parameters)
             else:
-                response = await client.post(tool.endpoint, json=call.parameters)
+                response = await client.post(resolved_url, json=call.parameters)
             
             response.raise_for_status()
             result_data = response.json()
@@ -204,6 +244,11 @@ async def tool_history(limit: int = 50):
 
 @app.post("/mcp/register")
 async def register_tool(tool: MCPTool, _auth: str = Depends(verify_api_key)):
+    # Validate endpoint before registration
+    is_valid, reason = _validate_endpoint(tool.endpoint)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=f"Invalid endpoint: {reason}")
+    
     _tools[tool.name] = tool
     try:
         r = await _get_redis()
@@ -297,10 +342,14 @@ async def _bootstrap_tools():
             endpoint="http://growthengine:8003/api/prospect/outreach",
             method="POST",
             parameters=[
-                MCPToolParameter(name="place_id", type="string", description="Google Places ID of the prospect", required=True),
-                MCPToolParameter(name="message", type="string", description="Custom SMS message body", required=True),
+                MCPToolParameter(name="place_id", type="string", description="Google Places ID", required=True),
+                MCPToolParameter(name="name", type="string", description="Business name", required=True),
+                MCPToolParameter(name="phone", type="string", description="Business phone number", required=True),
+                MCPToolParameter(name="rating", type="number", description="Google rating", required=True),
+                MCPToolParameter(name="review_count", type="integer", description="Number of reviews", required=True),
+                MCPToolParameter(name="message", type="string", description="Custom message override", required=False),
             ],
-            returns={"type": "object", "properties": {"sent": {"type": "boolean"}, "sid": {"type": "string"}}},
+            returns={"type": "object", "properties": {"status": {"type": "string"}, "preview_url": {"type": "string"}}},
         ),
         MCPTool(
             name="complianceone.get_status",
@@ -332,8 +381,8 @@ async def _bootstrap_tools():
             endpoint="http://orchestrator:9000/services/{name}/scale",
             method="POST",
             parameters=[
-                MCPToolParameter(name="service_name", type="string", description="Name of service to scale: money, complianceone, finops360, growthengine", required=True),
-                MCPToolParameter(name="target_instances", type="integer", description="Desired number of container instances", required=True),
+                MCPToolParameter(name="name", type="string", description="Service name: money, complianceone, finops360, growthengine", required=True, enum=["money", "complianceone", "finops360", "growthengine"]),
+                MCPToolParameter(name="target_instances", type="integer", description="Desired instance count", required=True),
             ],
             returns={"type": "object", "properties": {"scaled_to": {"type": "integer"}, "status": {"type": "string"}}},
         ),
