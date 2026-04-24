@@ -178,8 +178,9 @@ class TestRateLimiting:
         for _ in range(60):
             main._rate_limit(bucket)
 
-        # Advance time by 61 seconds
-        monkeypatch.setattr("time.time", lambda: time.time() + 70)
+        # Advance time by 61 seconds using a fixed offset to avoid recursion
+        original_time = time.time
+        monkeypatch.setattr("time.time", lambda: original_time() + 70)
 
         # Should allow another batch now (bucket was pruned)
         main._rate_limit(bucket)  # Should not raise
@@ -550,7 +551,10 @@ class TestBillingEndpoints:
 
     def test_webhook_missing_stripe_secret_returns_500(self, client, monkeypatch):
         """Stripe webhook without secret configured → 500."""
-        monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "")
+        import billing
+
+        # Patch the module-level variable directly since it's initialized at import time
+        monkeypatch.setattr("billing.stripe_webhook_secret", "")
 
         response = client.post(
             "/billing/webhook",
