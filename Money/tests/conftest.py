@@ -211,8 +211,10 @@ class _FakeConn:
         self.rolled_back = False
 
     def cursor(self, cursor_factory=None):
-        # Respect cursor_factory parameter for RealDictCursor compatibility
-        # Always returns dict-like objects to match production RealDictCursor behavior
+        # Enforce systemic invariant: cursor_factory MUST be RealDictCursor
+        # per CLAUDE.md Invariant #25 and Risk #193
+        if cursor_factory is None or getattr(cursor_factory, "__name__", "") != "RealDictCursor":
+            raise ValueError("Systemic Invariant Violation: cursor_factory MUST be RealDictCursor")
         return _FakeCursor(self._store)
 
     def commit(self) -> None:

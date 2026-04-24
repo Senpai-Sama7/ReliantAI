@@ -23,6 +23,7 @@ from unittest.mock import MagicMock, patch, AsyncMock
 
 import pytest
 import requests
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from config import DISPATCH_API_KEY
@@ -41,9 +42,9 @@ class TestAuthorizeRequest:
         """No auth header, cookie, or API key → 401."""
         import main
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None)
-        assert "401" in str(exc_info.value) or "Missing authentication" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_valid_api_key_passes(self):
@@ -58,9 +59,9 @@ class TestAuthorizeRequest:
         """Invalid X-API-Key → 401."""
         import main
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key="invalid-key-1234567890")
-        assert "401" in str(exc_info.value) or "Invalid API key" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_bearer_token_success_via_auth_service(self, monkeypatch):
@@ -99,9 +100,9 @@ class TestAuthorizeRequest:
         }.get(k, default)
         fake_request.cookies.get.return_value = None
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None, request=fake_request)
-        assert "401" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_auth_service_down_returns_503_after_circuit_opens(self, monkeypatch):
@@ -118,21 +119,21 @@ class TestAuthorizeRequest:
         fake_request.cookies.get.return_value = None
 
         # Failure 1
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Failure 2
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Failure 3 — triggers circuit to OPEN
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Now circuit is OPEN; 4th call should get 503 without even trying the network
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None, request=fake_request)
-        assert "503" in str(exc_info.value) or "Circuit Open" in str(exc_info.value)
+        assert exc_info.value.status_code == 503
 
 
 class TestRateLimiting:
@@ -348,8 +349,8 @@ class TestDispatchEndpoint:
             },
             headers={"X-API-Key": DISPATCH_API_KEY},
         )
-        # Should either 200 (idempotent) or 409 (conflict) — not 500
-        assert response.status_code in (200, 409)
+        # UPSERT logic returns 200 OK for idempotent requests
+        assert response.status_code == 200
 
     def test_dispatch_life_safety_urgency_handled(self, client, mock_crew):
         """LIFE_SAFETY message triggers correct escalation path without error."""
@@ -553,7 +554,7 @@ class TestBillingEndpoints:
             json={"type": "checkout.session.completed"},
             headers={"stripe-signature": "test-sig"},
         )
-        assert response.status_code in (400, 500)
+        assert response.status_code == 500
 
 
 class TestDispatchQuota:
@@ -624,12 +625,6 @@ class TestSSEStream:
             content_type = response.headers.get("content-type", "")
             assert "text/event-stream" in content_type
 
-    def test_sse_broadcast_function_exists(self):
-        """_broadcast_dispatch_event helper is present and callable."""
-        import main
-
-        assert hasattr(main, "_broadcast_dispatch_event") or hasattr(main, "broadcast_event")
-
     def test_dispatch_creation_broadcasts_event(self, client, mock_crew, fake_pool):
         """Dispatch creation doesn't crash the broadcast path."""
         import main
@@ -698,4 +693,4 @@ class TestHealthEndpoints:
         )
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, (list, dict))
+        assert isinstance(data, list)
