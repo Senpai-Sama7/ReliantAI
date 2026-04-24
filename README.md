@@ -273,14 +273,18 @@ curl http://localhost:8085/health
 
 ## 📝 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| `README.md` | This file — platform overview |
-| `reliant-os/README.md` | Technical API docs for JIT OS |
-| `reliant-os/USER_MANUAL.md` | User-friendly guide for JIT OS |
-| `USER_MANUAL.md` | Platform-wide service documentation |
-| `Bug-Report.md` | Known issues & fixes registry |
-| `AGENTS.md` | AI agent development guidelines |
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| `README.md` | This file — platform overview | Everyone |
+| `CLAUDE.md` | **Claude Code context** — architecture, constraints, codebase health | Developers using Claude Code |
+| `reliant-os/README.md` | Technical API docs for JIT OS | Developers building features |
+| `reliant-os/USER_MANUAL.md` | User-friendly guide for JIT OS | Non-technical operators |
+| `USER_MANUAL.md` | Platform-wide service documentation | Platform operators |
+| `MASTER_AUDIT_CONSOLIDATED.md` | Complete audit history & remediation | Compliance, security teams |
+| `Bug-Report.md` | Known issues & fixes registry | Support, developers |
+| `AGENTS.md` | AI agent development guidelines | Agent developers |
+
+**For Claude Code Users:** Start with `CLAUDE.md` — it contains architectural blueprints, development commands, semantic code intelligence, and current codebase health status.
 
 ---
 

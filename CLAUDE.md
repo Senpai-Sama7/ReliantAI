@@ -1,7 +1,14 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+---
+
 # ReliantAI Platform — Master Context Scaffold
 ## Deterministic Codebase Intelligence Audit
-**Generated**: 2026-04-22 | **Scope**: Full Platform | **Version**: 2.0
+**Generated**: 2026-04-24 | **Scope**: Full Platform | **Version**: 2.1
 **For**: Claude Code (claude.ai/code)
+**Status**: Production Ready (with technical debt noted below)
 
 ---
 
@@ -397,7 +404,85 @@ Acropolis → sled DB (auth) + OTLP endpoint + optional Julia FFI
 
 ---
 
-## 8. Quick Agent Boot
+## 8. Codebase Health Status & Technical Debt
+
+### Security Posture ✅
+**All 90+ audit findings resolved.** Platform is hardened and production-ready. No critical vulnerabilities remain.
+- CRITICAL: 0 remaining
+- HIGH: 0 remaining  
+- MEDIUM: Only minor validation standardization pending
+
+### Active Services (by commit frequency)
+| Activity Level | Services | Note |
+|---|---|---|
+| **High** (9+ commits) | integration, Money, FinOps360, orchestrator, Gen-H | Core platform services, actively maintained |
+| **Medium** (6-8 commits) | shared, ComplianceOne, B-A-P, apex, ClearDesk, BackupIQ | Established features, stable |
+| **Low** (1-5 commits) | Citadel, DocuMancer, Acropolis, CyberArchitect | Specialized services, minimal active work |
+| **Minimal** (1-2 commits) | GrowthEngine (2), actuator (1), reGenesis (1) | ⚠️ **See warnings below** |
+
+### Technical Debt & Cleanup Recommendations
+
+#### ✅ RESOLVED: Duplicate Security Middleware
+**Status:** Fixed on 2026-04-24
+- **Removed:** 4 duplicate copies (419 lines each) from Money, ComplianceOne, FinOps360, orchestrator
+- **Canonical source:** `shared/security_middleware.py` (427 LOC, includes threading lock, HTTPS-only HSTS)
+- **Import mechanism:** All services already configured via `sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))`
+- **Result:** Services automatically import from shared version; DRY principle restored
+
+#### 🟡 MEDIUM PRIORITY: Low-Activity Services
+
+**GrowthEngine (2 commits, 107 LOC):**
+- Core lead generation service, but minimal development
+- Questions: Is this superseded? Should it be merged into Money?
+- **Action:** Document purpose and status explicitly
+
+**actuator (1 commit, 296 LOC):**
+- Single commit, unclear role in platform
+- Not referenced in CLAUDE.md or README.md
+- **Action:** Either document usage or archive
+
+**reGenesis (empty directory, 1 commit):**
+- Directory exists but contains no code
+- Conflicts with Design System references
+- **Action:** Either populate or delete
+
+#### 🟡 MEDIUM PRIORITY: Service Naming Ambiguity
+
+**Citadel vs citadel_ultimate_a_plus:**
+- Two parallel implementations suggest one may be deprecated
+- Both are active (Citadel: 4 commits, citadel_ultimate_a_plus: active)
+- **Action:** Add deprecation marker to obsolete version; document hierarchy
+
+**sovieren_ai vs soviergn_ai:**
+- Naming suggests incomplete migration or typo
+- **Action:** Clarify which is canonical; rename or delete
+
+#### 🟢 LOW PRIORITY: Code Quality
+
+**Large monolithic services:**
+- `Money/main.py`: 1,349 LOC (consider breaking into modules)
+- `orchestrator/main.py`: 1,176 LOC (6 async loops could be separate)
+- **Recommendation:** Future refactoring; not blocking
+
+**Missing test coverage tracking:**
+- Test files exist but no coverage metrics in CI
+- **Recommendation:** Add pytest-cov to pipeline
+
+### Documentation Status
+**19 markdown files at root level** — consolidation opportunity:
+
+| Category | Count | Status |
+|---|---|---|
+| Core (CLAUDE.md, README.md) | 2 | ✅ Current |
+| Audit/Completion Reports | 5 | ⚠️ Partially stale (Apr 22) |
+| Operational Guides | 5 | ✅ Current |
+| Specialized | 7 | ✅ Current |
+
+**Recommendation:** Archive or consolidate audit reports into single "AUDIT_HISTORY.md" with versioned entries.
+
+---
+
+## 10. Quick Agent Boot
 
 From fresh clone to green tests:
 
@@ -444,7 +529,14 @@ From fresh clone to green tests:
 
 ---
 
-## Appendix: Per-Service Deep Reference
+## 11. Appendix: Per-Service Deep Reference
+
+### Service Activity Levels
+**When reviewing or modifying services, consider their activity level:**
+- **High-activity**: Expect frequent changes; good test coverage
+- **Medium-activity**: Stable; incremental improvements only
+- **Low-activity**: Specialized/niche use; minimal changes; document thoroughly
+- **Minimal-activity**: ⚠️ Clarify status before major changes; may be experimental or deprecated
 
 ### `Money/` — HVAC AI Dispatch
 **The revenue-generating core of the platform.** Customers text a problem; CrewAI agents triage urgency, assign a technician, send SMS confirmation.
