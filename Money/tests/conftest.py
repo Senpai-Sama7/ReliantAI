@@ -156,7 +156,7 @@ class _FakeCursor:
             self.rowcount = 1
             return
         if "count(*)" in normalized and "customer_events" in normalized:
-            self._last_result = [(self._store.get("dispatch_count", 0),)]
+            self._last_result = [{"count": self._store.get("dispatch_count", 0)}]
             self.rowcount = 1
             return
         if "from customers where api_key" in normalized:

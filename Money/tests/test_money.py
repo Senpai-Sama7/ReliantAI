@@ -40,10 +40,11 @@ class TestAuthorizeRequest:
     async def test_missing_credentials_returns_401(self):
         """No auth header, cookie, or API key → 401."""
         import main
+        from fastapi import HTTPException
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None)
-        assert "401" in str(exc_info.value) or "Missing authentication" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_valid_api_key_passes(self):
@@ -57,10 +58,11 @@ class TestAuthorizeRequest:
     async def test_invalid_api_key_returns_401(self):
         """Invalid X-API-Key → 401."""
         import main
+        from fastapi import HTTPException
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key="invalid-key-1234567890")
-        assert "401" in str(exc_info.value) or "Invalid API key" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_bearer_token_success_via_auth_service(self, monkeypatch):
@@ -89,6 +91,7 @@ class TestAuthorizeRequest:
     async def test_bearer_token_expired_returns_401(self, monkeypatch):
         """Expired or invalid bearer token → 401."""
         import main
+        from fastapi import HTTPException
 
         mock_get = MagicMock()
         mock_get.return_value.status_code = 401
@@ -101,14 +104,15 @@ class TestAuthorizeRequest:
         }.get(k, default)
         fake_request.cookies.get.return_value = None
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None, request=fake_request)
-        assert "401" in str(exc_info.value)
+        assert exc_info.value.status_code == 401
 
     @pytest.mark.asyncio
     async def test_auth_service_down_returns_503_after_circuit_opens(self, monkeypatch):
         """Auth service unavailable → circuit breaker opens after 3 failures → 503."""
         import main
+        from fastapi import HTTPException
 
         mock_get = MagicMock(side_effect=requests.RequestException("Connection refused"))
         monkeypatch.setattr("requests.get", mock_get)
@@ -120,21 +124,21 @@ class TestAuthorizeRequest:
         fake_request.cookies.get.return_value = None
 
         # Failure 1
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Failure 2
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Failure 3 — triggers circuit to OPEN
-        with pytest.raises(Exception):
+        with pytest.raises(HTTPException):
             await main._authorize_request(x_api_key=None, request=fake_request)
 
         # Now circuit is OPEN; 4th call should get 503 without even trying the network
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             await main._authorize_request(x_api_key=None, request=fake_request)
-        assert "503" in str(exc_info.value) or "Circuit Open" in str(exc_info.value)
+        assert exc_info.value.status_code == 503
 
 
 class TestRateLimiting:
@@ -143,6 +147,7 @@ class TestRateLimiting:
     def test_rate_limit_allows_up_to_60_requests_in_window(self):
         """Within 60-second window, allow 60 requests."""
         import main
+        from fastapi import HTTPException
 
         fake_request = MagicMock()
         fake_request.client.host = "127.0.0.1"
@@ -155,9 +160,9 @@ class TestRateLimiting:
             main._rate_limit(bucket)
 
         # 61st request should raise 429
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             main._rate_limit(bucket)
-        assert "429" in str(exc_info.value) or "Rate limit" in str(exc_info.value)
+        assert exc_info.value.status_code == 429
 
     def test_rate_limit_resets_after_window_expires(self, monkeypatch):
         """After 60s, window expires and counter resets."""
@@ -211,13 +216,14 @@ class TestCircuitBreaker:
     def test_circuit_breaker_rejects_calls_when_open(self):
         """When circuit is OPEN, calls are rejected immediately (no network attempt)."""
         import main
+        from fastapi import HTTPException
 
         main.auth_circuit_breaker.state = "OPEN"
         main.auth_circuit_breaker.last_failure_time = time.time()
 
-        with pytest.raises(Exception) as exc_info:
+        with pytest.raises(HTTPException) as exc_info:
             main.auth_circuit_breaker.call(lambda: None)
-        assert "503" in str(exc_info.value) or "Circuit Open" in str(exc_info.value)
+        assert exc_info.value.status_code == 503
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -870,8 +876,8 @@ class TestErrorHandling:
             },
             headers={"X-API-Key": DISPATCH_API_KEY},
         )
-        # Check for CORS/security headers (set by middleware)
-        assert "strict-transport-security" in response.headers or response.status_code == 200
+        # Check for CORS headers (set by CORSMiddleware)
+        assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
 
 
 if __name__ == "__main__":
