@@ -123,9 +123,10 @@ def init_db() -> None:
                     plan            TEXT DEFAULT 'free', -- free, starter, professional, enterprise
                     status          TEXT DEFAULT 'active', -- active, inactive, past_due, cancelled
                     billing_status  TEXT DEFAULT 'trialing', -- trialing, active, past_due, cancelled
-                    trial_ends_at   TIMESTAMP,
-                    subscription_starts_at TIMESTAMP,
-                    subscription_ends_at TIMESTAMP,
+                    -- FIX 7: use TIMESTAMPTZ so stored values are always timezone-aware
+                    trial_ends_at   TIMESTAMP WITH TIME ZONE,
+                    subscription_starts_at TIMESTAMP WITH TIME ZONE,
+                    subscription_ends_at TIMESTAMP WITH TIME ZONE,
                     monthly_revenue DECIMAL(10, 2) DEFAULT 0,
                     lead_source     TEXT,
                     notes           TEXT,

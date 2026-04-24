@@ -47,8 +47,15 @@ from fastapi.responses import (
 )
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
-from twilio.request_validator import RequestValidator
-from twilio.rest import Client as TwilioClient
+# FIX 5: guard Twilio imports so the service starts even without the package
+try:
+    from twilio.request_validator import RequestValidator
+    from twilio.rest import Client as TwilioClient
+    TWILIO_AVAILABLE = True
+except ImportError:
+    RequestValidator = None  # type: ignore[assignment,misc]
+    TwilioClient = None  # type: ignore[assignment,misc]
+    TWILIO_AVAILABLE = False
 
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
@@ -63,7 +70,7 @@ from database import (
     log_customer_event,
 )
 from metrics import get_metrics_response, DISPATCH_JOB_DURATION
-from billing import router as billing_router, validate_api_key, check_dispatch_quota, PRICING
+from billing import router as billing_router, validate_api_key, check_dispatch_quota, PRICING, STRIPE_AVAILABLE
 
 logger = setup_logging("hvac_api")
 AUTH_SERVICE_URL = os.environ.get("AUTH_SERVICE_URL", "http://localhost:8080").rstrip(
@@ -423,16 +430,30 @@ def _advance_dispatch_workflow(sm, run_id: str, result: dict | None = None) -> N
         DispatchState.DISPATCHED,
     ]
 
+    # FIX 9: guard each transition individually so a mid-loop failure stops advancing
+    _transition_failed = False
     for state in workflow_states:
         if sm.get_current_state(run_id) == state.value:
             continue
-        sm.transition(
-            run_id,
-            state,
-            actor="hvac_crew",
-            run_id=run_id,
-            payload=result if state == DispatchState.DISPATCHED else None,
-        )
+        try:
+            sm.transition(
+                run_id,
+                state,
+                actor="hvac_crew",
+                run_id=run_id,
+                payload=result if state == DispatchState.DISPATCHED else None,
+            )
+        except Exception as exc:
+            logger.error(
+                "State transition to %s failed for run %s: %s",
+                state, run_id, exc, exc_info=True,
+            )
+            _transition_failed = True
+            break  # do not attempt further transitions
+
+    # FIX 9b: mark dispatch as error in DB when any transition failed
+    if _transition_failed:
+        update_dispatch_status(run_id, "error", {"error": "State transition failed"})
 
 
 def _publish_dispatch_completed_event(
@@ -479,6 +500,8 @@ class DispatchRequest(BaseModel):
     customer_message: str = Field(..., min_length=1, max_length=MAX_MSG_LENGTH)
     outdoor_temp_f: float = Field(default=80.0, ge=-50.0, le=150.0)
     async_mode: bool = False
+    # FIX 3: client-supplied dispatch_id enables idempotent re-requests
+    dispatch_id: Optional[str] = None
 
 
 class DispatchResponse(BaseModel):
@@ -503,6 +526,10 @@ class SMSDispatchRequest(BaseModel):
 
 def _validate_twilio_signature(request: Request, params: dict) -> bool:
     """Verify Twilio webhook signature to prevent spoofing."""
+    # FIX 5b: if Twilio package is absent, treat as invalid rather than crashing
+    if not TWILIO_AVAILABLE:
+        logger.warning("Twilio package not installed; treating signature as invalid")
+        return False
     validator = RequestValidator(TWILIO_TOKEN)
     signature = request.headers.get("X-Twilio-Signature", "")
     url = str(request.url)
@@ -538,7 +565,12 @@ def _execute_job_sync(run_id: str, message: str, temp: float):
 
         _advance_dispatch_workflow(sm, run_id, result)
 
-        event_bus_event = _publish_dispatch_completed_event(run_id, result)
+        # FIX 8: event bus is fire-and-forget — a down bus must not fail the dispatch
+        try:
+            event_bus_event = _publish_dispatch_completed_event(run_id, result)
+        except Exception as bus_exc:
+            logger.warning("Event bus publish failed for %s: %s", run_id, bus_exc)
+            event_bus_event = None
         if event_bus_event:
             result = {
                 **result,
@@ -565,7 +597,8 @@ def _execute_job_sync(run_id: str, message: str, temp: float):
             )
 
     except Exception as exc:
-        logger.error("Job %s failed: %s", run_id, exc)
+        # FIX 10: include full traceback in error log for post-mortem debugging
+        logger.error("Job %s failed: %s", run_id, exc, exc_info=True)
         if DISPATCH_JOB_DURATION:
             DISPATCH_JOB_DURATION.labels(status="error").observe(
                 time.time() - start_time
@@ -626,6 +659,19 @@ def health():
     }
 
 
+@app.get("/status")
+async def status():
+    # FIX 4: config metadata endpoint — no auth required, exposes no secrets
+    return {
+        "status": "ok",
+        "version": os.getenv("APP_VERSION", "unknown"),
+        "environment": os.getenv("ENVIRONMENT", "unknown"),
+        "dispatch_api_configured": bool(DISPATCH_API_KEY),
+        "billing_configured": STRIPE_AVAILABLE,
+        "event_bus_configured": bool(os.getenv("EVENT_BUS_URL")),
+    }
+
+
 @app.get("/metrics")
 async def metrics(request: Request, x_api_key: str = Header(default=None)):
     """Expose Prometheus metrics."""
@@ -648,14 +694,19 @@ async def dispatch(
     # Validate customer API key for multi-tenant billing
     customer = None
     if x_api_key:
-        try:
-            customer = await validate_api_key(x_api_key)
-        except HTTPException as e:
-            # Re-raise billing/authentication errors (not validation failures)
-            if e.status_code in (401, 403, 429):
-                raise
-            # Fall back to legacy admin API key auth for other errors
-            await _authorize_request(x_api_key, request)
+        # FIX 2a: admin key matches env var — bypass billing entirely, no customer row required
+        if DISPATCH_API_KEY and hmac.compare_digest(x_api_key, DISPATCH_API_KEY):
+            pass  # legacy admin key path; customer stays None
+        else:
+            # FIX 2b: non-admin key — validate through billing (requires a customer row)
+            try:
+                customer = await validate_api_key(x_api_key)
+            except HTTPException as e:
+                # Re-raise billing/authentication errors (not validation failures)
+                if e.status_code in (401, 403, 402):
+                    raise
+                # Fall back to legacy admin API key auth for other errors
+                await _authorize_request(x_api_key, request)
     else:
         await _authorize_request(x_api_key, request)
 
@@ -664,13 +715,27 @@ async def dispatch(
     
     # Check dispatch quota if customer is authenticated
     if customer:
+        # FIX 1: quota exhaustion is a payment requirement (402), not rate-limiting (429)
         if not check_dispatch_quota(customer):
             raise HTTPException(
-                status_code=429,
+                status_code=402,
                 detail="Monthly dispatch quota exceeded. Please upgrade your plan."
             )
 
-    run_id = str(uuid.uuid4())
+    # FIX 3: idempotent dispatch — return existing record if dispatch_id already known
+    if payload.dispatch_id:
+        existing = get_dispatch(payload.dispatch_id)
+        if existing:
+            return DispatchResponse(
+                run_id=payload.dispatch_id,
+                status=existing.get("status", "unknown"),
+                result=existing.get("crew_result") if isinstance(existing.get("crew_result"), dict) else None,
+                timestamp=existing.get("updated_at", datetime.now(timezone.utc).isoformat()),
+            )
+        run_id = payload.dispatch_id  # use caller-supplied id for the new dispatch
+    else:
+        run_id = str(uuid.uuid4())
+
     _prune_stores()
     job_store[run_id] = {"status": "queued", "result": None}
     ts = datetime.now(timezone.utc).isoformat()
@@ -814,7 +879,15 @@ async def get_dashboard_metrics(request: Request, x_api_key: str = Header(defaul
     _rate_limit(_rate_bucket(request, "metrics"))
     await _authorize_request(x_api_key, request)
     from database import get_dispatch_metrics
-    return get_dispatch_metrics()
+    data = get_dispatch_metrics()
+    # FIX 12: add normalized keys so clients have a stable, predictable schema
+    data.setdefault("total_dispatches", data.get("total", 0))
+    data.setdefault("successful_dispatches", data.get("completed_count", 0))
+    data.setdefault("failed_dispatches",
+                    max(0, (data.get("total", 0) or 0)
+                        - (data.get("completed_count", 0) or 0)
+                        - (data.get("pending_count", 0) or 0)))
+    return data
 
 
 @app.get("/api/dispatches/search")
@@ -974,12 +1047,13 @@ async def _handle_twilio_webhook(
         logger.warning("Invalid Twilio signature from %s", From)
         raise HTTPException(status_code=403, detail="Invalid signature")
 
-    # Anti-spam: drop messages from the same number faster than 5 seconds
+    # FIX 13: namespace Twilio keys to avoid collision with REST API rate-limit buckets
+    _twilio_rl_key = f"twilio:{From}"
     now_time = time.time()
-    if now_time - rate_limit_store.get(From, 0.0) < 5.0:
+    if now_time - rate_limit_store.get(_twilio_rl_key, 0.0) < 5.0:
         logger.warning("Rate limit hit from %s, dropping %s", From, channel)
         return _twiml_response("")
-    rate_limit_store[From] = now_time
+    rate_limit_store[_twilio_rl_key] = now_time
 
     # Sanitize: truncate + strip HTML to prevent XSS echoing
     Body = re.sub(r"<[^>]+>", "[REDACTED]", Body[:MAX_MSG_LENGTH])

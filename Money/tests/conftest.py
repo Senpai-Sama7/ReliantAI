@@ -245,37 +245,11 @@ class _FakePool:
     """Stand-in for ``psycopg2.pool.ThreadedConnectionPool``."""
 
     def __init__(self) -> None:
-        from config import DISPATCH_API_KEY
-
-        # Seed default test customer so validate_api_key succeeds without a real DB.
-        test_customer = {
-            "id": 1,
-            "stripe_customer_id": "pytest-cus-placeholder",
-            "stripe_subscription_id": "pytest-sub-placeholder",
-            "api_key": DISPATCH_API_KEY,
-            "email": "pytest@example.com",
-            "name": "Pytest Customer",
-            "company": "Pytest Co",
-            "phone": "+15005550001",
-            "plan": "enterprise",  # unlimited dispatches by default
-            "status": "active",
-            "billing_status": "active",
-            "trial_ends_at": None,
-            "subscription_starts_at": None,
-            "subscription_ends_at": None,
-            "monthly_revenue": 0.0,
-            "lead_source": None,
-            "notes": "Auto-seeded test customer",
-            "outreach_status": "new",
-            "outreach_last_contact": None,
-            "outreach_next_contact": None,
-            "created_at": None,
-            "updated_at": None,
-        }
-
+        # FIX 2: DISPATCH_API_KEY now bypasses billing via admin-key path in main.py.
+        # Do NOT seed a customer row for it — the bypass must work without one.
         self.store: dict = {
             "dispatches": {},
-            "customers_by_key": {DISPATCH_API_KEY: test_customer},
+            "customers_by_key": {},
             "dispatch_count": 0,
         }
         self._conn = _FakeConn(self.store)

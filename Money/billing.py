@@ -4,7 +4,7 @@ Handles checkout, webhooks, customer provisioning, and API key validation
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 try:
@@ -32,9 +32,11 @@ logger = setup_logging("billing")
 # Initialize Stripe
 if STRIPE_AVAILABLE:
     stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
-    stripe_webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
-else:
-    stripe_webhook_secret = ""
+
+
+# FIX 6: lazy accessor avoids module-level env-var capture so tests can monkeypatch reliably
+def _get_webhook_secret() -> str:
+    return os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
@@ -257,13 +259,15 @@ async def stripe_webhook(request: Request):
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
     
-    if not stripe_webhook_secret:
+    # FIX 6: read secret lazily so tests can monkeypatch _get_webhook_secret
+    _secret = _get_webhook_secret()
+    if not _secret:
         logger.error("Stripe webhook secret not configured")
         raise HTTPException(status_code=500, detail="Stripe webhook secret not configured")
-    
+
     try:
         event = stripe.Webhook.construct_event(
-            payload, sig_header, stripe_webhook_secret
+            payload, sig_header, _secret
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid payload")
@@ -417,9 +421,14 @@ async def validate_api_key(x_api_key: str = Header(..., alias="X-API-Key")) -> d
             detail="Billing issue. Please update payment method."
         )
     
-    # Check if trial has expired
-    if customer["trial_ends_at"] and customer["trial_ends_at"] < datetime.now():
-        if customer["billing_status"] == "trialing":
+    # FIX 7: use timezone-aware comparison; guard against mismatched types
+    if customer["trial_ends_at"]:
+        try:
+            trial_expired = customer["trial_ends_at"] < datetime.now(timezone.utc)
+        except TypeError:
+            logger.warning("trial_ends_at type mismatch for customer %s", customer.get("id"))
+            trial_expired = True
+        if trial_expired and customer["billing_status"] == "trialing":
             raise HTTPException(
                 status_code=403,
                 detail="Trial expired. Please subscribe to continue."
