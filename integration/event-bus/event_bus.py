@@ -83,7 +83,8 @@ async def require_event_bus_api_key(
         )
     if credentials is None:
         raise HTTPException(status_code=401, detail="Authentication required")
-    if credentials.credentials != EVENT_BUS_API_KEY:
+    import secrets as _secrets
+    if not _secrets.compare_digest(credentials.credentials, EVENT_BUS_API_KEY):
         raise HTTPException(status_code=403, detail="Invalid API key")
     return True
 
@@ -179,10 +180,10 @@ async def publish_event(
 
         # Persist event
         event_key = f"event:{event_id}"
-        await r.setex(event_key, EVENT_RETENTION_SECONDS, event.model_dump_json())
-
-        # Publish to channel
-        await r.publish(channel, event.model_dump_json())
+        pipe = r.pipeline()
+        pipe.setex(event_key, EVENT_RETENTION_SECONDS, event.model_dump_json())
+        pipe.publish(channel, event.model_dump_json())
+        await pipe.execute()
 
         # Update metrics
         events_published.labels(channel=channel, event_type=request.event_type).inc()
@@ -210,7 +211,8 @@ async def publish_event(
         # Send to DLQ
         try:
             redis = fastapi_req.app.state.redis
-            await redis.lpush(
+            pipe = redis.pipeline()
+            pipe.lpush(
                 "dlq:events",
                 json.dumps(
                     {
@@ -220,6 +222,8 @@ async def publish_event(
                     }
                 ),
             )
+            pipe.ltrim("dlq:events", 0, DLQ_MAX_SIZE - 1)
+            await pipe.execute()
             dlq_size.inc()
         except Exception as dlq_err:
             logger.error("dlq_write_failed", error=str(dlq_err))
@@ -354,7 +358,8 @@ async def process_subscriptions(app: FastAPI):
                             ).inc()
 
                             # Send to DLQ
-                            await r.lpush(
+                            pipe = r.pipeline()
+                            pipe.lpush(
                                 "dlq:handler_errors",
                                 json.dumps(
                                     {
@@ -364,6 +369,8 @@ async def process_subscriptions(app: FastAPI):
                                     }
                                 ),
                             )
+                            pipe.ltrim("dlq:handler_errors", 0, DLQ_MAX_SIZE - 1)
+                            await pipe.execute()
 
                 except ValidationError as e:
                     logger.error("validation_error", error=str(e))

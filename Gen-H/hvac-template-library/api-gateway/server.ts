@@ -262,6 +262,26 @@ app.get('/api/deployments/:id/analytics', async (req: Request, res: Response) =>
   }
 });
 
+// Mockup endpoint for ReliantAI.org dynamic site generation
+app.get('/preview/:slug', async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    // Generate dynamic mockup configuration
+    res.json({ 
+      success: true, 
+      preview_url: `https://reliantai.org/preview/${slug}`,
+      mockup_data: {
+        theme: "modern",
+        primary_color: "#1e3a8a",
+        business_name: slug.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
+        features: ["AEO Optimized", "GEO Mapped", "Fast SSR"]
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: getErrorMessage(error) });
+  }
+});
+
 const port = Number(process.env.API_PORT || process.env.PORT || 5000);
 app.listen(port, () => {
   console.log(`API Gateway running on port ${port}`);

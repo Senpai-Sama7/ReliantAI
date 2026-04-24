@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReliantAI — Operator Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- Shared primitives — load first -->
+<script type="text/babel" src="Data.jsx"></script>
+<script type="text/babel" src="UI.jsx"></script>
+
+<!-- Screens -->
+<script type="text/babel" src="screens/Auth.jsx"></script>
+<script type="text/babel" src="screens/Marketing.jsx"></script>
+<script type="text/babel" src="screens/ConsoleHome.jsx"></script>
+<script type="text/babel" src="screens/ClearDesk.jsx"></script>
+<script type="text/babel" src="screens/Money.jsx"></script>
+<script type="text/babel" src="screens/APEX.jsx"></script>
+<script type="text/babel" src="screens/BAP.jsx"></script>
+<script type="text/babel" src="screens/Integration.jsx"></script>
+<script type="text/babel" src="screens/Admin.jsx"></script>
+<script type="text/babel" src="screens/ApexExtra.jsx"></script>
+<script type="text/babel" src="screens/BAPExtra.jsx"></script>
+<script type="text/babel" src="screens/IntegrationExtra.jsx"></script>
+<script type="text/babel" src="screens/MarketingPages.jsx"></script>
+<script type="text/babel" src="screens/UXPolish.jsx"></script>
+
+<!-- Shell (router + sidebar + top bar + event feed) -->
+<script type="text/babel" src="Shell.jsx"></script>
+
+<script type="text/babel">
+// ── Route manifest ───────────────────────────────────────────────
+window.ROUTES = [
+  // Auth (fullscreen)
+  { path:'/auth/signin',  label:'Sign In',       group:'Auth',        icon:'log-in',        component:'AuthSignIn',  fullscreen:true },
+  { path:'/auth/mfa',     label:'MFA',           group:'Auth',        icon:'shield-check',  component:'AuthMFA',     fullscreen:true },
+
+  // Marketing (fullscreen)
+  { path:'/marketing/home',       label:'Homepage',          group:'Marketing', icon:'globe',         component:'MarketingHome',       fullscreen:true },
+  { path:'/marketing/pricing',    label:'Pricing',           group:'Marketing', icon:'credit-card',   component:'MarketingPricing',    fullscreen:true },
+  { path:'/marketing/cleardesk',  label:'ClearDesk Landing', group:'Marketing', icon:'file-text',     component:'MarketingClearDesk',  fullscreen:true },
+  { path:'/marketing/money',      label:'Money Landing',     group:'Marketing', icon:'radio',         component:'MarketingMoney',      fullscreen:true },
+  { path:'/marketing/apex',       label:'APEX Landing',      group:'Marketing', icon:'cpu',           component:'MarketingAPEX',       fullscreen:true },
+  { path:'/marketing/bap',        label:'B-A-P Landing',     group:'Marketing', icon:'bar-chart-3',   component:'MarketingBAP',        fullscreen:true },
+
+  // Platform
+  { path:'/console/home',      label:'Overview',        group:'Platform',    icon:'layout-dashboard', component:'ConsoleHome' },
+
+  // ClearDesk
+  { path:'/cleardesk/landing', label:'Landing Page',    group:'ClearDesk',   icon:'monitor',         component:'ClearDeskLanding' },
+  { path:'/cleardesk/queue',   label:'Document Queue',  group:'ClearDesk',   icon:'file-text',       component:'ClearDeskQueue' },
+  { path:'/cleardesk/upload',  label:'Upload',          group:'ClearDesk',   icon:'upload-cloud',    component:'ClearDeskUpload' },
+  { path:'/cleardesk/chat',    label:'AI Assistant',    group:'ClearDesk',   icon:'message-circle',  component:'ClearDeskChat' },
+  { path:'/cleardesk/export',  label:'Export',          group:'ClearDesk',   icon:'download',        component:'ClearDeskExport' },
+  { path:'/cleardesk/settings',label:'Settings',        group:'ClearDesk',   icon:'settings',        component:'ClearDeskSettings' },
+
+  // Money
+  { path:'/money/admin',   label:'Admin Dashboard', group:'Money', icon:'radio',       component:'MoneyAdmin',   badge:'LIVE', badgeTone:'red' },
+  { path:'/money/billing', label:'Billing',         group:'Money', icon:'credit-card', component:'MoneyBilling' },
+
+  // APEX
+  { path:'/apex/overview',   label:'Overview',         group:'APEX', icon:'cpu',         component:'ApexOverview' },
+  { path:'/apex/hitl',       label:'HITL Review',      group:'APEX', icon:'user-check',  component:'ApexHITL', badge:'3', badgeTone:'red' },
+  { path:'/apex/workflows',  label:'Workflow Runner',  group:'APEX', icon:'play-circle', component:'ApexWorkflows' },
+  { path:'/apex/langfuse',   label:'Trace Viewer',     group:'APEX', icon:'network',     component:'ApexLangfuse' },
+  { path:'/apex/tools',      label:'Tool Bus',         group:'APEX', icon:'wrench',      component:'ApexTools' },
+
+  // B-A-P
+  { path:'/bap/analytics', label:'Analytics',       group:'B-A-P', icon:'bar-chart-3', component:'BAPAnalytics' },
+  { path:'/bap/pipeline',  label:'Pipeline Builder', group:'B-A-P', icon:'git-branch',  component:'BAPPipeline' },
+  { path:'/bap/upload',    label:'Upload Dataset',   group:'B-A-P', icon:'upload-cloud',component:'BAPUpload' },
+  { path:'/bap/insights',  label:'AI Insights',      group:'B-A-P', icon:'sparkles',    component:'BAPInsights' },
+
+  // Integration
+  { path:'/integration/overview', label:'Service Registry', group:'Integration', icon:'layers',    component:'IntegrationOverview' },
+  { path:'/integration/bus',      label:'Event Bus',        group:'Integration', icon:'activity',  component:'IntegrationBus' },
+  { path:'/integration/sagas',    label:'Saga Transactions',group:'Integration', icon:'git-merge', component:'IntegrationSagas' },
+  { path:'/integration/auth',     label:'Auth Sessions',    group:'Integration', icon:'shield',    component:'IntegrationAuth' },
+
+  // Admin
+  { path:'/settings',        label:'Settings',   group:'Admin', icon:'settings',    component:'AdminSettings' },
+  { path:'/admin/billing',   label:'Billing',    group:'Admin', icon:'credit-card', component:'AdminBilling' },
+  { path:'/admin/audit',     label:'Audit Log',  group:'Admin', icon:'shield',      component:'AuditLog' },
+];
+
+// ── go() helper — allows screens to navigate cross-component ────
+// Patched into window after App mounts
+(function() {
+  let _go = null;
+  const _pending = [];
+  window.go = (p) => { if (_go) _go(p); else _pending.push(p); };
+  window.__registerGo = (fn) => { _go = fn; _pending.forEach(fn); };
+})();
+
+// ── Mount ───────────────────────────────────────────────────────
+const AppWrapper = () => {
+  const [current, setCurrent] = React.useState(
+    () => localStorage.getItem('re:route') || '/console/home'
+  );
+  const [sideEx,  setSideEx]  = React.useState(true);
+  const [feedEx,  setFeedEx]  = React.useState(() => window.innerWidth > 1400);
+  const [cmdOpen, setCmdOpen] = React.useState(false);
+  const [shortcuts, setShortcuts] = React.useState(false);
+
+  const go = React.useCallback((p) => {
+    setCurrent(p);
+    localStorage.setItem('re:route', p);
+  }, []);
+
+  React.useEffect(() => { window.__registerGo(go); }, [go]);
+
+  React.useEffect(() => {
+    const h = (e) => {
+      if ((e.metaKey||e.ctrlKey) && e.key==='k') { e.preventDefault(); setCmdOpen(o=>!o); }
+      if ((e.metaKey||e.ctrlKey) && e.key==='b') { e.preventDefault(); setSideEx(s=>!s); }
+      if ((e.metaKey||e.ctrlKey) && e.key==='.') { e.preventDefault(); setFeedEx(f=>!f); }
+      if (e.shiftKey && e.key==='?') { e.preventDefault(); setShortcuts(s=>!s); }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+
+  const routes = window.ROUTES;
+  const route  = routes.find(r => r.path === current);
+  const isFullscreen = route?.fullscreen;
+
+  const renderScreen = () => {
+    const Cmp = route && window[route.component];
+    if (!Cmp) return (
+      <div style={{padding:40}}>
+        <div style={{fontSize:13, color:'#ffc400', marginBottom:8}}>Stub — {route?.label || current}</div>
+        <div style={{fontSize:11, color:'#4a6880', fontFamily:'IBM Plex Mono,monospace'}}>
+          Component "{route?.component}" not yet registered.<br/>Route: {current}
+        </div>
+        <button onClick={()=>go('/console/home')} style={{marginTop:16, background:'transparent', border:'1px solid #152637', color:'#a8c4de', padding:'7px 14px', fontSize:12, cursor:'pointer', borderRadius:2}}>← Back to console</button>
+      </div>
+    );
+    return <Cmp/>;
+  };
+
+  const overlay = <>
+    <CommandPalette open={cmdOpen} onClose={()=>setCmdOpen(false)} routes={routes} onGo={go}/>
+    {shortcuts && <ShortcutOverlay onClose={()=>setShortcuts(false)}/>}
+  </>;
+
+  if (isFullscreen) return (
+    <ToastProvider>
+      <div style={{height:'100vh', overflowY:'auto', background:'#020510'}}>
+        {renderScreen()}
+        <div style={{position:'fixed', top:14, left:14, zIndex:50}}>
+          <Btn variant="secondary" size="sm" icon="arrow-left" onClick={()=>go('/console/home')}>Console</Btn>
+        </div>
+        {overlay}
+      </div>
+    </ToastProvider>
+  );
+
+  return (
+    <ToastProvider>
+      <div style={{display:'flex', height:'100vh', overflow:'hidden'}}>
+        <Sidebar current={current} onGo={go} routes={routes} expanded={sideEx} onToggle={()=>setSideEx(s=>!s)}/>
+        <div style={{flex:1, display:'flex', flexDirection:'column', minWidth:0}}>
+          <TopBar current={current} routes={routes} onGo={go} onCmd={()=>setCmdOpen(true)}/>
+          <ScrollTop trigger={current}>
+            {renderScreen()}
+          </ScrollTop>
+        </div>
+        <EventFeed collapsed={!feedEx} onToggle={()=>setFeedEx(e=>!e)}/>
+        {overlay}
+      </div>
+      {/* Shortcut hint */}
+      <div onClick={()=>setShortcuts(true)} style={{position:'fixed', bottom:16, left: sideEx?236:68, zIndex:10, display:'flex', alignItems:'center', gap:6, cursor:'pointer', opacity:0.4, transition:'opacity 150ms'}} onMouseEnter={e=>e.currentTarget.style.opacity=1} onMouseLeave={e=>e.currentTarget.style.opacity=0.4}>
+        <Kbd>Shift+?</Kbd>
+        <span style={{fontSize:10, color:'#4a6880', fontFamily:'IBM Plex Mono,monospace'}}>shortcuts</span>
+      </div>
+    </ToastProvider>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<AppWrapper/>);
+</script>
+</body>
+</html>

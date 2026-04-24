@@ -1,0 +1,67 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px}
+.flabel{font-size:10px;color:#4a6880;letter-spacing:0.06em;text-transform:uppercase}
+input,select,textarea{background:#091424;border:1px solid #152637;color:#a8c4de;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 12px;border-radius:2px;outline:none;width:200px}
+input::placeholder{color:#1e3348}
+input:focus{border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,0.15)}
+input.error{border-color:#ff3b5c;box-shadow:0 0 0 2px rgba(255,59,92,0.12)}
+.err-msg{font-size:11px;color:#ff3b5c;margin-top:3px}
+textarea{height:72px;resize:none;width:100%}
+select{width:200px}
+.search{position:relative;display:inline-flex;align-items:center}
+.search input{padding-left:30px;width:240px}
+.search-icon{position:absolute;left:10px;color:#4a6880;font-size:13px}
+</style></head><body>
+
+<div class="row">
+  <div class="field">
+    <div class="flabel">Text Input</div>
+    <input type="text" placeholder="e.g. Martinez HVAC Supply Co.">
+  </div>
+  <div class="field">
+    <div class="flabel">Focused</div>
+    <input type="text" value="INV-2025-0441" style="border-color:#00e5ff;box-shadow:0 0 0 2px rgba(0,229,255,0.15)">
+  </div>
+  <div class="field">
+    <div class="flabel">Error state</div>
+    <input class="error" type="text" value="invalid@">
+    <div class="err-msg">Invalid email format</div>
+  </div>
+  <div class="field">
+    <div class="flabel">Disabled</div>
+    <input type="text" value="read-only" disabled style="opacity:0.4;cursor:not-allowed">
+  </div>
+</div>
+
+<div class="row">
+  <div class="field">
+    <div class="flabel">Search</div>
+    <div class="search">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Search dispatches…">
+    </div>
+  </div>
+  <div class="field">
+    <div class="flabel">Select</div>
+    <select>
+      <option>All Statuses</option>
+      <option>PENDING</option>
+      <option>PROCESSING</option>
+      <option>ESCALATED</option>
+    </select>
+  </div>
+</div>
+
+<div class="row">
+  <div class="field" style="width:100%">
+    <div class="flabel">Textarea</div>
+    <textarea placeholder="Add notes — e.g. Customer confirmed on-site access, tenant unit 4B…"></textarea>
+  </div>
+</div>
+
+</body></html>

@@ -16,7 +16,7 @@ except ImportError:
     print("Error: requests package not installed. Run: pip install requests")
     sys.exit(1)
 
-# Service configuration — ALL 20+ platform services
+# Service configuration — active platform services only
 SERVICES = {
     # Core critical services
     "money": {
@@ -37,11 +37,17 @@ SERVICES = {
         "api_key": None,
         "critical": True
     },
+    "growthengine": {
+        "url": "http://localhost:8003",
+        "health_endpoint": "/health",
+        "api_key": None,
+        "critical": True
+    },
     "integration": {
         "url": "http://localhost:8080",
         "health_endpoint": "/health",
         "api_key": None,
-        "critical": False
+        "critical": True
     },
     "orchestrator": {
         "url": "http://localhost:9000",
@@ -50,115 +56,39 @@ SERVICES = {
         "critical": True
     },
     "nginx": {
-        "url": "http://localhost:80",
-        "health_endpoint": "/nginx-health",
+        "url": "http://localhost:8880",
+        "health_endpoint": "/health",
         "api_key": None,
         "critical": False
     },
     # Infrastructure
-    "vault": {
-        "url": "http://localhost:8200",
-        "health_endpoint": "/v1/sys/health?standbyok=true",
+    "os-backend": {
+        "url": "http://localhost:8004",
+        "health_endpoint": "/health",
         "api_key": None,
-        "critical": False
+        "critical": True
     },
-    # Analytics & AI
-    "bap": {
-        "url": "http://localhost:8108",
+    "os-frontend": {
+        "url": "http://localhost:8085",
         "health_endpoint": "/health",
         "api_key": None,
         "critical": False
     },
-    "apex-agents": {
-        "url": "http://localhost:8109",
+    # Integration services
+    "event-bus": {
+        "url": "http://localhost:8081",
         "health_endpoint": "/health",
         "api_key": None,
-        "critical": False
+        "critical": True
     },
-    "apex-ui": {
-        "url": "http://localhost:8112",
+    "mcp-bridge": {
+        "url": "http://localhost:8083",
         "health_endpoint": "/health",
         "api_key": None,
-        "critical": False
+        "critical": True
     },
-    "apex-mcp": {
-        "url": "http://localhost:4000",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "acropolis": {
-        "url": "http://localhost:8110",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    # Operations Intelligence
-    "ops-intelligence-backend": {
-        "url": "http://localhost:8095",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "ops-intelligence-frontend": {
-        "url": "http://localhost:5174",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    # Security & Observability
-    "citadel": {
-        "url": "http://localhost:8100",
-        "health_endpoint": "/api/health",
-        "api_key": None,
-        "critical": False
-    },
-    "citadel-ultimate-a-plus": {
-        "url": "http://localhost:8111",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    # Frontends
-    "cleardesk": {
-        "url": "http://localhost:8101",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "gen-h": {
-        "url": "http://localhost:8102",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "regenesis": {
-        "url": "http://localhost:8107",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    # Specialized Services
-    "documancer": {
-        "url": "http://localhost:8103",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "backupiq": {
-        "url": "http://localhost:8104",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "cyberarchitect": {
-        "url": "http://localhost:8105",
-        "health_endpoint": "/health",
-        "api_key": None,
-        "critical": False
-    },
-    "sovieren-ai": {
-        "url": "http://localhost:8106",
+"health-aggregator": {
+        "url": "http://localhost:8086",
         "health_endpoint": "/health",
         "api_key": None,
         "critical": False

@@ -95,3 +95,4 @@ yarn-error.log*
 dist/
 build/
 out/
+.worktrees/

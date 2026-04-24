@@ -11,7 +11,7 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "${NGINX_PORT:-8880}:80"
     environment:
       NGINX_MODE: development
     command: >
@@ -32,10 +32,10 @@ services:
     environment:
       DEBUG: true
       LOG_LEVEL: DEBUG
-      # Pass through required env vars from base compose
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       DISPATCH_API_KEY: ${DISPATCH_API_KEY}
       ENVIRONMENT: dev
+      ENV: dev
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
       - ./Money:/app
@@ -57,8 +57,7 @@ services:
       LOG_LEVEL: DEBUG
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       ENVIRONMENT: dev
-      # Fix: pass correct DATABASE_URL for finops360 from base
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-localdev}@postgres:5432/finops360
     volumes:
       - ./FinOps360:/app
       - ./shared:/shared:ro
@@ -71,17 +70,38 @@ services:
       DEBUG: true
       LOG_LEVEL: DEBUG
       ENVIRONMENT: dev
+      ENV: dev
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:3000}
     command: uvicorn main:app --host 0.0.0.0 --port 9000 --reload
 
   integration:
     volumes:
       - ./integration:/app
-      - ./shared:/shared:ro
+      - ./shared:/app/shared:ro
     environment:
       DEBUG: true
       LOG_LEVEL: DEBUG
       ENVIRONMENT: dev
+      ENV: dev
     command: uvicorn main:app --host 0.0.0.0 --port 8080 --reload
+
+  reliant-os-backend:
+    environment:
+      ENVIRONMENT: dev
+      ENV: dev
+      OS_API_KEY: ${OS_API_KEY:-reliant-os-dev-key}
+      MCP_API_KEY: ${MCP_API_KEY:-mcp-bridge-dev-key}
+      HEAL_API_KEY: ${HEAL_API_KEY:-heal-dev-key}
+
+  mcp-bridge:
+    environment:
+      MCP_API_KEY: ${MCP_API_KEY:-mcp-bridge-dev-key}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:3000,http://localhost:8085}
+
+  health-aggregator:
+    environment:
+      HEAL_API_KEY: ${HEAL_API_KEY:-heal-dev-key}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost,http://localhost:3000,http://localhost:8085}
 
   # Vault for secrets management (enabled by default in local dev)
   vault:

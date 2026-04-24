@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClearDesk — Document Processing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body,#root { height:100%; background:#020510; }
+body { font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:#020510; } ::-webkit-scrollbar-thumb { background:#0c1a2c; }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body><div id="root"></div>
+<script type="text/babel">
+
+const TEAL = '#00d4aa';
+const DOCS = [
+  { id:'INV-2025-0441', filename:'MartinezHVAC_Invoice_0441.pdf', type:'INVOICE', priority:'CRITICAL', status:'ESCALATED', customer:'Martinez HVAC Supply Co.', amount:52400, dueDate:'2025-05-01', confidence:0.61, assignee:'Chen, R.', escalationReason:'Confidence below threshold · Amount exceeds $50K auto-approval limit' },
+  { id:'INV-2025-0398', filename:'GulfCoast_Invoice_0398.pdf',    type:'INVOICE', priority:'HIGH',     status:'PROCESSING', customer:'Gulf Coast Medical Group', amount:8900,  dueDate:'2025-05-08', confidence:0.78, assignee:'Patel, S.', escalationReason:null },
+  { id:'INV-2025-0412', filename:'LoneStar_Invoice_0412.pdf',     type:'INVOICE', priority:'MEDIUM',   status:'COMPLETED',  customer:'Lone Star Contractors LLC', amount:2100,  dueDate:'2025-05-15', confidence:0.96, assignee:null, escalationReason:null },
+  { id:'PO-2025-0089',  filename:'Bayou_PO_0089.pdf',            type:'PO',      priority:'HIGH',     status:'PENDING',    customer:'Bayou City Enterprises', amount:14200, dueDate:'2025-05-03', confidence:0.83, assignee:'Chen, R.', escalationReason:null },
+  { id:'CON-2025-0021', filename:'TexOil_Contract_0021.pdf',     type:'CONTRACT',priority:'CRITICAL', status:'ESCALATED',  customer:'TexOil Services Inc.', amount:189000, dueDate:'2025-04-30', confidence:0.55, assignee:'Patel, S.', escalationReason:'High-value contract · Legal review required' },
+  { id:'INV-2025-0423', filename:'Houston_Medical_0423.pdf',     type:'INVOICE', priority:'LOW',      status:'COMPLETED',  customer:'Houston Medical Supply', amount:890,   dueDate:'2025-05-22', confidence:0.99, assignee:null, escalationReason:null },
+];
+
+const priorityStyle = { CRITICAL:{bg:'rgba(255,68,68,0.1)',color:'#ff4444',border:'rgba(255,68,68,0.3)'}, HIGH:{bg:'rgba(255,140,0,0.1)',color:'#ff8c00',border:'rgba(255,140,0,0.25)'}, MEDIUM:{bg:'rgba(255,184,0,0.1)',color:'#ffb800',border:'rgba(255,184,0,0.25)'}, LOW:{bg:'rgba(142,142,160,0.1)',color:'#8e8ea0',border:'rgba(142,142,160,0.2)'} };
+const statusStyle  = { ESCALATED:{bg:'rgba(255,59,92,0.1)',color:'#ff3b5c',border:'rgba(255,59,92,0.25)'}, PROCESSING:{bg:'rgba(0,229,255,0.1)',color:'#00e5ff',border:'rgba(0,229,255,0.25)'}, COMPLETED:{bg:'rgba(0,255,122,0.1)',color:'#00ff7a',border:'rgba(0,255,122,0.25)'}, PENDING:{bg:'rgba(255,196,0,0.1)',color:'#ffc400',border:'rgba(255,196,0,0.25)'} };
+
+const Badge = ({label, styles}) => <span style={{fontSize:10,fontWeight:500,padding:'2px 7px',borderRadius:2,background:styles.bg,color:styles.color,border:`1px solid ${styles.border}`,letterSpacing:'0.03em'}}>{label}</span>;
+
+const ConfBar = ({val}) => {
+  const color = val >= 0.9 ? TEAL : val >= 0.7 ? '#ffc400' : '#ff3b5c';
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:8}}>
+      <div style={{width:60,height:4,background:'#0c1a2c',borderRadius:1,overflow:'hidden'}}>
+        <div style={{width:`${val*100}%`,height:'100%',background:color,transition:'width 300ms'}}/>
+      </div>
+      <span style={{fontFamily:'IBM Plex Mono,monospace',fontSize:11,color}}>{val.toFixed(2)}</span>
+    </div>
+  );
+};
+
+// StatsOverview
+const StatsOverview = ({docs}) => {
+  const stats = [
+    {label:'Total',      val:docs.length,                                color:'#ffffff'},
+    {label:'Processed',  val:docs.filter(d=>d.status==='COMPLETED').length, color:TEAL},
+    {label:'Processing', val:docs.filter(d=>d.status==='PROCESSING').length,color:'#00e5ff'},
+    {label:'Pending',    val:docs.filter(d=>d.status==='PENDING').length,  color:'#ffc400'},
+    {label:'Escalated',  val:docs.filter(d=>d.status==='ESCALATED').length,color:'#ff3b5c'},
+  ];
+  return (
+    <div style={{display:'flex',borderBottom:'1px solid #0c1a2c'}}>
+      {stats.map(s => (
+        <div key={s.label} style={{flex:1,padding:'14px 20px',borderRight:'1px solid #0c1a2c'}}>
+          <div style={{fontSize:9,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>{s.label}</div>
+          <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:24,fontWeight:600,color:s.color}}>{s.val}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// FilterPanel
+const FilterPanel = ({status, setStatus, search, setSearch}) => {
+  const statuses = ['ALL','PENDING','PROCESSING','COMPLETED','ESCALATED'];
+  return (
+    <div style={{display:'flex',gap:10,padding:'12px 20px',borderBottom:'1px solid #0c1a2c',alignItems:'center',flexWrap:'wrap'}}>
+      <div style={{position:'relative',flex:'1',minWidth:180}}>
+        <i data-lucide="search" style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',width:13,height:13,color:'#4a6880'}}/>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search documents…"
+          style={{width:'100%',background:'#091424',border:'1px solid #152637',color:'#a8c4de',fontSize:12,padding:'7px 10px 7px 30px',borderRadius:2,outline:'none',fontFamily:'IBM Plex Sans,sans-serif'}}/>
+      </div>
+      {statuses.map(s => (
+        <div key={s} onClick={()=>setStatus(s)} style={{
+          fontSize:10,fontWeight:500,padding:'4px 10px',borderRadius:2,cursor:'pointer',transition:'all 150ms',
+          background: status===s ? 'rgba(0,212,170,0.1)' : 'transparent',
+          color: status===s ? TEAL : '#4a6880',
+          border: `1px solid ${status===s ? 'rgba(0,212,170,0.3)' : '#0c1a2c'}`,
+        }}>{s}</div>
+      ))}
+    </div>
+  );
+};
+
+// DocumentDetail modal
+const DocumentDetail = ({doc, onClose}) => {
+  if(!doc) return null;
+  const pStyle = priorityStyle[doc.priority];
+  const sStyle = statusStyle[doc.status];
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(2,5,16,0.85)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center'}} onClick={onClose}>
+      <div style={{background:'#091424',border:'1px solid #152637',width:600,maxHeight:'85vh',overflow:'auto',borderRadius:2}} onClick={e=>e.stopPropagation()}>
+        {/* Header */}
+        <div style={{padding:'16px 20px',borderBottom:'1px solid #0c1a2c',display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+          <div>
+            <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:'#4a6880',marginBottom:4}}>{doc.id}</div>
+            <div style={{fontSize:16,fontWeight:600,color:'#ffffff',marginBottom:6}}>{doc.filename}</div>
+            <div style={{display:'flex',gap:6}}>
+              <Badge label={doc.priority} styles={pStyle}/>
+              <Badge label={doc.status} styles={sStyle}/>
+              <span style={{fontSize:10,color:'#4a6880',padding:'2px 7px',border:'1px solid #0c1a2c',borderRadius:2}}>{doc.type}</span>
+            </div>
+          </div>
+          <div onClick={onClose} style={{cursor:'pointer',padding:4,color:'#4a6880'}}>
+            <i data-lucide="x" style={{width:16,height:16}}/>
+          </div>
+        </div>
+
+        {/* Extracted data */}
+        <div style={{padding:'16px 20px',borderBottom:'1px solid #0c1a2c'}}>
+          <div style={{fontSize:10,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:10}}>Extracted Data</div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'8px 20px'}}>
+            {[
+              ['Customer',     doc.customer],
+              ['Invoice #',    doc.id],
+              ['Amount',       `$${doc.amount.toLocaleString()}`],
+              ['Due Date',     doc.dueDate],
+              ['Assignee',     doc.assignee || 'Unassigned'],
+              ['Document Type',doc.type],
+            ].map(([k,v]) => (
+              <div key={k}>
+                <div style={{fontSize:10,color:'#4a6880',marginBottom:2}}>{k}</div>
+                <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:12,color:'#a8c4de'}}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Confidence */}
+        <div style={{padding:'12px 20px',borderBottom:'1px solid #0c1a2c',display:'flex',alignItems:'center',gap:20}}>
+          <div>
+            <div style={{fontSize:10,color:'#4a6880',marginBottom:4}}>Confidence Score</div>
+            <ConfBar val={doc.confidence}/>
+          </div>
+          {doc.confidence < 0.7 && (
+            <div style={{fontSize:11,color:'#ff3b5c',background:'rgba(255,59,92,0.08)',border:'1px solid rgba(255,59,92,0.2)',padding:'4px 10px',borderRadius:2}}>
+              Below 0.70 threshold — manual review required
+            </div>
+          )}
+        </div>
+
+        {/* Escalation reasons */}
+        {doc.escalationReason && (
+          <div style={{padding:'12px 20px',borderBottom:'1px solid #0c1a2c'}}>
+            <div style={{fontSize:10,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:8}}>Escalation Reasons</div>
+            <div style={{padding:'8px 12px',background:'rgba(255,59,92,0.06)',border:'1px solid rgba(255,59,92,0.2)',borderLeft:'3px solid #ff3b5c',fontSize:12,color:'#ff3b5c'}}>{doc.escalationReason}</div>
+          </div>
+        )}
+
+        {/* Summaries */}
+        <div style={{padding:'12px 20px',borderBottom:'1px solid #0c1a2c',display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <div style={{fontSize:10,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Summary (EN)</div>
+            <div style={{fontSize:12,color:'#a8c4de',lineHeight:1.6}}>Invoice from {doc.customer} for ${doc.amount.toLocaleString()} due {doc.dueDate}. Standard NET-30 terms. Requires approval from finance manager.</div>
+          </div>
+          <div>
+            <div style={{fontSize:10,color:'#4a6880',textTransform:'uppercase',letterSpacing:'0.08em',marginBottom:6}}>Resumen (ES)</div>
+            <div style={{fontSize:12,color:'#a8c4de',lineHeight:1.6}}>Factura de {doc.customer} por ${doc.amount.toLocaleString()} con vencimiento {doc.dueDate}. Términos NET-30. Requiere aprobación del gerente financiero.</div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div style={{padding:'12px 20px',display:'flex',gap:8}}>
+          <button style={{background:TEAL,color:'#020510',border:'none',padding:'8px 16px',fontSize:12,fontWeight:600,borderRadius:2,cursor:'pointer'}}>Update Status</button>
+          <button style={{background:'#091424',color:'#a8c4de',border:'1px solid #152637',padding:'8px 16px',fontSize:12,borderRadius:2,cursor:'pointer'}}>Assign</button>
+          <button style={{background:'#091424',color:'#a8c4de',border:'1px solid #152637',padding:'8px 16px',fontSize:12,borderRadius:2,cursor:'pointer'}}>Export</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Main app
+const ClearDeskApp = () => {
+  const [status, setStatus] = React.useState('ALL');
+  const [search, setSearch] = React.useState('');
+  const [selected, setSelected] = React.useState(null);
+  const [view, setView] = React.useState('dashboard');
+
+  React.useEffect(() => { lucide.createIcons(); });
+
+  const filtered = DOCS.filter(d =>
+    (status === 'ALL' || d.status === status) &&
+    (!search || d.customer.toLowerCase().includes(search.toLowerCase()) || d.id.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100vh',background:'#020510'}}>
+      {/* Top bar */}
+      <div style={{background:'#060c1a',borderBottom:'1px solid #0c1a2c',padding:'0 20px',height:48,display:'flex',alignItems:'center',gap:16,flexShrink:0}}>
+        <div style={{display:'flex',alignItems:'center',gap:8}}>
+          <div style={{width:8,height:8,borderRadius:'50%',background:TEAL,boxShadow:`0 0 6px ${TEAL}80`}}/>
+          <span style={{fontSize:14,fontWeight:700,color:'#ffffff'}}>ClearDesk</span>
+        </div>
+        <div style={{height:16,width:1,background:'#0c1a2c'}}/>
+        {['dashboard','documents','upload'].map(v => (
+          <div key={v} onClick={()=>setView(v)} style={{fontSize:12,color:view===v?'#ffffff':'#4a6880',cursor:'pointer',padding:'4px 0',borderBottom:view===v?`2px solid ${TEAL}`:'2px solid transparent',transition:'all 150ms',textTransform:'capitalize'}}>{v}</div>
+        ))}
+        <div style={{flex:1}}/>
+        <button style={{background:TEAL,color:'#020510',border:'none',padding:'6px 14px',fontSize:12,fontWeight:600,borderRadius:2,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}>
+          <i data-lucide="upload" style={{width:13,height:13}}/>Upload
+        </button>
+      </div>
+
+      {/* Stats */}
+      <StatsOverview docs={DOCS}/>
+
+      {/* Filter */}
+      <FilterPanel status={status} setStatus={setStatus} search={search} setSearch={setSearch}/>
+
+      {/* Table */}
+      <div style={{flex:1,overflow:'auto'}}>
+        <table style={{width:'100%',borderCollapse:'collapse'}}>
+          <thead>
+            <tr style={{background:'#091424',position:'sticky',top:0}}>
+              {['Document ID','Customer','Amount','Priority','Status','Confidence','Assignee'].map(h => (
+                <th key={h} style={{padding:'8px 14px',textAlign:'left',fontSize:10,fontWeight:500,color:'#4a6880',letterSpacing:'0.07em',textTransform:'uppercase',borderBottom:'1px solid #152637',whiteSpace:'nowrap'}}>{h}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(doc => (
+              <tr key={doc.id} onClick={()=>setSelected(doc)} style={{cursor:'pointer',borderBottom:'1px solid #0c1a2c',transition:'background 100ms'}}
+                onMouseEnter={e=>e.currentTarget.style.background='#091424'}
+                onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:TEAL}}>{doc.id}</td>
+                <td style={{padding:'9px 14px',fontSize:12,color:'#a8c4de'}}>{doc.customer}</td>
+                <td style={{padding:'9px 14px',fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:doc.amount>50000?'#ff3b5c':doc.amount>10000?'#ffc400':'#a8c4de'}}>${doc.amount.toLocaleString()}</td>
+                <td style={{padding:'9px 14px'}}><Badge label={doc.priority} styles={priorityStyle[doc.priority]}/></td>
+                <td style={{padding:'9px 14px'}}><Badge label={doc.status} styles={statusStyle[doc.status]}/></td>
+                <td style={{padding:'9px 14px'}}><ConfBar val={doc.confidence}/></td>
+                <td style={{padding:'9px 14px',fontSize:11,color:'#4a6880'}}>{doc.assignee||'—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && (
+          <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:60,gap:12}}>
+            <i data-lucide="file-text" style={{width:32,height:32,color:'#1e3348'}}/>
+            <div style={{fontSize:14,color:'#4a6880'}}>No documents match your filters.</div>
+            <button onClick={()=>{setStatus('ALL');setSearch('');}} style={{background:'transparent',color:TEAL,border:`1px solid rgba(0,212,170,0.3)`,padding:'6px 14px',fontSize:12,borderRadius:2,cursor:'pointer'}}>Clear filters</button>
+          </div>
+        )}
+      </div>
+
+      {selected && <DocumentDetail doc={selected} onClose={()=>setSelected(null)}/>}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ClearDeskApp/>);
+</script>
+</body>
+</html>

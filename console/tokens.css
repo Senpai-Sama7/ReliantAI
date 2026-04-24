@@ -1,0 +1,64 @@
+/* ReliantAI — Revenue Engine v6 tokens (display swap: Fraunces → PP Neue Montreal via system stack) */
+:root {
+  --re-bg: #020510;
+  --re-surface: #060c1a;
+  --re-surface-hi: #091424;
+  --re-surface-pop: #0d1e35;
+  --re-border: #0c1a2c;
+  --re-border-brt: #152637;
+  --re-text: #a8c4de;
+  --re-text-dim: #4a6880;
+  --re-text-muted: #1e3348;
+  --re-text-bright: #ffffff;
+  --re-cyan: #00e5ff;
+  --re-green: #00ff7a;
+  --re-gold: #ffc400;
+  --re-red: #ff3b5c;
+  --re-purple: #7c5cfc;
+  --re-teal: #00d4aa;
+  --re-cd: #00FF94;
+  --font-display: 'Neue Haas Grotesk', 'Söhne', 'Inter Tight', -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --r-fast: 150ms; --r-norm: 200ms; --r-slow: 300ms;
+  --ease: cubic-bezier(.4,0,.2,1);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body, #root { height:100%; background:var(--re-bg); }
+body { font-family:var(--font-body); color:var(--re-text); -webkit-font-smoothing:antialiased; font-size:13px; }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--re-bg); }
+::-webkit-scrollbar-thumb { background:var(--re-border); }
+::-webkit-scrollbar-thumb:hover { background:var(--re-border-brt); }
+input, select, textarea, button { font-family:inherit; color:inherit; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.55} }
+@keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(255,59,92,.5)} 50%{box-shadow:0 0 0 8px rgba(255,59,92,0)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes slide-up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slide-left { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+@keyframes countup { from{opacity:0} to{opacity:1} }
+.skel { background:linear-gradient(90deg,var(--re-surface) 25%,var(--re-surface-hi) 50%,var(--re-surface) 75%); background-size:200% 100%; animation:shimmer 1.4s linear infinite; }
+@media (prefers-reduced-motion:reduce){
+  * { animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+}
+
+/* ── Responsive breakpoints ─────────────────────────────────── */
+@media (max-width:1024px){
+  .re-sidebar { width:52px !important; }
+  .re-sidebar .re-sidebar-text { display:none !important; }
+  .re-event-feed { display:none !important; }
+  .re-top-bar .re-breadcrumb { max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .re-cmd-palette { width:90vw !important; max-width:480px !important; }
+}
+@media (max-width:768px){
+  .re-sidebar-mobile { position:fixed !important; left:0; top:0; bottom:0; z-index:40; transform:translateX(-100%); transition:transform var(--r-norm) var(--ease); }
+  .re-sidebar-mobile.re-open { transform:translateX(0); }
+  .re-sidebar-overlay { position:fixed; inset:0; background:rgba(2,5,16,0.7); z-index:35; backdrop-filter:blur(2px); }
+  .re-top-bar { padding:0 12px !important; gap:8px !important; height:auto !important; min-height:44px; flex-wrap:wrap; }
+  .re-top-bar .re-cmd-trigger { min-width:auto !important; flex:1; }
+  .re-top-bar .re-status-pill { display:none !important; }
+  .re-cmd-palette { width:96vw !important; padding-top:8vh !important; }
+  .re-cmd-palette > div { width:100% !important; }
+  .re-main { padding:12px !important; }
+}

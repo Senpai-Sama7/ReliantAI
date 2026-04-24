@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReliantAI — Command Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body, #root { height:100%; background:#020510; }
+  body { font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+  ::-webkit-scrollbar { width:4px; height:4px; }
+  ::-webkit-scrollbar-track { background:#020510; }
+  ::-webkit-scrollbar-thumb { background:#0c1a2c; border-radius:2px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="Sidebar.jsx"></script>
+<script type="text/babel" src="TopBar.jsx"></script>
+<script type="text/babel" src="Dashboard.jsx"></script>
+<script type="text/babel" src="EventStream.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{"accentColor":"#00e5ff","showEventStream":true,"sidebarCollapsed":false}/*EDITMODE-END*/;
+
+// Command palette
+const CommandPalette = ({ onClose, onNavigate }) => {
+  const [q, setQ] = React.useState('');
+  const items = [
+    { label:'Overview Dashboard',   action:()=>onNavigate('overview'),    hint:'Platform' },
+    { label:'ClearDesk Documents',  action:()=>onNavigate('cleardesk'),   hint:'cleardesk' },
+    { label:'Money Dispatches',     action:()=>onNavigate('money'),       hint:'money' },
+    { label:'B-A-P Analytics',      action:()=>onNavigate('bap'),         hint:'bap' },
+    { label:'APEX HITL Review',     action:()=>onNavigate('apex'),        hint:'apex' },
+    { label:'Integration Events',   action:()=>onNavigate('integration'), hint:'integration' },
+    { label:'Settings',             action:()=>onNavigate('settings'),    hint:'settings' },
+  ].filter(i => !q || i.label.toLowerCase().includes(q.toLowerCase()));
+
+  React.useEffect(() => {
+    const h = e => { if(e.key==='Escape') onClose(); };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  return (
+    <div style={{position:'fixed',inset:0,background:'rgba(2,5,16,0.85)',zIndex:300,display:'flex',alignItems:'flex-start',justifyContent:'center',paddingTop:80}} onClick={onClose}>
+      <div style={{background:'#091424',border:'1px solid #152637',width:560,borderRadius:2,overflow:'hidden'}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 16px',borderBottom:'1px solid #0c1a2c'}}>
+          <i data-lucide="search" style={{width:16,height:16,color:'#4a6880'}}/>
+          <input autoFocus value={q} onChange={e=>setQ(e.target.value)}
+            placeholder="Search actions, routes, documents…"
+            style={{flex:1,background:'transparent',border:'none',outline:'none',color:'#ffffff',fontSize:14,fontFamily:'IBM Plex Sans,sans-serif'}}/>
+          <span style={{fontSize:10,color:'#1e3348',fontFamily:'IBM Plex Mono,monospace',background:'#060c1a',border:'1px solid #0c1a2c',padding:'2px 5px',borderRadius:2}}>ESC</span>
+        </div>
+        {items.map((item,i) => (
+          <div key={i} onClick={()=>{item.action();onClose();}} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 16px',cursor:'pointer',borderBottom:'1px solid #0c1a2c',transition:'background 100ms'}}
+            onMouseEnter={e=>e.currentTarget.style.background='#091424'}
+            onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+            <span style={{fontSize:13,color:'#a8c4de'}}>{item.label}</span>
+            <span style={{fontSize:10,color:'#4a6880',fontFamily:'IBM Plex Mono,monospace'}}>{item.hint}</span>
+          </div>
+        ))}
+        {items.length === 0 && <div style={{padding:'20px 16px',fontSize:13,color:'#4a6880'}}>No results for "{q}"</div>}
+      </div>
+    </div>
+  );
+};
+
+// Placeholder screens for nav targets
+const PlaceholderScreen = ({ title, accent, description, route }) => (
+  <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100%',gap:16}}>
+    <div style={{width:48,height:2,background:accent,marginBottom:8}}/>
+    <div style={{fontSize:22,fontWeight:700,color:'#ffffff'}}>{title}</div>
+    <div style={{fontSize:13,color:'#4a6880',maxWidth:360,textAlign:'center',lineHeight:1.6}}>{description}</div>
+    <div style={{fontFamily:'IBM Plex Mono,monospace',fontSize:11,color:'#1e3348',marginTop:8}}>{route}</div>
+  </div>
+);
+
+const SCREENS = {
+  overview:    null, // rendered as PlatformDashboard
+  cleardesk:   { title:'ClearDesk', accent:'#00d4aa', description:'AI-powered AR document processing. Confidence scoring, escalation management, and dual-language summaries.', route:'/cleardesk' },
+  money:       { title:'Money', accent:'#ffc400', description:'HVAC AI dispatch automation. CrewAI multi-agent workflow for lead intake, triage, scheduling, and follow-up.', route:'/money' },
+  bap:         { title:'B-A-P', accent:'#00e5ff', description:'Business analytics platform. ETL pipeline, AI insights, forecasting, and anomaly detection.', route:'/bap' },
+  apex:        { title:'APEX', accent:'#7c5cfc', description:'5-layer probabilistic autonomous agent OS. Human-in-the-loop review, uncertainty visualization, MCP tool bus.', route:'/apex' },
+  integration: null, // rendered as EventStream
+  settings:    { title:'Settings', accent:'#a8c4de', description:'Organization profile, API keys, webhooks, integrations, and team management.', route:'/settings' },
+  billing:     { title:'Billing', accent:'#ffc400', description:'Stripe subscription management, usage meters, invoice history, and seat management.', route:'/billing' },
+  admin:       { title:'Admin', accent:'#ff3b5c', description:'User management, role assignment, cross-service audit log.', route:'/admin' },
+};
+
+const App = () => {
+  const saved = (() => { try { return JSON.parse(localStorage.getItem('re-platform-state')||'{}'); } catch{ return {}; } })();
+  const tweaks = {...TWEAK_DEFAULTS};
+
+  const [active, setActive] = React.useState(saved.screen || 'overview');
+  const [palette, setPalette] = React.useState(false);
+  const [editMode, setEditMode] = React.useState(false);
+  const [twkVals, setTwkVals] = React.useState(tweaks);
+
+  const navigate = (screen) => {
+    setActive(screen);
+    localStorage.setItem('re-platform-state', JSON.stringify({screen}));
+  };
+
+  React.useEffect(() => {
+    lucide.createIcons();
+  });
+
+  React.useEffect(() => {
+    const h = e => {
+      if((e.metaKey||e.ctrlKey) && e.key==='k') { e.preventDefault(); setPalette(p=>!p); }
+    };
+    window.addEventListener('keydown', h);
+    return () => window.removeEventListener('keydown', h);
+  }, []);
+
+  // Tweaks protocol
+  React.useEffect(() => {
+    const h = e => {
+      if(e.data?.type === '__activate_edit_mode') setEditMode(true);
+      if(e.data?.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', h);
+    window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return () => window.removeEventListener('message', h);
+  }, []);
+
+  const screen = SCREENS[active];
+
+  return (
+    <div style={{display:'flex',height:'100vh',overflow:'hidden'}}>
+      <SidebarNav active={active} onNavigate={navigate} collapsed={twkVals.sidebarCollapsed}/>
+      <div style={{flex:1,display:'flex',flexDirection:'column',overflow:'hidden'}}>
+        <TopBar onCommandK={()=>setPalette(true)} notifications={3}/>
+        <div style={{flex:1,overflow:'hidden',display:'flex'}}>
+          {active === 'overview' && (
+            <div style={{flex:1,overflow:'auto'}}>
+              <PlatformDashboard onNavigate={navigate}/>
+            </div>
+          )}
+          {active === 'integration' && (
+            <div style={{flex:1,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+              <EventStream/>
+            </div>
+          )}
+          {screen && (
+            <PlaceholderScreen {...screen}/>
+          )}
+        </div>
+      </div>
+
+      {palette && <CommandPalette onClose={()=>setPalette(false)} onNavigate={n=>{navigate(n);}}/>}
+
+      {/* Tweaks panel */}
+      {editMode && (
+        <div style={{position:'fixed',bottom:20,right:20,background:'#091424',border:'1px solid #152637',borderRadius:2,padding:16,zIndex:400,width:240,fontFamily:'IBM Plex Sans,sans-serif'}}>
+          <div style={{fontSize:12,fontWeight:600,color:'#ffffff',marginBottom:12}}>Tweaks</div>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            <label style={{fontSize:11,color:'#4a6880',display:'flex',flexDirection:'column',gap:4}}>
+              Sidebar Collapsed
+              <select value={String(twkVals.sidebarCollapsed)} onChange={e=>{const v={...twkVals,sidebarCollapsed:e.target.value==='true'};setTwkVals(v);window.parent.postMessage({type:'__edit_mode_set_keys',edits:v},'*');}}
+                style={{background:'#060c1a',border:'1px solid #152637',color:'#a8c4de',padding:'4px 8px',borderRadius:2,fontSize:11}}>
+                <option value="false">Expanded</option>
+                <option value="true">Collapsed</option>
+              </select>
+            </label>
+            <label style={{fontSize:11,color:'#4a6880',display:'flex',flexDirection:'column',gap:4}}>
+              Show Event Stream
+              <select value={String(twkVals.showEventStream)} onChange={e=>{const v={...twkVals,showEventStream:e.target.value==='true'};setTwkVals(v);window.parent.postMessage({type:'__edit_mode_set_keys',edits:v},'*');}}
+                style={{background:'#060c1a',border:'1px solid #152637',color:'#a8c4de',padding:'4px 8px',borderRadius:2,fontSize:11}}>
+                <option value="true">Visible</option>
+                <option value="false">Hidden</option>
+              </select>
+            </label>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

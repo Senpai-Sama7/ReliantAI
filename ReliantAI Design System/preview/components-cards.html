@@ -1,0 +1,59 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.card{background:#060c1a;border:1px solid #0c1a2c;padding:16px;min-width:180px;max-width:220px;flex:1}
+.card-title{font-size:11px;font-weight:600;color:#ffffff;margin-bottom:4px;letter-spacing:0.01em}
+.card-sub{font-size:10px;color:#4a6880;margin-bottom:12px;font-family:'IBM Plex Mono',monospace}
+.metric{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;color:#ffffff;margin-bottom:2px}
+.metric-label{font-size:10px;color:#4a6880}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 6px;border-radius:2px;margin-top:8px}
+.divider{border:none;border-top:1px solid #0c1a2c;margin:10px 0}
+.row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.row-label{font-size:11px;color:#4a6880}
+.row-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#a8c4de}
+</style></head><body>
+
+<!-- Service health card -->
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+    <div>
+      <div class="card-title">ClearDesk</div>
+      <div class="card-sub">Document Processing</div>
+    </div>
+    <span class="badge" style="background:rgba(0,255,122,0.1);color:#00ff7a;border:1px solid rgba(0,255,122,0.25)">OPERATIONAL</span>
+  </div>
+  <div class="metric" style="color:#00d4aa">1,284</div>
+  <div class="metric-label">docs processed today</div>
+  <hr class="divider">
+  <div class="row"><span class="row-label">Escalated</span><span class="row-val" style="color:#ff3b5c">12</span></div>
+  <div class="row"><span class="row-label">Avg confidence</span><span class="row-val">0.91</span></div>
+</div>
+
+<!-- Dispatch card -->
+<div class="card" style="border-color:#152637">
+  <div class="card-title">dispatch.completed</div>
+  <div class="card-sub" style="margin-bottom:10px">2 min ago · money</div>
+  <div style="font-size:12px;color:#a8c4de;line-height:1.5;margin-bottom:10px">AC not cooling · 96°F · Unit 4B<br>Tech: Rodriguez, M.</div>
+  <div class="row"><span class="row-label">corr</span><span class="row-val">a3f9-81cb-…</span></div>
+  <div class="row"><span class="row-label">urgency</span><span style="font-size:10px;font-weight:500;padding:2px 6px;border-radius:2px;background:rgba(255,196,0,0.1);color:#ffc400;border:1px solid rgba(255,196,0,0.25)">URGENT</span></div>
+</div>
+
+<!-- Stat card -->
+<div class="card">
+  <div class="card-title" style="margin-bottom:16px;color:#4a6880;font-size:10px;letter-spacing:0.08em;text-transform:uppercase">Total Revenue Pipeline</div>
+  <div class="metric" style="font-size:28px;color:#ffc400">$1.24M</div>
+  <div class="metric-label" style="margin-bottom:8px">Q2 2025 · Houston region</div>
+  <div style="font-size:11px;color:#00ff7a">↑ 18% vs last quarter</div>
+</div>
+
+<!-- Skeleton card -->
+<div class="card">
+  <div class="card-title" style="margin-bottom:12px">Loading state</div>
+  <div style="background:linear-gradient(90deg,#060c1a 25%,#091424 50%,#060c1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite linear;height:14px;margin-bottom:8px;border-radius:1px"></div>
+  <div style="background:linear-gradient(90deg,#060c1a 25%,#091424 50%,#060c1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite linear;height:28px;margin-bottom:8px;width:70%;border-radius:1px"></div>
+  <div style="background:linear-gradient(90deg,#060c1a 25%,#091424 50%,#060c1a 75%);background-size:200% 100%;animation:shimmer 1.5s infinite linear;height:10px;width:50%;border-radius:1px"></div>
+</div>
+<style>@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}</style>
+</body></html>

@@ -23,6 +23,8 @@ itsdangerous>=2.1.0
 tenacity>=9.0.0
 python-dotenv>=1.0.0
 rich>=13.7.0
+structlog>=23.2.0
+redis>=5.0.0
 
 # Security
 python-jose[cryptography]>=3.4.0

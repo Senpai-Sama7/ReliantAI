@@ -46,7 +46,7 @@ def get_pool():
                 try:
                     with test_conn.cursor() as cur:
                         cur.execute("SELECT 1")
-                    logger.info("DB pool validated", pool_min=min_conn, pool_max=max_conn)
+                    logger.info("DB pool validated (min=%d, max=%d)", min_conn, max_conn)
                 except Exception as exc:
                     _pool.closeall()
                     _pool = None

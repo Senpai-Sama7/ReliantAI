@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ReliantAI — Developer Handoff Spec</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#020510;--surface:#060c1a;--hi:#091424;
+  --border:#0c1a2c;--brt:#152637;
+  --text:#a8c4de;--dim:#4a6880;--muted:#1e3348;--bright:#ffffff;
+  --cyan:#00e5ff;--green:#00ff7a;--gold:#ffc400;--red:#ff3b5c;--purple:#7c5cfc;--teal:#00d4aa;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body{padding:0;display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.sidebar-logo{padding:0 18px 18px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-logo .wordmark{font-size:15px;font-weight:700;color:var(--bright);letter-spacing:-0.01em}
+.sidebar-logo .wordmark span{color:var(--cyan)}
+.sidebar-logo .sub{font-family:var(--mono);font-size:9px;color:var(--dim);margin-top:3px}
+.nav-section{padding:8px 18px 4px;font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:0.12em;text-transform:uppercase;margin-top:8px}
+.nav-item{display:block;padding:7px 18px;font-size:12px;color:var(--dim);text-decoration:none;border-left:2px solid transparent;transition:all 120ms;cursor:pointer}
+.nav-item:hover{color:var(--text);background:var(--hi);border-left-color:var(--cyan)}
+.nav-item.active{color:var(--bright);background:rgba(0,229,255,0.06);border-left-color:var(--cyan)}
+
+/* Main */
+.main{flex:1;padding:40px 56px;max-width:960px}
+h1{font-family:var(--sans);font-size:28px;font-weight:700;color:var(--bright);letter-spacing:-0.02em;margin-bottom:6px}
+.meta{font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:36px;display:flex;gap:20px}
+h2{font-family:var(--sans);font-size:16px;font-weight:600;color:var(--bright);margin:36px 0 14px;padding-top:36px;border-top:1px solid var(--border)}
+h2:first-of-type{margin-top:0;padding-top:0;border-top:none}
+h3{font-size:12px;font-weight:600;color:var(--text);margin:20px 0 8px;text-transform:uppercase;letter-spacing:0.07em}
+p{color:var(--text);margin-bottom:12px;line-height:1.7}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}
+thead tr{background:var(--hi)}
+th{padding:8px 12px;text-align:left;font-size:9px;font-weight:600;color:var(--dim);letter-spacing:0.09em;text-transform:uppercase;border-bottom:1px solid var(--brt)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:top}
+tr:hover td{background:var(--hi)}
+td code,th code{font-family:var(--mono);font-size:10px;color:var(--cyan)}
+td:first-child{font-family:var(--mono);font-size:10px;color:var(--cyan);white-space:nowrap}
+
+/* Code blocks */
+pre{background:var(--surface);border:1px solid var(--border);padding:16px 18px;overflow-x:auto;margin-bottom:16px;font-family:var(--mono);font-size:11px;color:var(--text);line-height:1.7}
+code{font-family:var(--mono);font-size:11px;color:var(--teal);background:rgba(0,212,170,0.07);padding:1px 5px;border-radius:2px}
+pre code{background:none;padding:0;color:inherit}
+
+/* Service badges */
+.badge{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:600;padding:2px 7px;border-radius:2px;letter-spacing:0.05em;vertical-align:middle}
+.badge-cd{background:rgba(0,212,170,0.1);color:#00FF94;border:1px solid rgba(0,212,170,0.3)}
+.badge-money{background:rgba(255,196,0,0.1);color:var(--gold);border:1px solid rgba(255,196,0,0.3)}
+.badge-apex{background:rgba(124,92,252,0.1);color:var(--purple);border:1px solid rgba(124,92,252,0.3)}
+.badge-bap{background:rgba(0,229,255,0.1);color:var(--cyan);border:1px solid rgba(0,229,255,0.3)}
+.badge-int{background:rgba(0,255,122,0.1);color:var(--green);border:1px solid rgba(0,255,122,0.3)}
+.badge-auth{background:rgba(168,196,222,0.1);color:var(--text);border:1px solid var(--brt)}
+.badge-red{background:rgba(255,59,92,0.1);color:var(--red);border:1px solid rgba(255,59,92,0.3)}
+
+/* Callout */
+.callout{padding:12px 16px;border-left:3px solid var(--red);background:rgba(255,59,92,0.06);margin-bottom:16px;font-size:12px}
+.callout.green{border-color:var(--green);background:rgba(0,255,122,0.05)}
+.callout.gold{border-color:var(--gold);background:rgba(255,196,0,0.05)}
+.callout strong{color:var(--bright)}
+
+/* Token swatch */
+.token-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.token-tile{padding:12px;background:var(--surface);border:1px solid var(--border)}
+.token-swatch{height:28px;margin-bottom:8px;border-radius:1px}
+.token-name{font-family:var(--mono);font-size:9px;color:var(--dim);margin-bottom:2px}
+.token-val{font-family:var(--mono);font-size:10px;color:var(--text);font-weight:500}
+
+/* State machine */
+.state-flow{display:flex;gap:0;align-items:center;flex-wrap:wrap;margin-bottom:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border)}
+.state{font-family:var(--mono);font-size:10px;padding:4px 10px;border-radius:2px;background:var(--hi);color:var(--bright);border:1px solid var(--brt)}
+.state.green{background:rgba(0,255,122,0.08);color:var(--green);border-color:rgba(0,255,122,0.25)}
+.state.red{background:rgba(255,59,92,0.08);color:var(--red);border-color:rgba(255,59,92,0.25)}
+.state.gold{background:rgba(255,196,0,0.08);color:var(--gold);border-color:rgba(255,196,0,0.25)}
+.state.purple{background:rgba(124,92,252,0.08);color:var(--purple);border-color:rgba(124,92,252,0.25)}
+.arrow{font-family:var(--mono);font-size:11px;color:var(--dim);padding:0 6px}
+
+/* Checklist */
+.checklist{list-style:none;margin-bottom:20px}
+.checklist li{padding:6px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;font-size:12px;color:var(--text)}
+.checklist li::before{content:'□';font-family:var(--mono);color:var(--dim);flex-shrink:0}
+
+/* Scroll highlight */
+:target{scroll-margin-top:20px}
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="wordmark">Reliant<span>AI</span></div>
+    <div class="sub">Developer Handoff · v1.0</div>
+  </div>
+  <div class="nav-section">Screens</div>
+  <a class="nav-item" href="#routes">Route map</a>
+  <a class="nav-item" href="#components">Components</a>
+  <div class="nav-section">Design</div>
+  <a class="nav-item" href="#tokens">Token usage</a>
+  <a class="nav-item" href="#states">State machines</a>
+  <div class="nav-section">Backend</div>
+  <a class="nav-item" href="#api">API endpoints</a>
+  <a class="nav-item" href="#security">Security invariants</a>
+  <div class="nav-section">Implementation</div>
+  <a class="nav-item" href="#checklist">Handoff checklist</a>
+  <a class="nav-item" href="#files">File structure</a>
+</nav>
+
+<main class="main">
+  <h1>Developer Handoff Spec</h1>
+  <div class="meta">
+    <span>Generated: 2026-04-23</span>
+    <span>Console: console/index.html</span>
+    <span>Stack: React 19 · Next.js 15 App Router · TypeScript · Tailwind 4</span>
+  </div>
+
+  <!-- ROUTES -->
+  <h2 id="routes">Route → Component Map</h2>
+  <table>
+    <thead><tr><th>Path</th><th>Screen</th><th>Component</th><th>Service</th><th>Primary API</th></tr></thead>
+    <tbody>
+      <tr><td>/auth/signin</td><td>Sign In</td><td>AuthSignIn</td><td><span class="badge badge-auth">Auth</span></td><td>POST /auth/token</td></tr>
+      <tr><td>/auth/mfa</td><td>MFA</td><td>AuthMFA</td><td><span class="badge badge-auth">Auth</span></td><td>POST /auth/mfa/verify</td></tr>
+      <tr><td>/marketing</td><td>Homepage</td><td>MarketingHome</td><td><span class="badge badge-auth">Marketing</span></td><td>—</td></tr>
+      <tr><td>/marketing/pricing</td><td>Pricing</td><td>MarketingPricing</td><td><span class="badge badge-auth">Marketing</span></td><td>—</td></tr>
+      <tr><td>/console</td><td>Command Center</td><td>ConsoleHome</td><td><span class="badge badge-int">Platform</span></td><td>GET /services/health</td></tr>
+      <tr><td>/cleardesk</td><td>Landing Page</td><td>ClearDeskLanding</td><td><span class="badge badge-cd">ClearDesk</span></td><td>—</td></tr>
+      <tr><td>/cleardesk/queue</td><td>Document Queue</td><td>ClearDeskQueue</td><td><span class="badge badge-cd">ClearDesk</span></td><td>GET /api/documents</td></tr>
+      <tr><td>/cleardesk/upload</td><td>Upload</td><td>ClearDeskUpload</td><td><span class="badge badge-cd">ClearDesk</span></td><td>POST /api/documents/upload</td></tr>
+      <tr><td>/cleardesk/chat</td><td>AI Chat</td><td>ClearDeskChat</td><td><span class="badge badge-cd">ClearDesk</span></td><td>POST /api/chat (SSE)</td></tr>
+      <tr><td>/cleardesk/export</td><td>Export</td><td>ClearDeskExport</td><td><span class="badge badge-cd">ClearDesk</span></td><td>GET /api/documents/export</td></tr>
+      <tr><td>/cleardesk/settings</td><td>Settings</td><td>ClearDeskSettings</td><td><span class="badge badge-cd">ClearDesk</span></td><td>GET/PUT /api/settings</td></tr>
+      <tr><td>/money/admin</td><td>Dispatch Dashboard</td><td>MoneyAdmin</td><td><span class="badge badge-money">Money</span></td><td>GET /dispatches · SSE /stream</td></tr>
+      <tr><td>/money/billing</td><td>Billing</td><td>MoneyBilling</td><td><span class="badge badge-money">Money</span></td><td>GET /billing/subscription</td></tr>
+      <tr><td>/apex/overview</td><td>APEX Overview</td><td>ApexOverview</td><td><span class="badge badge-apex">APEX</span></td><td>GET /workflow/completed</td></tr>
+      <tr><td>/apex/hitl</td><td>HITL Review</td><td>ApexHITL</td><td><span class="badge badge-apex">APEX</span></td><td>GET /workflow/pending · SSE</td></tr>
+      <tr><td>/apex/workflows</td><td>Workflow Runner</td><td>ApexWorkflows</td><td><span class="badge badge-apex">APEX</span></td><td>POST /workflow/run</td></tr>
+      <tr><td>/apex/langfuse</td><td>Trace Viewer</td><td>ApexLangfuse</td><td><span class="badge badge-apex">APEX</span></td><td>GET /traces · GET /traces/{id}/spans</td></tr>
+      <tr><td>/apex/tools</td><td>Tool Bus</td><td>ApexTools</td><td><span class="badge badge-apex">APEX</span></td><td>GET /tools · POST /tools/call</td></tr>
+      <tr><td>/bap/analytics</td><td>Analytics</td><td>BAPAnalytics</td><td><span class="badge badge-bap">B-A-P</span></td><td>GET /datasets · GET /insights</td></tr>
+      <tr><td>/bap/pipeline</td><td>Pipeline Builder</td><td>BAPPipeline</td><td><span class="badge badge-bap">B-A-P</span></td><td>GET /etl/jobs/{id} · SSE</td></tr>
+      <tr><td>/bap/upload</td><td>Dataset Upload</td><td>BAPUpload</td><td><span class="badge badge-bap">B-A-P</span></td><td>POST /datasets/upload</td></tr>
+      <tr><td>/bap/insights</td><td>AI Insights</td><td>BAPInsights</td><td><span class="badge badge-bap">B-A-P</span></td><td>GET /insights?type=&conf_min=</td></tr>
+      <tr><td>/integration/overview</td><td>Service Registry</td><td>IntegrationOverview</td><td><span class="badge badge-int">Integration</span></td><td>GET /gateway/services</td></tr>
+      <tr><td>/integration/bus</td><td>Event Bus</td><td>IntegrationBus</td><td><span class="badge badge-int">Integration</span></td><td>SSE /events/stream</td></tr>
+      <tr><td>/integration/sagas</td><td>Saga Transactions</td><td>IntegrationSagas</td><td><span class="badge badge-int">Integration</span></td><td>GET /sagas · POST /sagas/{id}/compensate</td></tr>
+      <tr><td>/integration/auth</td><td>Auth Sessions</td><td>IntegrationAuth</td><td><span class="badge badge-int">Integration</span></td><td>GET /auth/sessions</td></tr>
+      <tr><td>/settings</td><td>Org Settings</td><td>AdminSettings</td><td><span class="badge badge-auth">Admin</span></td><td>GET/PUT /org · GET /api-keys</td></tr>
+      <tr><td>/admin/billing</td><td>Platform Billing</td><td>AdminBilling</td><td><span class="badge badge-auth">Admin</span></td><td>GET /billing</td></tr>
+      <tr><td>/admin/audit</td><td>Audit Log</td><td>AuditLog</td><td><span class="badge badge-auth">Admin</span></td><td>GET /audit</td></tr>
+    </tbody>
+  </table>
+
+  <!-- COMPONENTS -->
+  <h2 id="components">Shared Component Inventory</h2>
+  <h3>Primitives — console/UI.jsx</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Key props</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>CountUp</td><td>to, duration?, prefix?, suffix?, decimals?</td><td>rAF animation + setTimeout fallback for offscreen iframes</td></tr>
+      <tr><td>Badge</td><td>label, tone?, pulse?, size?</td><td>tones: neutral/cyan/green/gold/red/purple/teal/orange/life</td></tr>
+      <tr><td>Btn</td><td>variant?, size?, tone?, onClick?, disabled?, icon?</td><td>variants: primary/secondary/ghost/danger/success · service tones via tone prop</td></tr>
+      <tr><td>Panel</td><td>style?, elevated?</td><td>Dark surface — always border-radius 0. Use elevated for modals/popovers.</td></tr>
+      <tr><td>PanelHeader</td><td>title, sub?, right?</td><td>right slot for action buttons or badges</td></tr>
+      <tr><td>MetricTile</td><td>label, value, unit?, delta?, color?, icon?</td><td>Flex tile for stat strips. delta renders ↑↓ in green/red.</td></tr>
+      <tr><td>ConfBar</td><td>val, width?, showLabel?</td><td>0–1 animated fill. Green ≥0.90, gold ≥0.70, red below.</td></tr>
+      <tr><td>Sparkline</td><td>data, width?, height?, color?, fill?</td><td>SVG polyline with gradient fill. No axis labels.</td></tr>
+      <tr><td>Tabs</td><td>tabs, active, onChange, tone?</td><td>Bottom-border active indicator. tabs can be strings or {id, label, count}.</td></tr>
+      <tr><td>Input</td><td>icon?, type?, error?, size?</td><td>Wraps input with optional leading lucide icon and inline error message.</td></tr>
+      <tr><td>EmptyState</td><td>icon?, title, body?, cta?</td><td>Centered empty state with lucide icon + optional CTA slot.</td></tr>
+      <tr><td>Skel</td><td>w?, h?, style?</td><td>Shimmer skeleton block. Match to target element dimensions.</td></tr>
+      <tr><td>Logo</td><td>size?, showWord?, wordSize?</td><td>SVG chevron-diamond monogram + IBM Plex Sans wordmark.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Shell — console/Shell.jsx</h3>
+  <table>
+    <thead><tr><th>Component</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>Sidebar</td><td>Left rail. Collapsible. Grouped by service with accent colors. User footer with avatar.</td></tr>
+      <tr><td>TopBar</td><td>44px breadcrumb + Cmd+K trigger + system health indicator.</td></tr>
+      <tr><td>EventFeed</td><td>Right rail SSE feed. Collapsible to icon strip. Auto-ticks every 2.8s in prototype.</td></tr>
+      <tr><td>CommandPalette</td><td>Full-screen overlay. ↑↓↵ Esc keyboard nav. Route search across all 29 screens.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- TOKENS -->
+  <h2 id="tokens">Token Usage Rules</h2>
+
+  <h3>Color application</h3>
+  <div class="token-grid">
+    <div class="token-tile"><div class="token-swatch" style="background:#020510;border:1px solid #0c1a2c"></div><div class="token-name">--re-bg</div><div class="token-val">#020510 · page root</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#060c1a"></div><div class="token-name">--re-surface</div><div class="token-val">#060c1a · card/panel</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#091424"></div><div class="token-name">--re-surface-hi</div><div class="token-val">#091424 · hover/modal</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#0d1e35"></div><div class="token-name">--re-surface-pop</div><div class="token-val">#0d1e35 · tooltip</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#00FF94"></div><div class="token-name">ClearDesk</div><div class="token-val">#00FF94 / #00d4aa</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#ffc400"></div><div class="token-name">Money</div><div class="token-val">#ffc400 --re-gold</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#7c5cfc"></div><div class="token-name">APEX</div><div class="token-val">#7c5cfc --re-purple</div></div>
+    <div class="token-tile"><div class="token-swatch" style="background:#00e5ff"></div><div class="token-name">B-A-P</div><div class="token-val">#00e5ff --re-cyan</div></div>
+  </div>
+
+  <pre>/* Background hierarchy — never invert */
+--re-bg          #020510   page root
+--re-surface     #060c1a   primary card / panel
+--re-surface-hi  #091424   hover row / modal / elevated
+--re-surface-pop #0d1e35   tooltip / dropdown
+
+/* Typography */
+font-display: 'Neue Haas Grotesk', 'Inter Tight', sans-serif  → headings only
+font-body:    'IBM Plex Sans', sans-serif                       → all UI, labels, body
+font-mono:    'IBM Plex Mono', monospace                        → ALL data values, IDs, codes
+
+/* Border rules */
+default panel:  1px solid #0c1a2c  (--re-border)
+hover / active: 1px solid #152637  (--re-border-brt)
+focus ring:     box-shadow: 0 0 0 2px &lt;accent&gt;25
+error state:    1px solid #ff3b5c
+border-radius:  0px panels/cards · 2px buttons/badges/inputs — NEVER rounded-lg</pre>
+
+  <!-- STATE MACHINES -->
+  <h2 id="states">State Machines</h2>
+
+  <h3>ClearDesk document flow</h3>
+  <div class="state-flow">
+    <span class="state">UPLOADED</span><span class="arrow">→ OCR + Claude →</span>
+    <span class="state">PARSED</span><span class="arrow">→ conf ≥ 0.70 + amount &lt; limit →</span>
+    <span class="state green">READY</span><span class="arrow">→</span>
+    <span class="state green">EXPORTED</span>
+  </div>
+  <div class="state-flow">
+    <span class="state">PARSED</span><span class="arrow">→ conf &lt; 0.70 OR amount ≥ threshold →</span>
+    <span class="state red">ESCALATED</span><span class="arrow">→ human approve →</span>
+    <span class="state green">READY</span>
+  </div>
+  <div class="callout"><strong>Security:</strong> Document preview MUST pass DOMPurify before DOM insertion. Never use innerHTML with raw document bytes.</div>
+
+  <h3>Money dispatch + LIFE_SAFETY protocol</h3>
+  <div class="state-flow">
+    <span class="state">INBOUND</span><span class="arrow">→ triage_agent →</span>
+    <span class="state red">LIFE_SAFETY</span><span class="arrow">→ 911 directive · NO dispatch · owner notified</span>
+  </div>
+  <div class="state-flow">
+    <span class="state">INBOUND</span><span class="arrow">→ triage_agent →</span>
+    <span class="state">PENDING</span><span class="arrow">→</span>
+    <span class="state gold">SCHEDULED</span><span class="arrow">→</span>
+    <span class="state gold">EN_ROUTE</span><span class="arrow">→</span>
+    <span class="state green">COMPLETED</span>
+  </div>
+  <div class="callout"><strong>Security invariant #3:</strong> Gas/CO/smoke/fire keywords MUST trigger 911 directive. UI must show LIFE_SAFETY banner, disable dispatch actions, and display "no technician dispatched" — even if backend check fails.</div>
+
+  <h3>APEX execution tier assignment</h3>
+  <table>
+    <thead><tr><th>Tier</th><th>Condition</th><th>Resolution</th><th>Color</th></tr></thead>
+    <tbody>
+      <tr><td>T1 Reflexive</td><td>conf ≥ 0.92 AND domain_novelty &lt; 0.50</td><td>Auto-approve, log only</td><td style="color:#00e5ff">--re-cyan</td></tr>
+      <tr><td>T2 Deliberative</td><td>conf ≥ 0.65 AND domain_novelty &lt; 0.85</td><td>Approve with reasoning</td><td style="color:#ffc400">--re-gold</td></tr>
+      <tr><td>T3 Contested</td><td>conf &lt; 0.65 OR stakes == HIGH</td><td>HITL required</td><td style="color:#ff3b5c">--re-red</td></tr>
+      <tr><td>T4 Unknown</td><td>domain_novelty ≥ 0.85</td><td>HITL + escalate to owner</td><td style="color:#7c5cfc">--re-purple</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Saga compensation</h3>
+  <div class="state-flow">
+    <span class="state">PENDING</span><span class="arrow">→</span>
+    <span class="state gold">RUNNING</span><span class="arrow">→</span>
+    <span class="state green">COMPLETED</span>
+  </div>
+  <div class="state-flow">
+    <span class="state gold">RUNNING</span><span class="arrow">→ step fails →</span>
+    <span class="state red">FAILED</span><span class="arrow">→</span>
+    <span class="state gold">COMPENSATING</span><span class="arrow">→</span>
+    <span class="state green">COMPENSATED</span>
+  </div>
+
+  <!-- API -->
+  <h2 id="api">API Endpoint Reference</h2>
+
+  <h3>Auth service · port 8001 · Kong /auth</h3>
+  <pre>POST /auth/token              OAuth2 password → {access_token, refresh_token, expires_in}
+POST /auth/refresh             Rotate tokens
+POST /auth/mfa/verify          TOTP → {access_token}
+GET  /auth/sessions            Active JWT session list (admin only)
+DELETE /auth/sessions/{id}     Revoke session
+GET  /health                   No auth required</pre>
+
+  <h3>ClearDesk API · port 8002 · Kong /cleardesk</h3>
+  <pre>GET  /api/documents            ?status= &search= &page= &limit=
+POST /api/documents/upload     multipart/form-data → {document_id}
+POST /api/analyze              {document_id} → {confidence, extracted_data, summary_en, summary_es}
+GET  /api/documents/{id}       Full document record
+PATCH /api/documents/{id}      {status, assignee, notes}
+GET  /api/documents/export     ?format=csv|json &fields= → stream
+GET  /api/settings             Thresholds and config
+PUT  /api/settings             Update thresholds
+POST /api/chat                 {messages, context_doc_ids} → SSE stream</pre>
+
+  <h3>Money API · FastAPI · port 8003 · Kong /money</h3>
+  <pre>GET  /dispatches               ?status= &urgency= &limit=
+POST /dispatch                 {lead_info, issue, source} → dispatch_id (triggers CrewAI)
+GET  /dispatches/{id}          Full dispatch + message thread
+PATCH /dispatches/{id}         {status, notes}
+POST /dispatches/{id}/sms      Resend SMS
+GET  /agents/status            CrewAI agent pipeline status
+SSE  /dispatches/stream        Live dispatch events</pre>
+
+  <h3>APEX · Next.js API routes · port 8000 · Kong /apex</h3>
+  <pre>POST /workflow/run             {input, context?} → {workflow_id}
+GET  /workflow/pending         HITL decision queue
+POST /workflow/hitl/{id}       {action: approve|reject, reasoning}
+SSE  /workflow/run/{id}/stream Execution trace
+GET  /traces                   Langfuse trace list
+GET  /traces/{id}/spans        Span breakdown
+GET  /tools                    MCP tool registry (15+ integrations)
+POST /tools/call               {tool_name, input} → result
+POST /memory/search            {query, k?} → [{content, similarity}]</pre>
+
+  <h3>B-A-P · FastAPI · port 8004 · Kong /bap</h3>
+  <pre>GET  /datasets                 Dataset inventory
+POST /datasets/upload          multipart → {dataset_id}
+POST /datasets/{id}/run        Trigger ETL pipeline
+GET  /etl/jobs                 Active + recent jobs
+SSE  /etl/jobs/{id}/stream     Live stage updates
+GET  /insights                 ?type=anomaly|forecast|summary &conf_min=</pre>
+
+  <h3>Integration layer · Kong gateway</h3>
+  <pre>GET  /gateway/services         Kong registered services
+SSE  /events/stream            Live event feed (Redis Streams)
+GET  /events                   ?source= &kind= &limit=
+GET  /dlq                      Dead letter queue
+GET  /sagas                    Active saga list
+GET  /sagas/{id}               Saga detail + step trace
+POST /sagas/{id}/compensate    Trigger compensation
+GET  /audit                    ?service= &user= &action= &limit=</pre>
+
+  <!-- SECURITY -->
+  <h2 id="security">Security Invariants</h2>
+  <p>These MUST be enforced in every implementation. All 7 appear in Settings → Security in the console.</p>
+
+  <table>
+    <thead><tr><th>#</th><th>Invariant</th><th>UI enforcement</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>No auth tokens in browser storage</td><td>localStorage / sessionStorage / IndexedDB must never contain JWTs or API keys. Session state is server-side only.</td></tr>
+      <tr><td>2</td><td>Document preview is text-safe</td><td>All document content must pass DOMPurify.sanitize() before DOM insertion. No innerHTML with raw bytes.</td></tr>
+      <tr><td>3</td><td>Life-safety auto-dispatch blocked</td><td>LIFE_SAFETY → show red pulse banner, disable dispatch actions, display "no technician dispatched" message.</td></tr>
+      <tr><td>4</td><td>No default credentials</td><td>Settings UI must reject empty API key fields. All services require explicit env vars with :?required syntax.</td></tr>
+      <tr><td>5</td><td>No raw UUID KV access</td><td>ClearDesk cross-device sync uses signed session codes (6-char, short-lived) — never raw document UUIDs.</td></tr>
+      <tr><td>6</td><td>Fail-closed auth</td><td>If /auth/health fails, UI must block access and show error. Never fall through to an unauthenticated state.</td></tr>
+      <tr><td>7</td><td>No direct service-to-service calls</td><td>All cross-service data flows through the integration event bus or Kong gateway. No direct API calls between service UIs.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- CHECKLIST -->
+  <h2 id="checklist">Implementation Checklist</h2>
+  <ul class="checklist">
+    <li>Tokens imported from colors_and_type.css — no hardcoded hex values in components</li>
+    <li>All data values use IBM Plex Mono — no sans-serif for numeric / ID fields</li>
+    <li>Border-radius max 2px — no rounded-lg, rounded-xl, or rounded-full in Tailwind</li>
+    <li>No box-shadows on cards/panels — elevation via background-color stepping only</li>
+    <li>Hover: background steps up one level (--re-surface → --re-surface-hi)</li>
+    <li>Loading states: shimmer skeleton (Skel component) matching screen layout</li>
+    <li>Empty states: centered, lucide icon + action CTA (EmptyState component)</li>
+    <li>LIFE_SAFETY banner: animation: pulse 1.4s ease infinite — red, full-width, sticky top</li>
+    <li>Confidence scores: ConfBar — thresholds at 0.90 (green), 0.70 (gold), below (red)</li>
+    <li>Event types in snake.dot.notation — never camelCase in UI labels</li>
+    <li>Status enums in SCREAMING_SNAKE_CASE — never lowercase in badges</li>
+    <li>All cross-service navigation via event bus — no direct service-to-service API calls</li>
+    <li>SSE connections use useEventStream hook — always clean up on unmount</li>
+    <li>Command palette (⌘K) available on every authenticated screen</li>
+  </ul>
+
+  <!-- FILES -->
+  <h2 id="files">Target File Structure</h2>
+  <pre>src/
+├── app/
+│   ├── (auth)/signin/page.tsx        AuthSignIn
+│   ├── (auth)/mfa/page.tsx           AuthMFA
+│   ├── (marketing)/page.tsx          MarketingHome
+│   ├── (marketing)/pricing/page.tsx  MarketingPricing
+│   └── console/
+│       ├── layout.tsx                Shell (Sidebar + TopBar + EventFeed)
+│       ├── page.tsx                  ConsoleHome
+│       ├── cleardesk/{queue,upload,chat,export,settings}/page.tsx
+│       ├── money/{page,billing}/page.tsx
+│       ├── apex/{overview,hitl,workflows,langfuse,tools}/page.tsx
+│       ├── bap/{analytics,pipeline,upload,insights}/page.tsx
+│       ├── integration/{overview,bus,sagas,auth}/page.tsx
+│       └── admin/{page,billing,audit}/page.tsx
+├── components/
+│   ├── ui/          Badge Btn Panel Tabs Input EmptyState Skel Logo CountUp ConfBar Sparkline
+│   ├── shell/       Sidebar TopBar EventFeed CommandPalette
+│   ├── cleardesk/   DocumentCard DocumentDetail ConfBar ChatPanel ExportPanel
+│   ├── money/       DispatchRow DispatchModal AgentTrace LifeSafetyBanner
+│   ├── apex/        UncertaintyGauge TierBadge HITLCard SpanDetail WorkflowTrace
+│   ├── bap/         InsightCard ETLJobRow PipelineGraph
+│   └── integration/ SagaStepTrace EventRow SessionRow
+├── lib/
+│   ├── api/         Type-safe fetch wrappers per service
+│   ├── auth/        JWT validation, session management
+│   ├── sse/         useEventStream hook
+│   └── tokens.ts    Design token constants
+└── styles/
+    └── tokens.css   Revenue Engine v6 (copy of colors_and_type.css)</pre>
+
+</main>
+</body>
+</html>

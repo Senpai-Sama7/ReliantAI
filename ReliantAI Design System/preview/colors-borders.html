@@ -1,0 +1,26 @@
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#020510;font-family:'IBM Plex Sans',sans-serif;padding:20px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;align-items:center;gap:16px;padding:12px 14px;background:#060c1a}
+.border-demo{flex:1;height:32px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#4a6880}
+.meta{font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4a6880;text-align:right}
+</style></head><body>
+<div class="row" style="border:1px solid #0c1a2c">
+  <div class="border-demo">Default panel border</div>
+  <div class="meta">--re-border · #0c1a2c · default</div>
+</div>
+<div class="row" style="border:1px solid #152637">
+  <div class="border-demo">Hover / active border</div>
+  <div class="meta">--re-border-brt · #152637 · hover</div>
+</div>
+<div class="row" style="border:1px solid #00e5ff">
+  <div class="border-demo" style="color:#00e5ff">Cyan accent border — active nav, focused input</div>
+  <div class="meta" style="color:#00e5ff">--re-cyan · focus ring</div>
+</div>
+<div class="row" style="border:1px solid #ff3b5c">
+  <div class="border-demo" style="color:#ff3b5c">Red accent border — error state, LIFE_SAFETY</div>
+  <div class="meta" style="color:#ff3b5c">--re-red · error</div>
+</div>
+</body></html>

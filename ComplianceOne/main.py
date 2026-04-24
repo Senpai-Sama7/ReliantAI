@@ -230,7 +230,7 @@ async def create_framework(data: FrameworkCreate, api_key: str = Depends(verify_
         pool.putconn(conn)
 
 @router.get("/frameworks")
-async def list_frameworks():
+async def list_frameworks(api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -260,7 +260,7 @@ async def create_control(data: ControlCreate, api_key: str = Depends(verify_api_
         pool.putconn(conn)
 
 @router.get("/frameworks/{framework_id}/controls")
-async def list_controls(framework_id: int):
+async def list_controls(framework_id: int, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -292,7 +292,7 @@ async def create_audit(data: AuditCreate, api_key: str = Depends(verify_api_key)
         pool.putconn(conn)
 
 @router.get("/audits")
-async def list_audits():
+async def list_audits(api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -360,7 +360,7 @@ async def report_violation(data: ViolationReport, api_key: str = Depends(verify_
         pool.putconn(conn)
 
 @router.get("/violations")
-async def list_violations(status: Optional[str] = None):
+async def list_violations(status: Optional[str] = None, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -378,7 +378,7 @@ async def list_violations(status: Optional[str] = None):
         pool.putconn(conn)
 
 @router.get("/dashboard")
-async def compliance_dashboard():
+async def compliance_dashboard(api_key: str = Depends(verify_api_key)):
     """Real-time compliance dashboard data"""
     pool = get_db_pool()
     conn = pool.getconn()
