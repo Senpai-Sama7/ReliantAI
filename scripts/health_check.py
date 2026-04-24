@@ -50,7 +50,7 @@ SERVICES = {
         "critical": True
     },
     "nginx": {
-        "url": "http://localhost:80",
+        "url": "http://localhost:8880",
         "health_endpoint": "/nginx-health",
         "api_key": None,
         "critical": False
