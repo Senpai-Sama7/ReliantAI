@@ -93,10 +93,15 @@ def trigger_outreach(req: OutreachRequest, _: str = Depends(verify_api_key)):
         resp = requests.post(
             f"{money_url}/api/dispatch/sms",
             json={"to": req.phone, "body": message},
-            headers={"X-API-Key": dispatch_key}
+            headers={"X-API-Key": dispatch_key},
+            timeout=10
         )
+        resp.raise_for_status()
         logger.info("outreach_triggered", name=req.name, phone=req.phone, status=resp.status_code)
         return {"status": "outreach_queued", "preview_url": preview_url}
+    except requests.HTTPError as e:
+        logger.error("outreach_failed", status=resp.status_code, error=str(e))
+        raise HTTPException(status_code=resp.status_code, detail="Failed to trigger outreach")
     except Exception as e:
         logger.error("outreach_failed", error=str(e))
         raise HTTPException(status_code=500, detail="Failed to trigger outreach")

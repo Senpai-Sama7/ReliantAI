@@ -227,19 +227,21 @@ async def _publish_health_event(service: str, healthy: bool, error: Optional[str
 
 async def _evaluate_self_heal():
     """Evaluate if any services need self-healing and trigger Orchestrator."""
-    for svc in SERVICES:
-        state = _health_state.get(svc["name"], {})
+    for svc_name, state in _health_state.items():
         if not state.get("healthy", False):
             # Check if we've been unhealthy for > 2 minutes
-            last_healthy = state.get("last_healthy")
-            if last_healthy is None:
+            first_unhealthy = state.get("first_unhealthy")
+            if first_unhealthy is None:
                 # First time seeing unhealthy — mark timestamp
-                state["last_healthy"] = None
                 state["first_unhealthy"] = datetime.utcnow().isoformat()
             else:
-                first_unhealthy = datetime.fromisoformat(state.get("first_unhealthy", datetime.utcnow().isoformat()))
-                if (datetime.utcnow() - first_unhealthy).total_seconds() > 120:
-                    await _self_heal(svc["name"])
+                # Already marked — check duration
+                try:
+                    unhealthy_since = datetime.fromisoformat(first_unhealthy)
+                    if (datetime.utcnow() - unhealthy_since).total_seconds() > 120:
+                        await _self_heal(svc_name)
+                except Exception:
+                    pass
 
 async def _self_heal(service: str) -> Dict:
     """Trigger self-healing through the Orchestrator."""
