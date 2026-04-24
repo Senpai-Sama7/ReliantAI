@@ -356,14 +356,6 @@ class TestDispatchEndpoint:
 class TestTwilioWebhooks:
     """Test ``POST /sms`` and ``POST /whatsapp`` webhook endpoints."""
 
-    def _twilio_signature(self, url: str, params: dict, token: str) -> str:
-        """Compute valid Twilio signature for a webhook."""
-        data = url
-        for key in sorted(params.keys()):
-            data += key + params[key]
-        mac = hmac.new(token.encode(), data.encode(), hashlib.sha1)
-        return mac.digest().hex()
-
     def test_sms_webhook_with_invalid_signature_returns_403(self, client, monkeypatch):
         """Invalid Twilio signature → 403 (when validation enabled)."""
         monkeypatch.setenv("SKIP_TWILIO_VALIDATION", "false")

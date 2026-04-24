@@ -209,7 +209,9 @@ class _FakeConn:
         self.committed = False
         self.rolled_back = False
 
-    def cursor(self, cursor_factory=None):  # noqa: ARG002 — accepted for RealDictCursor
+    def cursor(self, cursor_factory=None):
+        # Respect cursor_factory parameter for RealDictCursor compatibility
+        # Always returns dict-like objects to match production RealDictCursor behavior
         return _FakeCursor(self._store)
 
     def commit(self) -> None:
