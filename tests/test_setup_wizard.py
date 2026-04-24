@@ -24,13 +24,12 @@ def test_set_env_var_append_and_replace():
     assert re.search(r"^NEWKEY=xyz$", content, re.MULTILINE)
 
 
-def test_set_env_var_with_comments():
-    """Test that set_env_var handles keys with comments and whitespace."""
+def test_set_env_var_preserves_comments():
+    """Test that set_env_var preserves trailing comments."""
     content = "KEY1=value1 # This is a comment\nKEY2=value2\n"
     content = setup_wizard.set_env_var(content, "KEY1", "newvalue1")
-    assert re.search(r"^KEY1=newvalue1$", content, re.MULTILINE)
-    # The old line with comment should be replaced
-    assert "# This is a comment" not in content
+    assert re.search(r"^KEY1=newvalue1 # This is a comment$", content, re.MULTILINE)
+    assert "# This is a comment" in content
 
 
 def test_set_env_var_empty_content():
@@ -102,25 +101,28 @@ def test_create_empty_file_truncates_existing(tmp_path):
         assert content == ""
 
 
-def test_regex_handles_trailing_comments():
-    """Test that the regex used in run_setup doesn't capture trailing comments."""
-    content = """
-KEY1=value1 # This is a comment
-KEY2=value2# No space before comment
-KEY3=value3
-"""
-    # Simulate the regex used in run_setup
-    key = "KEY1"
-    m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
-    if m:
-        value = m.group(1).strip()
-        # Should get just "value1", not the comment
-        assert value == "value1"
-        assert "#" not in value
+def test_regex_handles_quoted_values_with_hash():
+    """Test that the improved regex handles quoted strings with # correctly."""
+    content = 'KEY1="val#ue"\nKEY2=\'single#quote\'\nKEY3=unquoted # comment\n'
 
-    key = "KEY2"
-    m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
+    key = "KEY1"
+    m = re.search(
+        rf"^\s*{re.escape(key)}\s*=\s*('(?:[^']|\\')*'|\"(?:[^\"]|\\\")*\"|[^#\n\r]*)",
+        content,
+        re.MULTILINE
+    )
     if m:
         value = m.group(1).strip()
-        assert value == "value2"
+        # Should preserve the quoted value with hash intact
+        assert value == '"val#ue"'
+
+    key = "KEY3"
+    m = re.search(
+        rf"^\s*{re.escape(key)}\s*=\s*('(?:[^']|\\')*'|\"(?:[^\"]|\\\")*\"|[^#\n\r]*)",
+        content,
+        re.MULTILINE
+    )
+    if m:
+        value = m.group(1).strip()
+        assert value == "unquoted"
         assert "#" not in value

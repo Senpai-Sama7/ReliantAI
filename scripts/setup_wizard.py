@@ -20,6 +20,7 @@ import re
 import argparse
 import datetime
 import getpass
+from typing import Optional, Match, Callable
 
 # ANSI Colors (gracefully degrade if terminal doesn't support)
 C_BLUE = "\033[94m"
@@ -44,7 +45,12 @@ def print_header():
     print("It looks like this is your first time running the platform.")
     print("Let's get your environment configured quickly.\n")
 
-def ask(prompt_text, default=None, is_secret=False, unattended_default=None):
+def ask(
+    prompt_text: str,
+    default: Optional[str] = None,
+    is_secret: bool = False,
+    unattended_default: Optional[str] = None,
+) -> str:
     """Prompt user for input.
 
     Args:
@@ -63,7 +69,7 @@ def ask(prompt_text, default=None, is_secret=False, unattended_default=None):
         else:
             try:
                 val = getpass.getpass(prompt)
-            except (EOFError, KeyboardInterrupt):
+            except EOFError:
                 val = ""
     else:
         if default:
@@ -91,7 +97,7 @@ ENV_KEYS_TO_PROMPT = [
     ("STRIPE_SECRET_KEY", "Stripe Secret Key (Billing)", True),
 ]
 
-def read_file(path):
+def read_file(path: str) -> Optional[str]:
     """Read file with UTF-8 encoding."""
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -99,16 +105,16 @@ def read_file(path):
     except FileNotFoundError:
         return None
 
-def write_file(path, content):
+def write_file(path: str, content: str) -> None:
     """Write file with UTF-8 encoding."""
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 
-def set_env_var(content, key, value):
+def set_env_var(content: str, key: str, value: str) -> str:
     """Set or replace an environment variable in .env content.
 
-    Uses regex to find and replace existing key=value pairs, or appends
-    if the key doesn't exist. Handles comments and whitespace robustly.
+    Uses regex to find and replace existing key=value pairs, preserving
+    any trailing comments. Appends if the key doesn't exist.
 
     Args:
         content: Current .env file content
@@ -121,19 +127,35 @@ def set_env_var(content, key, value):
     if value is None or value == "":
         return content
 
-    pattern = re.compile(rf"^\s*{re.escape(key)}\s*=.*$", re.MULTILINE)
-    new_line = f"{key}={value}"
+    # Pattern to match KEY=value, preserving trailing comments and indentation
+    # Captures: key= prefix, value+spaces, and optional comment
+    pattern = re.compile(
+        rf"(^\s*{re.escape(key)}\s*=)([^#\n\r]*)(\s*#.*)?$",
+        re.MULTILINE
+    )
+
+    def replacer(match: Match[str]) -> str:
+        prefix = match.group(1)  # KEY=
+        value_with_space = match.group(2).rstrip()  # value (strip trailing space)
+        comment = match.group(3) or ""  # trailing comment (with leading space if present)
+        # Reconstruct with space before comment if comment exists
+        if comment:
+            return f"{prefix}{value} {comment.lstrip()}"
+        return f"{prefix}{value}"
 
     if pattern.search(content):
-        content = pattern.sub(new_line, content)
+        # Replace only the value part, preserving structure and comments
+        content = pattern.sub(replacer, content)
     else:
+        # Append new key=value pair
+        new_line = f"{key}={value}"
         if not content.endswith("\n") and content != "":
             content += "\n"
         content += new_line + "\n"
 
     return content
 
-def backup_file(path):
+def backup_file(path: str) -> Optional[str]:
     """Create a timestamped backup of a file."""
     if not os.path.exists(path):
         return None
@@ -143,11 +165,11 @@ def backup_file(path):
     shutil.copy2(path, bak)
     return bak
 
-def create_empty_file(path):
+def create_empty_file(path: str) -> None:
     """Safely create an empty file (portable for Windows and Unix)."""
     open(path, "w", encoding="utf-8").close()
 
-def run_setup(unattended=False):
+def run_setup(unattended: bool = False) -> None:
     """Run the setup wizard."""
     print_header()
 
@@ -188,11 +210,23 @@ def run_setup(unattended=False):
     if content is None:
         content = ""
 
-    # Extract current defaults from file (stop at # comment)
+    # Extract current defaults from file (handles quoted strings with # correctly)
     current_values = {}
     for key, prompt_text, is_secret in ENV_KEYS_TO_PROMPT:
-        m = re.search(rf"^\s*{re.escape(key)}\s*=\s*([^#\n\r]*)", content, re.MULTILINE)
-        current_values[key] = (m.group(1).strip() if m and m.group(1) is not None else "")
+        # Regex handles: unquoted values, single-quoted with escapes, double-quoted with escapes
+        m = re.search(
+            rf"^\s*{re.escape(key)}\s*=\s*('(?:[^']|\\')*'|\"(?:[^\"]|\\\")*\"|[^#\n\r]*)",
+            content,
+            re.MULTILINE
+        )
+        if m and m.group(1):
+            val = m.group(1).strip()
+            # Remove quotes if present, but keep content intact
+            if (val.startswith('"') and val.endswith('"')) or (val.startswith("'") and val.endswith("'")):
+                val = val[1:-1]
+            current_values[key] = val
+        else:
+            current_values[key] = ""
 
     # Prompt user for each key
     for key, prompt_text, is_secret in ENV_KEYS_TO_PROMPT:
