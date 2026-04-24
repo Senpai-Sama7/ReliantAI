@@ -479,7 +479,7 @@ Acropolis → sled DB (auth) + OTLP endpoint + optional Julia FFI
 | Operational Guides | 5 | ✅ Current |
 | Specialized | 7 | ✅ Current |
 
-**Recommendation:** See consolidated audit history in `MASTER_AUDIT_CONSOLIDATED.md` (all 90+ findings resolved).
+**Status:** All 90+ audit findings resolved across 2 audit rounds. No outstanding issues.
 
 ---
 

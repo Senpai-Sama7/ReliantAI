@@ -7,40 +7,68 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+_No unreleased changes at this time._
+
+---
+
+## [2.1.0] - 2026-04-24
+
 ### Added
-- Robust setup wizard (`scripts/setup_wizard.py`) with getpass for secrets, timestamped backups, and unattended mode
-- Pre-commit hooks for code quality and secret detection
-- Enhanced CI pipeline with mypy type checking and yamllint YAML validation
-- Comprehensive test suite for setup wizard functionality
-- Contributing guidelines and development workflow documentation
+- `CLAUDE.md` v2.1 with Section 8: Codebase Health Status & Technical Debt
+- Service activity matrix documenting commit frequency across all 20+ services
+- Technical debt inventory with priority levels and remediation guidance
 
 ### Changed
-- Moved interactive setup from root `setup.py` to `scripts/setup_wizard.py`
-- Normalized `.env.example` to use ASCII-only characters (removed Unicode box-drawing)
-- Updated `.gitignore` to properly ignore environment configuration files
+- Documentation consolidated from 19 → 7 essential root-level files
+- `README.md` navigation guide updated with audience-based routing
 
 ### Removed
-- `.env.production` and `.env.staging` from repository tracking (converted to example templates)
-- Fragile string-based environment variable replacement
+- 12 redundant/completed documentation files cleaned up:
+  - Audit reports superseded by completed remediation (`AUDIT_REPORT.md`, `MASTER_AUDIT_CONSOLIDATED.md`)
+  - Completed checklists and status reports (`Bug-Report.md`, `CHECKLIST.md`, `COMPLETION_SUMMARY.md`)
+  - Redundant guides covered by `CLAUDE.md`/`README.md` (`PLATFORM_GUIDE.md`, `QUICK_REFERENCE.md`)
+  - Completed infrastructure summary (`INFRASTRUCTURE_ADDITIONS.md`)
+  - Miscellaneous (`BLACKBOX.md`, `PRODUCTION_CHECKLIST.md`, `REMEDIATION_PLAN.md`, `RELIANT_OS_LAUNCH.md`)
 
-### Fixed
-- Security: Secrets no longer echoed to terminal during setup
-- Portability: Removed non-portable `shutil.copy("/dev/null", ...)` usage
-- Compatibility: Fixed encoding issues with Unicode characters in configuration files
-- Setup: Environment variable detection now handles trailing comments correctly
+---
+
+## [2.0.0] - 2026-04-23
+
+### Added
+- **Reliant JIT OS** — Zero-configuration AI operations system (port 8085)
+  - AES-256 vault encryption, no `.env` files required
+  - Multi-role AI assistant (Auto, Support, Engineer, Sales modes)
+  - Setup wizard with secure credential management
+- **GrowthEngine** — Autonomous lead generation via Google Places API (port 8003)
+- Full production infrastructure: nginx TLS termination, HashiCorp Vault, monitoring stack
+- Prometheus + Grafana + Loki + Alertmanager observability stack
+- Saga orchestrator with Kafka + Redis for distributed transactions
+- Metacognitive Layer (APEX L5) — self-reflective AI engine
+- A2A protocol bridge for cross-system agent communication
+- `scripts/setup_wizard.py` with unattended mode and secret validation
+- Pre-commit hooks for code quality and secret detection
+- CI/CD pipeline with security scanning (Trivy, bandit, gitleaks)
+
+### Changed
+- Platform upgraded to federated microservices architecture (20+ services)
+- All services wired through shared auth layer and event bus
+- Orchestrator upgraded with Holt-Winters forecasting for auto-scaling
+
+### Fixed — Security (All 90+ audit findings resolved across 2 rounds)
+- Hardcoded absolute paths removed from all services
+- CORS wildcard + credentials misconfiguration in `integration/main.py`
+- RCE via `exec()` in `Citadel/desktop_gui.py` — sandboxed with timeout + blacklist
+- Fail-open auth → fail-closed in all services (returns 503 when secrets missing)
+- Rate limiter thread safety fixed (`threading.Lock` added to local fallback)
+- JWT revocation cache unbounded growth fixed
+- psycopg2 dict crash fixed with `cursor_factory=RealDictCursor` across all services
+- SSE client race conditions, dispatch ID collisions, async/sync context mismatches
+- Saga idempotency key now deterministic (hash-based from correlation_id)
 
 ### Security
-- Added gitleaks configuration with enhanced secret pattern detection
-- Removed committed environment files to prevent accidental credential exposure
-- Implemented UTF-8 encoding for all file operations
-
-## [Previous Versions]
-
-Prior release history can be found in git tags. Use:
-```bash
-git log --oneline --all
-git show <tag>
-```
+- All 104 bugs in Bug-Report.md resolved (100% completion)
+- Secrets no longer echoed to terminal; `.env.production`/`.env.staging` removed from tracking
+- gitleaks configuration with enhanced secret pattern detection
 
 ---
 
