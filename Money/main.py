@@ -20,8 +20,9 @@ import re
 import sys
 
 # Shared graceful shutdown
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
-from graceful_shutdown import GracefulShutdownManager
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared"))
+)
 import threading
 import time
 import uuid
@@ -31,46 +32,64 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-# Resolve workspace shared code
-from integration.shared.event_types import EventPublishRequest, EventType
-from integration.shared.event_bus_client import publish_sync as _event_bus_publish_sync
-
 import requests
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Header, Request, Form
+from fastapi import BackgroundTasks, FastAPI, Form, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import (
-    PlainTextResponse,
-    HTMLResponse,
-    RedirectResponse,
     FileResponse,
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
     StreamingResponse,
 )
 from fastapi.templating import Jinja2Templates
+from graceful_shutdown import GracefulShutdownManager
 from pydantic import BaseModel, Field
+
+from integration.shared.event_bus_client import publish_sync as _event_bus_publish_sync
+
+# Resolve workspace shared code
+from integration.shared.event_types import EventPublishRequest, EventType
+
 # FIX 5: guard Twilio imports so the service starts even without the package
 try:
     from twilio.request_validator import RequestValidator
     from twilio.rest import Client as TwilioClient
+
     TWILIO_AVAILABLE = True
 except ImportError:
     RequestValidator = None  # type: ignore[assignment,misc]
     TwilioClient = None  # type: ignore[assignment,misc]
     TWILIO_AVAILABLE = False
 
-from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
-
-from config import DISPATCH_API_KEY, TWILIO_SID, TWILIO_TOKEN, TWILIO_FROM_PHONE, ENV, setup_logging
+from billing import (
+    PRICING,
+    STRIPE_AVAILABLE,
+    check_dispatch_quota,
+)
+from billing import router as billing_router
+from billing import (
+    validate_api_key,
+)
+from config import (
+    DISPATCH_API_KEY,
+    ENV,
+    TWILIO_FROM_PHONE,
+    TWILIO_SID,
+    TWILIO_TOKEN,
+    setup_logging,
+)
 from database import (
-    init_db,
-    save_dispatch,
-    update_dispatch_status,
     get_dispatch,
     get_recent_dispatches,
-    log_message,
+    init_db,
     log_customer_event,
+    log_message,
+    save_dispatch,
+    update_dispatch_status,
 )
-from metrics import get_metrics_response, DISPATCH_JOB_DURATION
-from billing import router as billing_router, validate_api_key, check_dispatch_quota, PRICING, STRIPE_AVAILABLE
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from metrics import DISPATCH_JOB_DURATION, get_metrics_response
 
 logger = setup_logging("hvac_api")
 AUTH_SERVICE_URL = os.environ.get("AUTH_SERVICE_URL", "http://localhost:8080").rstrip(
@@ -151,6 +170,7 @@ async def lifespan(app: FastAPI):
     # Validate production config (blocks deployment with placeholder values)
     try:
         from security_middleware import validate_production_config
+
         validate_production_config()
     except RuntimeError as e:
         logger.error(f"Production configuration validation failed: {e}")
@@ -158,17 +178,20 @@ async def lifespan(app: FastAPI):
     init_db()
     try:
         from hvac_dispatch_crew import warmup_node
+
         warmup_node()
-        logger.info("Agent warm-up complete — first dispatch will have no cold-start penalty")
+        logger.info(
+            "Agent warm-up complete — first dispatch will have no cold-start penalty"
+        )
     except Exception as e:
         logger.warning(
             f"Agent warm-up failed at startup: {e}. "
             "First dispatch request will incur agent initialization latency."
         )
     logger.info("HVAC AI Dispatch API started — database initialized")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("HVAC AI Dispatch API shutting down")
     await GracefulShutdownManager.shutdown_all()
@@ -186,14 +209,17 @@ app = FastAPI(
 
 # Apply ReliantAI platform branding to API docs
 from docs_branding import configure_docs_branding
+
 configure_docs_branding(app, service_name="Money", service_color="#4F46E5")
 
 # Distributed tracing (OpenTelemetry)
 from tracing import configure_tracing
+
 configure_tracing(service_name="money")
 
 try:
     from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
     FastAPIInstrumentor.instrument_app(app)
 except ImportError:
     pass
@@ -384,7 +410,9 @@ def _verify_bearer_token(token: str) -> dict[str, Any]:
     return response.json()
 
 
-async def _authorize_request(x_api_key: str | None, request: Request | None = None) -> None:
+async def _authorize_request(
+    x_api_key: str | None, request: Request | None = None
+) -> None:
     # Accept valid session cookie as alternative to API key or bearer auth
     if request and _get_session_user(request):
         return
@@ -446,7 +474,10 @@ def _advance_dispatch_workflow(sm, run_id: str, result: dict | None = None) -> N
         except Exception as exc:
             logger.error(
                 "State transition to %s failed for run %s: %s",
-                state, run_id, exc, exc_info=True,
+                state,
+                run_id,
+                exc,
+                exc_info=True,
             )
             _transition_failed = True
             break  # do not attempt further transitions
@@ -517,7 +548,9 @@ class ErrorResponse(BaseModel):
 
 class SMSDispatchRequest(BaseModel):
     to: str = Field(..., min_length=10, max_length=20, description="E.164 phone number")
-    body: str = Field(..., min_length=1, max_length=1000, description="SMS message body")
+    body: str = Field(
+        ..., min_length=1, max_length=1000, description="SMS message body"
+    )
     correlation_id: Optional[str] = Field(default=None, max_length=64)
 
 
@@ -588,8 +621,10 @@ def _execute_job_sync(run_id: str, message: str, temp: float):
 
         job_store[run_id].update({"status": "complete", "result": result})
         update_dispatch_status(run_id, "complete", result)
-        _broadcast_dispatch_event("dispatch_completed", {"run_id": run_id, "status": "complete",
-                                                          "result": result})
+        _broadcast_dispatch_event(
+            "dispatch_completed",
+            {"run_id": run_id, "status": "complete", "result": result},
+        )
 
         if DISPATCH_JOB_DURATION:
             DISPATCH_JOB_DURATION.labels(status="success").observe(
@@ -608,8 +643,9 @@ def _execute_job_sync(run_id: str, message: str, temp: float):
         )
         job_store[run_id].update({"status": "error", "error": str(exc)})
         update_dispatch_status(run_id, "error", {"error": str(exc)})
-        _broadcast_dispatch_event("dispatch_error", {"run_id": run_id, "status": "error",
-                                                      "error": str(exc)})
+        _broadcast_dispatch_event(
+            "dispatch_error", {"run_id": run_id, "status": "error", "error": str(exc)}
+        )
 
 
 async def _execute_job(run_id: str, message: str, temp: float) -> None:
@@ -712,14 +748,14 @@ async def dispatch(
 
     # Rate limit after authentication
     _rate_limit(_rate_bucket(request, "dispatch"))
-    
+
     # Check dispatch quota if customer is authenticated
     if customer:
         # FIX 1: quota exhaustion is a payment requirement (402), not rate-limiting (429)
         if not check_dispatch_quota(customer):
             raise HTTPException(
                 status_code=402,
-                detail="Monthly dispatch quota exceeded. Please upgrade your plan."
+                detail="Monthly dispatch quota exceeded. Please upgrade your plan.",
             )
 
     # FIX 3: idempotent dispatch — return existing record if dispatch_id already known
@@ -729,8 +765,14 @@ async def dispatch(
             return DispatchResponse(
                 run_id=payload.dispatch_id,
                 status=existing.get("status", "unknown"),
-                result=json.loads(existing["crew_result"]) if existing.get("crew_result") else None,
-                timestamp=existing.get("updated_at", datetime.now(timezone.utc).isoformat()),
+                result=(
+                    json.loads(existing["crew_result"])
+                    if existing.get("crew_result")
+                    else None
+                ),
+                timestamp=existing.get(
+                    "updated_at", datetime.now(timezone.utc).isoformat()
+                ),
             )
         run_id = payload.dispatch_id  # use caller-supplied id for the new dispatch
     else:
@@ -745,15 +787,19 @@ async def dispatch(
         issue_summary=payload.customer_message,
         status="queued",
     )
-    _broadcast_dispatch_event("dispatch_created", {"run_id": run_id, "status": "queued",
-                                                    "issue": payload.customer_message[:120]})
+    _broadcast_dispatch_event(
+        "dispatch_created",
+        {"run_id": run_id, "status": "queued", "issue": payload.customer_message[:120]},
+    )
 
     # Log customer event for revenue tracking
     if customer:
         # Calculate revenue impact based on plan
         plan_config = PRICING.get(customer.get("plan", "free"), {})
-        dispatch_value = plan_config.get("price", 0) / max(plan_config.get("dispatches_per_month", 1), 1)
-        
+        dispatch_value = plan_config.get("price", 0) / max(
+            plan_config.get("dispatches_per_month", 1), 1
+        )
+
         log_customer_event(
             customer_id=customer["id"],
             event_type="dispatch_created",
@@ -766,7 +812,9 @@ async def dispatch(
         )
 
     if payload.async_mode:
-        asyncio.create_task(_execute_job(run_id, payload.customer_message, payload.outdoor_temp_f))
+        asyncio.create_task(
+            _execute_job(run_id, payload.customer_message, payload.outdoor_temp_f)
+        )
         return DispatchResponse(run_id=run_id, status="queued", timestamp=ts)
     else:
         await _execute_job(run_id, payload.customer_message, payload.outdoor_temp_f)
@@ -874,19 +922,27 @@ async def get_dispatch_funnel(request: Request, x_api_key: str = Header(default=
 
 
 @app.get("/api/metrics")
-async def get_dashboard_metrics(request: Request, x_api_key: str = Header(default=None)):
+async def get_dashboard_metrics(
+    request: Request, x_api_key: str = Header(default=None)
+):
     """Server-side dispatch metrics — single DB query, no client-side aggregation."""
     _rate_limit(_rate_bucket(request, "metrics"))
     await _authorize_request(x_api_key, request)
     from database import get_dispatch_metrics
+
     data = get_dispatch_metrics()
     # FIX 12: add normalized keys so clients have a stable, predictable schema
     data.setdefault("total_dispatches", data.get("total", 0))
     data.setdefault("successful_dispatches", data.get("completed_count", 0))
-    data.setdefault("failed_dispatches",
-                    max(0, (data.get("total", 0) or 0)
-                        - (data.get("completed_count", 0) or 0)
-                        - (data.get("pending_count", 0) or 0)))
+    data.setdefault(
+        "failed_dispatches",
+        max(
+            0,
+            (data.get("total", 0) or 0)
+            - (data.get("completed_count", 0) or 0)
+            - (data.get("pending_count", 0) or 0),
+        ),
+    )
     return data
 
 
@@ -904,11 +960,16 @@ async def search_dispatches_api(
     _rate_limit(_rate_bucket(request, "search"))
     await _authorize_request(x_api_key, request)
     from database import search_dispatches
-    results = search_dispatches(query=q, status=status, urgency=urgency, limit=min(limit, 200), offset=offset)
+
+    results = search_dispatches(
+        query=q, status=status, urgency=urgency, limit=min(limit, 200), offset=offset
+    )
     return {"results": results, "count": len(results), "offset": offset}
 
 
-_ALLOWED_STATUS_VALUES = frozenset({"pending", "queued", "complete", "cancelled", "escalated", "in_progress"})
+_ALLOWED_STATUS_VALUES = frozenset(
+    {"pending", "queued", "complete", "cancelled", "escalated", "in_progress"}
+)
 
 
 class DispatchUpdateBody(BaseModel):
@@ -996,6 +1057,7 @@ async def stream_dispatches(request: Request, x_api_key: str = Header(default=No
         try:
             # Send current metrics on connect so dashboard loads instantly
             from database import get_dispatch_metrics
+
             metrics = get_dispatch_metrics()
             yield f"event: metrics\ndata: {json.dumps(metrics)}\n\n"
 
@@ -1035,8 +1097,9 @@ async def _handle_twilio_webhook(
 ) -> PlainTextResponse:
     """Shared handler for SMS and WhatsApp Twilio webhooks."""
     import importlib
-    from state_machine import get_state_machine, DispatchState
+
     from response_templates import generate_dispatch_response
+    from state_machine import DispatchState, get_state_machine
     from triage import triage_urgency_local
 
     form_data = await request.form()
@@ -1059,12 +1122,16 @@ async def _handle_twilio_webhook(
     Body = re.sub(r"<[^>]+>", "[REDACTED]", Body[:MAX_MSG_LENGTH])
 
     logger.info("%s received from %s: %s", channel.upper(), From, Body[:100])
-    log_message(direction="inbound", phone=From, body=Body, sms_sid=MessageSid, channel=channel)
+    log_message(
+        direction="inbound", phone=From, body=Body, sms_sid=MessageSid, channel=channel
+    )
 
     run_id = str(uuid.uuid4())
     _prune_stores()
     job_store[run_id] = {"status": "queued", "result": None}
-    save_dispatch(dispatch_id=run_id, customer_phone=From, issue_summary=Body, status="queued")
+    save_dispatch(
+        dispatch_id=run_id, customer_phone=From, issue_summary=Body, status="queued"
+    )
 
     sm = get_state_machine()
     sm.transition(
@@ -1095,7 +1162,9 @@ async def sms_webhook(
     Twilio SMS webhook — customer texts in, AI responds.
     Configure in Twilio Console: Phone Numbers → Messaging → Webhook URL.
     """
-    return await _handle_twilio_webhook(request, background_tasks, From, Body, MessageSid, "sms")
+    return await _handle_twilio_webhook(
+        request, background_tasks, From, Body, MessageSid, "sms"
+    )
 
 
 @app.post("/whatsapp")
@@ -1111,7 +1180,9 @@ async def whatsapp_webhook(
     Twilio WhatsApp webhook — same logic as SMS but logged as 'whatsapp' channel.
     Configure in Twilio Console: Messaging → WhatsApp Sandbox → Webhook URL.
     """
-    return await _handle_twilio_webhook(request, background_tasks, From, Body, MessageSid, "whatsapp")
+    return await _handle_twilio_webhook(
+        request, background_tasks, From, Body, MessageSid, "whatsapp"
+    )
 
 
 @app.post("/api/dispatch/sms")
@@ -1136,7 +1207,9 @@ async def dispatch_sms(
     while dest_queue and now_ts - dest_queue[0] > 3600:
         dest_queue.popleft()
     if len(dest_queue) >= 5:
-        raise HTTPException(status_code=429, detail="Rate limit: max 5 SMS per destination per hour")
+        raise HTTPException(
+            status_code=429, detail="Rate limit: max 5 SMS per destination per hour"
+        )
     dest_queue.append(now_ts)
 
     if not TWILIO_SID or not TWILIO_TOKEN or not TWILIO_FROM_PHONE:
@@ -1305,9 +1378,9 @@ async def make_webhook_sales_lead(
     """
     from integrations import (
         MakeWebhookReceiver,
-        create_dispatch_from_sales_lead,
         NotificationRouter,
         WebhookVerifier,
+        create_dispatch_from_sales_lead,
     )
 
     # Make.com ingress is fail-closed: the HMAC secret must be configured.
@@ -1402,8 +1475,7 @@ def serve_index(request: Request):
         return FileResponse(index_path)
     else:
         # Fallback to API info page if frontend not built
-        return HTMLResponse(
-            content="""
+        return HTMLResponse(content="""
         <!DOCTYPE html>
         <html>
         <head><title>HVAC Dispatch API Server</title></head>
@@ -1419,5 +1491,4 @@ def serve_index(request: Request):
             <p>To build the frontend: <code>cd frontend && npm install && npm run build</code></p>
         </body>
         </html>
-        """
-        )
+        """)

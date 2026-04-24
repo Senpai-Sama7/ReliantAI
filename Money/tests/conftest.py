@@ -131,9 +131,10 @@ _install_crewai_stubs()
 _install_langsmith_stub()
 
 
+from unittest.mock import MagicMock, patch  # noqa: E402
+
 # ── Pytest fixtures ────────────────────────────────────────────
 import pytest  # noqa: E402
-from unittest.mock import MagicMock, patch  # noqa: E402
 
 
 class _FakeCursor:
@@ -285,6 +286,7 @@ def _patch_database_pool(monkeypatch, fake_pool):
     # Also patch billing.get_pool if billing is already imported.
     try:
         import billing
+
         monkeypatch.setattr(billing, "get_pool", lambda: fake_pool)
     except ImportError:
         pass
@@ -346,6 +348,7 @@ def mock_crew(monkeypatch):
 def app():
     """Return the FastAPI application — import lazily so env setup above runs first."""
     import main
+
     return main.app
 
 
@@ -356,6 +359,7 @@ def client(app):
     as a context manager — we skip it to avoid warm-up / ``init_db`` side effects.
     """
     from fastapi.testclient import TestClient
+
     return TestClient(app, raise_server_exceptions=True)
 
 
@@ -363,6 +367,7 @@ def client(app):
 def async_client(app):
     """httpx.AsyncClient wired to the app via ASGI transport."""
     import httpx
+
     transport = httpx.ASGITransport(app=app)
     return httpx.AsyncClient(transport=transport, base_url="http://testserver")
 

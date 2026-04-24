@@ -19,15 +19,13 @@ import hmac
 import json
 import time
 import uuid
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import requests
+from config import DISPATCH_API_KEY
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-
-from config import DISPATCH_API_KEY
-
 
 # ════════════════════════════════════════════════════════════════════════════
 # AUTH & RATE LIMITING TESTS
@@ -70,7 +68,10 @@ class TestAuthorizeRequest:
 
         mock_get = MagicMock()
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"user_id": "user-123", "role": "admin"}
+        mock_get.return_value.json.return_value = {
+            "user_id": "user-123",
+            "role": "admin",
+        }
 
         monkeypatch.setattr("requests.get", mock_get)
 
@@ -109,7 +110,9 @@ class TestAuthorizeRequest:
         """Auth service unavailable → circuit breaker opens after 3 failures → 503."""
         import main
 
-        mock_get = MagicMock(side_effect=requests.RequestException("Connection refused"))
+        mock_get = MagicMock(
+            side_effect=requests.RequestException("Connection refused")
+        )
         monkeypatch.setattr("requests.get", mock_get)
 
         fake_request = MagicMock()
@@ -540,7 +543,9 @@ class TestBillingEndpoints:
         assert "api_key" in data
         assert data["customer_id"] == 1
 
-    def test_webhook_stripe_checkout_completed_updates_customer(self, client, monkeypatch):
+    def test_webhook_stripe_checkout_completed_updates_customer(
+        self, client, monkeypatch
+    ):
         """Stripe webhook: checkout.session.completed → update customer."""
         mock_event = {
             "type": "checkout.session.completed",
@@ -606,7 +611,9 @@ class TestDispatchQuota:
         customer = {"id": 1, "plan": "free"}
         assert billing.check_dispatch_quota(customer) is True
 
-    def test_quota_exceeded_returns_402_on_dispatch(self, client, fake_pool, monkeypatch):
+    def test_quota_exceeded_returns_402_on_dispatch(
+        self, client, fake_pool, monkeypatch
+    ):
         """When quota exceeded, POST /dispatch returns 402."""
         # FIX 1+2: DISPATCH_API_KEY bypasses billing; use a billing customer key
         billing_key = "billing-test-customer-api-key-pytest"
@@ -664,7 +671,9 @@ class TestSSEStream:
         import main
 
         broadcast_calls = []
-        original = getattr(main, "_broadcast_dispatch_event", None) or getattr(main, "broadcast_event", None)
+        original = getattr(main, "_broadcast_dispatch_event", None) or getattr(
+            main, "broadcast_event", None
+        )
 
         def fake_broadcast(event_type, data):
             broadcast_calls.append({"type": event_type, "data": data})
@@ -761,7 +770,10 @@ class TestEventBusResilience:
 
         response = client.post(
             "/dispatch",
-            json={"customer_message": "AC failure event-bus-down", "outdoor_temp_f": 95.0},
+            json={
+                "customer_message": "AC failure event-bus-down",
+                "outdoor_temp_f": 95.0,
+            },
             headers={"X-API-Key": DISPATCH_API_KEY},
         )
         assert response.status_code == 200
@@ -769,9 +781,9 @@ class TestEventBusResilience:
 
         # Job must reach "complete" — event bus failure must not fail the dispatch
         job = main.job_store.get(run_id, {})
-        assert job.get("status") == "complete", (
-            f"Expected 'complete', got {job.get('status')!r}"
-        )
+        assert (
+            job.get("status") == "complete"
+        ), f"Expected 'complete', got {job.get('status')!r}"
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -808,6 +820,6 @@ class TestMetricsEndpoint:
         data = response.json()
         for key in ("total_dispatches", "successful_dispatches", "failed_dispatches"):
             assert key in data, f"Missing key: {key!r}"
-            assert isinstance(data[key], (int, float)), (
-                f"{key!r} must be numeric, got {type(data[key])}"
-            )
+            assert isinstance(
+                data[key], (int, float)
+            ), f"{key!r} must be numeric, got {type(data[key])}"
