@@ -48,19 +48,18 @@ jobs:
 
     - name: Type checking with mypy
       run: |
-        mypy scripts/setup_wizard.py --ignore-missing-imports || true
+        mypy scripts/setup_wizard.py --ignore-missing-imports
       continue-on-error: true
-      # Note: This is non-blocking while codebase type hints are incomplete
+      # Note: Warnings are non-blocking while codebase type hints are incomplete
 
     - name: Validate YAML files
       run: |
-        yamllint -d relaxed docker-compose*.yml || true
+        yamllint -d relaxed docker-compose*.yml
         yamllint -d relaxed .github/workflows/*.yml
-      continue-on-error: true
 
     - name: Run tests
       run: |
-        pytest tests/ -v --tb=short || true
+        pytest tests/ -v --tb=short
 
   # Job 2: Secrets Detection
   secrets-scan:

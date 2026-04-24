@@ -64,9 +64,14 @@ check_prerequisites() {
     # Check .env file
     if [ ! -f "$PROJECT_ROOT/.env" ]; then
         print_warning ".env file not found."
-        if [ -f "$PROJECT_ROOT/setup.py" ]; then
-            print_status "Launching intuitive setup wizard..."
-            python3 "$PROJECT_ROOT/setup.py"
+        if [ -f "$PROJECT_ROOT/scripts/setup_wizard.py" ]; then
+            print_status "Launching setup wizard..."
+            python3 "$PROJECT_ROOT/scripts/setup_wizard.py" -y
+            if [ ! -f "$PROJECT_ROOT/.env" ]; then
+                print_error "Setup wizard failed to create .env"
+                exit 1
+            fi
+            print_success ".env file created"
         elif [ -f "$PROJECT_ROOT/.env.example" ]; then
             cp "$PROJECT_ROOT/.env.example" "$PROJECT_ROOT/.env"
             print_success ".env file created from example"

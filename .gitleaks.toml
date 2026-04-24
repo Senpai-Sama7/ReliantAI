@@ -61,22 +61,22 @@ regex = '''AIza[0-9A-Za-z\-_]{35}'''
 keywords = ["AIza"]
 
 [allowlist]
-# Allow placeholder/example values
+# Allow placeholder/example values only (templates are scanned to catch real secrets)
 regexes = [
   '''change-me''',
+  '''change-me-immediately''',
   '''change-in-production''',
   '''your-''',
   '''placeholder''',
-  '''example''',
+  '''replace.?me''',
   '''test-''',
   '''fake-''',
   '''dummy''',
+  '''local(dev)?''',
+  '''sk_test_''',  # Stripe test keys are safe
 ]
 paths = [
   '''\.gitleaks\.toml$''',
-  '''\.env\.example$''',
-  '''\.env\.production\.example$''',
-  '''\.env\.staging\.example$''',
   '''(pkg|vendor)/.*''',
   '''scripts/legacy_setup_cli\.py$''',
 ]
