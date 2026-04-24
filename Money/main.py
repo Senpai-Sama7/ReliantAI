@@ -729,7 +729,7 @@ async def dispatch(
             return DispatchResponse(
                 run_id=payload.dispatch_id,
                 status=existing.get("status", "unknown"),
-                result=existing.get("crew_result") if isinstance(existing.get("crew_result"), dict) else None,
+                result=json.loads(existing["crew_result"]) if existing.get("crew_result") else None,
                 timestamp=existing.get("updated_at", datetime.now(timezone.utc).isoformat()),
             )
         run_id = payload.dispatch_id  # use caller-supplied id for the new dispatch
