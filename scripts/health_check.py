@@ -51,7 +51,7 @@ SERVICES = {
     },
     "nginx": {
         "url": "http://localhost:8880",
-        "health_endpoint": "/nginx-health",
+        "health_endpoint": "/health",
         "api_key": None,
         "critical": False
     },
