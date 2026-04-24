@@ -14,7 +14,7 @@ import os
 import time
 from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 import httpx
 import secrets as _secrets
@@ -81,7 +81,7 @@ class MCPToolResult(BaseModel):
     error: Optional[str] = None
     execution_time_ms: int = 0
     correlation_id: Optional[str] = None
-    timestamp: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
+    timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 class MCPDiscoveryRequest(BaseModel):
     service: Optional[str] = None  # Filter by service
@@ -107,7 +107,8 @@ async def verify_api_key(api_key: str = Security(_api_key_header)) -> str:
 
 
 def _validate_endpoint(endpoint: str) -> tuple[bool, str]:
-    """Validate endpoint to prevent SSRF attacks."""
+    """Validate endpoint to prevent SSRF attacks using ipaddress module."""
+    import ipaddress
     from urllib.parse import urlparse
     parsed = urlparse(endpoint)
     
@@ -115,24 +116,26 @@ def _validate_endpoint(endpoint: str) -> tuple[bool, str]:
     if parsed.scheme.lower() not in ('http', 'https'):
         return False, f"Invalid scheme: {parsed.scheme}. Only http/https allowed."
     
-    # Block localhost/private IPs
-    hostname = parsed.hostname or ""
-    if hostname in ('localhost', '127.0.0.1', '0.0.0.0', '::1'):
+    if not parsed.hostname:
+        return False, "No hostname in endpoint"
+    
+    # Block localhost
+    hostname_lower = parsed.hostname.lower()
+    if hostname_lower in ('localhost', '127.0.0.1', '0.0.0.0', '::1'):
         return False, "Localhost addresses not allowed."
     
-    # Block link-local and metadata endpoints
-    if hostname.startswith(('169.254.', 'metadata.google.', 'metadata.azure.')):
-        return False, "Metadata endpoints not allowed."
+    # Block link-local (169.254.0.0/16) and metadata endpoints
+    if hostname_lower.startswith(('169.254.', 'metadata.google.', 'metadata.azure.')):
+        return False, "Metadata/link-local endpoints not allowed."
     
-    # Block private IP ranges (RFC 1918)
-    private_patterns = ('10.', '172.16.', '172.17.', '172.18.', '172.19.', '172.2', '172.30.', '172.31.',
-                       '192.168.', '127.')
-    if any(hostname.startswith(p) for p in private_patterns):
-        return False, "Private IP addresses not allowed."
-    
-    # Block all-port ranges
-    if parsed.port and parsed.port > 10000 and not hostname:
-        return False, "High port ranges may indicate internal services."
+    # Validate IP using ipaddress module
+    try:
+        ip = ipaddress.ip_address(parsed.hostname)
+        if ip.is_loopback or ip.is_link_local or ip.is_private:
+            return False, f"Private/loopback IP not allowed: {ip}"
+    except ValueError:
+        # Not an IP address, check if hostname resolves to private (skip DNS for now)
+        pass
     
     return True, "OK"
 
@@ -185,20 +188,20 @@ async def call_tool(call: MCPToolCall, background: BackgroundTasks, _auth: str =
     
     # Execute the tool call
     try:
-        # Resolve URL template with parameters
+        # Resolve URL template with parameters (copy params to avoid modifying original)
         resolved_url = tool.endpoint
-        for param_name, param_value in call.parameters.items():
+        params_copy = dict(call.parameters)
+        for param_name in list(params_copy.keys()):
             placeholder = f"{{{param_name}}}"
             if placeholder in resolved_url:
-                resolved_url = resolved_url.replace(placeholder, str(param_value))
-                del call.parameters[param_name]
-                break
+                resolved_url = resolved_url.replace(placeholder, str(params_copy[param_name]))
+                del params_copy[param_name]
         
         async with httpx.AsyncClient(timeout=tool.timeout_ms / 1000) as client:
             if tool.method.upper() == "GET":
-                response = await client.get(resolved_url, params=call.parameters)
+                response = await client.get(resolved_url, params=params_copy)
             else:
-                response = await client.post(resolved_url, json=call.parameters)
+                response = await client.post(resolved_url, json=params_copy)
             
             response.raise_for_status()
             result_data = response.json()
@@ -269,7 +272,7 @@ async def unregister_tool(name: str, _auth: str = Depends(verify_api_key)):
 
 async def _log_tool_call(call: MCPToolCall, status: str, exec_time: int, result: Any):
     entry = {
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "tool": call.tool,
         "parameters": call.parameters,
         "status": status,

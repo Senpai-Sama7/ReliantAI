@@ -13,7 +13,7 @@ import json
 import os
 import secrets as _secrets
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import httpx
@@ -129,7 +129,7 @@ async def _check_service(client: httpx.AsyncClient, svc: Dict) -> Dict:
                 "healthy": True,
                 "status_code": response.status_code,
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow().isoformat(),
+                "last_check": datetime.now(timezone.utc).isoformat(),
                 "details": data,
                 "critical": svc["critical"],
             }
@@ -139,7 +139,7 @@ async def _check_service(client: httpx.AsyncClient, svc: Dict) -> Dict:
                 "healthy": False,
                 "status_code": response.status_code,
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow().isoformat(),
+                "last_check": datetime.now(timezone.utc).isoformat(),
                 "error": f"HTTP {response.status_code}",
                 "critical": svc["critical"],
             }
@@ -149,7 +149,7 @@ async def _check_service(client: httpx.AsyncClient, svc: Dict) -> Dict:
             "healthy": False,
             "status_code": None,
             "latency_ms": 10000,
-            "last_check": datetime.utcnow().isoformat(),
+            "last_check": datetime.now(timezone.utc).isoformat(),
             "error": "Timeout",
             "critical": svc["critical"],
         }
@@ -159,7 +159,7 @@ async def _check_service(client: httpx.AsyncClient, svc: Dict) -> Dict:
             "healthy": False,
             "status_code": None,
             "latency_ms": 0,
-            "last_check": datetime.utcnow().isoformat(),
+            "last_check": datetime.now(timezone.utc).isoformat(),
             "error": str(e),
             "critical": svc["critical"],
         }
@@ -188,7 +188,7 @@ async def _health_check_loop():
                     await _publish_health_event(result["name"], result["healthy"], result.get("error"))
             
             _health_state = new_state
-            _last_check = datetime.utcnow()
+            _last_check = datetime.now(timezone.utc)
             
             try:
                 r = await _get_redis()
@@ -215,7 +215,7 @@ async def _publish_health_event(service: str, healthy: bool, error: Optional[str
         "service": service,
         "healthy": healthy,
         "error": error,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
     try:
         r = await _get_redis()
@@ -233,12 +233,12 @@ async def _evaluate_self_heal():
             first_unhealthy = state.get("first_unhealthy")
             if first_unhealthy is None:
                 # First time seeing unhealthy — mark timestamp
-                state["first_unhealthy"] = datetime.utcnow().isoformat()
+                state["first_unhealthy"] = datetime.now(timezone.utc).isoformat()
             else:
                 # Already marked — check duration
                 try:
                     unhealthy_since = datetime.fromisoformat(first_unhealthy)
-                    if (datetime.utcnow() - unhealthy_since).total_seconds() > 120:
+                    if (datetime.now(timezone.utc) - unhealthy_since).total_seconds() > 120:
                         await _self_heal(svc_name)
                 except Exception:
                     pass
@@ -257,7 +257,7 @@ async def _self_heal(service: str) -> Dict:
                     "service": service,
                     "action": "restart",
                     "status": "triggered",
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
             
             # Step 2: If restart not available, try scale to 1
@@ -271,7 +271,7 @@ async def _self_heal(service: str) -> Dict:
                     "service": service,
                     "action": "scale",
                     "status": "triggered",
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
     except Exception as e:
         return {
@@ -279,14 +279,14 @@ async def _self_heal(service: str) -> Dict:
             "action": "none",
             "status": "failed",
             "error": str(e),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
     
     return {
         "service": service,
         "action": "none",
         "status": "orchestrator_unavailable",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 # ── Startup ─────────────────────────────────────────────────────
