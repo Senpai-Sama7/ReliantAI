@@ -39,6 +39,27 @@ description = "Alertmanager SMTP or PagerDuty credentials"
 regex = '''(ALERTMANAGER_SMTP_PASS|ALERTMANAGER_PAGERDUTY_KEY)\s*=\s*['"][^'"]{8,}['"]'''
 keywords = ["ALERTMANAGER_SMTP_PASS", "ALERTMANAGER_PAGERDUTY_KEY"]
 
+[[rules]]
+# Stripe API keys
+id = "stripe-api-key"
+description = "Stripe API keys (sk_live or sk_test)"
+regex = '''sk_(live|test)_[A-Za-z0-9]{20,}'''
+keywords = ["sk_live", "sk_test"]
+
+[[rules]]
+# AWS credentials
+id = "aws-credentials"
+description = "AWS access key ID and secret access key"
+regex = '''(AKIA|aws_secret_access_key)\s*=\s*['"][^'"]{20,}['"]'''
+keywords = ["AKIA", "aws_secret_access_key"]
+
+[[rules]]
+# Google API keys
+id = "google-api-key"
+description = "Google API key"
+regex = '''AIza[0-9A-Za-z\-_]{35}'''
+keywords = ["AIza"]
+
 [allowlist]
 # Allow placeholder/example values
 regexes = [
@@ -54,5 +75,8 @@ regexes = [
 paths = [
   '''\.gitleaks\.toml$''',
   '''\.env\.example$''',
+  '''\.env\.production\.example$''',
+  '''\.env\.staging\.example$''',
   '''(pkg|vendor)/.*''',
+  '''scripts/legacy_setup_cli\.py$''',
 ]
