@@ -249,7 +249,7 @@ async def create_account(data: AccountCreate, api_key: str = Depends(verify_api_
         pool.putconn(conn)
 
 @app.get("/accounts")
-async def list_accounts():
+async def list_accounts(api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -284,7 +284,8 @@ async def get_costs(
     account_id: Optional[int] = None,
     start_date: Optional[str] = None,
     end_date: Optional[str] = None,
-    group_by: str = "service"
+    group_by: str = "service",
+    api_key: str = Depends(verify_api_key)
 ):
     pool = get_db_pool()
     conn = pool.getconn()
@@ -337,7 +338,7 @@ async def create_budget(data: BudgetCreate, api_key: str = Depends(verify_api_ke
         pool.putconn(conn)
 
 @app.get("/budgets")
-async def list_budgets():
+async def list_budgets(api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -355,7 +356,7 @@ async def list_budgets():
         pool.putconn(conn)
 
 @app.get("/budgets/{budget_id}/status")
-async def get_budget_status(budget_id: int):
+async def get_budget_status(budget_id: int, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -437,7 +438,7 @@ async def generate_recommendations(account_id: int, api_key: str = Depends(verif
         pool.putconn(conn)
 
 @app.get("/recommendations")
-async def list_recommendations(account_id: Optional[int] = None, is_implemented: Optional[bool] = None, order_by: str = "potential_savings", sort_dir: str = "DESC"):
+async def list_recommendations(account_id: Optional[int] = None, is_implemented: Optional[bool] = None, order_by: str = "potential_savings", sort_dir: str = "DESC", api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -482,7 +483,7 @@ async def implement_recommendation(rec_id: int, api_key: str = Depends(verify_ap
         pool.putconn(conn)
 
 @app.get("/alerts")
-async def get_alerts(is_acknowledged: Optional[bool] = False):
+async def get_alerts(is_acknowledged: Optional[bool] = False, api_key: str = Depends(verify_api_key)):
     pool = get_db_pool()
     conn = pool.getconn()
     try:
@@ -515,7 +516,7 @@ async def acknowledge_alert(alert_id: int, api_key: str = Depends(verify_api_key
         pool.putconn(conn)
 
 @app.get("/dashboard")
-async def finops_dashboard():
+async def finops_dashboard(api_key: str = Depends(verify_api_key)):
     """Real-time FinOps dashboard data"""
     pool = get_db_pool()
     conn = pool.getconn()

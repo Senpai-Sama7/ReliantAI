@@ -50,7 +50,9 @@ COPY security_middleware.py .
 RUN mkdir -p /app/static && cp -r frontend/dist/* /app/static/
 
 # 8. Create directory for SQLite persistent data (Render mount point)
-RUN mkdir -p /data && chmod 777 /data
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+RUN chown -R appuser:appuser /app
+RUN mkdir -p /data && chown appuser:appuser /data
 
 # 9. Expose FastAPI Port
 EXPOSE 8000
@@ -61,4 +63,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
 
 # 11. Default Launch Command (Uvicorn)
 # Using uvicorn directly for production-grade ASGI serving.
+USER appuser
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

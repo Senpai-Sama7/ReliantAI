@@ -112,7 +112,7 @@ def setup_logging(name: str = "hvac_dispatch") -> logging.Logger:
         console.setFormatter(logging.Formatter(LOG_FORMAT))
         logger.addHandler(console)
 
-        fh = logging.FileHandler("hvac_dispatch.log")
+        fh = logging.FileHandler("/data/hvac_dispatch.log")
         fh.setFormatter(logging.Formatter(LOG_FORMAT))
         logger.addHandler(fh)
 

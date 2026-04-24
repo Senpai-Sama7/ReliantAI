@@ -23,9 +23,13 @@ COPY integration/hitl_optimizer.py .
 COPY integration/metacognitive_layer/ ./metacognitive_layer/
 COPY integration/main.py .
 
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser
+RUN chown -R appuser:appuser /app
+
 EXPOSE 8080
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:8080/health
 
+USER appuser
 CMD ["python", "main.py"]

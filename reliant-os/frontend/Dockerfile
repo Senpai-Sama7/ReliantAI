@@ -6,8 +6,11 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
+# nginx:alpine defaults to USER nginx; switch to root for system operations
+USER root
 RUN apk add --no-cache curl
 COPY --from=builder /app/dist /usr/share/nginx/html
+RUN chown -R nginx:nginx /usr/share/nginx/html /etc/nginx/conf.d
 
 # Setup NGINX to proxy /api requests to the backend
 RUN echo 'server { \
@@ -32,4 +35,5 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
+# nginx master must run as root to bind port 80; workers drop privileges automatically
 EXPOSE 80
