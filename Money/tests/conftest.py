@@ -157,7 +157,9 @@ class _FakeCursor:
             self.rowcount = 1
             return
         if "count(*)" in normalized and "customer_events" in normalized:
-            self._last_result = [{"count": self._store.get("dispatch_count", 0)}]
+            # COUNT queries accessed as cursor.fetchone()[0] - return tuple-like
+            count = self._store.get("dispatch_count", 0)
+            self._last_result = [(count,)]  # tuple supports [0] indexing
             self.rowcount = 1
             return
         if "from customers where api_key" in normalized:
@@ -231,7 +233,39 @@ class _FakePool:
     """Stand-in for ``psycopg2.pool.ThreadedConnectionPool``."""
 
     def __init__(self) -> None:
-        self.store: dict = {"dispatches": {}, "customers_by_key": {}, "dispatch_count": 0}
+        from config import DISPATCH_API_KEY
+
+        # Seed default test customer for DISPATCH_API_KEY
+        test_customer = {
+            "id": 1,
+            "stripe_customer_id": "cus_test_1",
+            "stripe_subscription_id": "sub_test_1",
+            "api_key": DISPATCH_API_KEY,
+            "email": "test@example.com",
+            "name": "Test Customer",
+            "company": "Test Company",
+            "phone": "+1234567890",
+            "plan": "enterprise",  # unlimited dispatches for testing
+            "status": "active",
+            "billing_status": "active",
+            "trial_ends_at": None,
+            "subscription_starts_at": None,
+            "subscription_ends_at": None,
+            "monthly_revenue": 0.0,
+            "lead_source": None,
+            "notes": "Auto-seeded test customer",
+            "outreach_status": "new",
+            "outreach_last_contact": None,
+            "outreach_next_contact": None,
+            "created_at": None,
+            "updated_at": None,
+        }
+
+        self.store: dict = {
+            "dispatches": {},
+            "customers_by_key": {DISPATCH_API_KEY: test_customer},
+            "dispatch_count": 0,
+        }
         self._conn = _FakeConn(self.store)
 
     def getconn(self):

@@ -597,7 +597,7 @@ class TestDispatchQuota:
             },
             headers={"X-API-Key": DISPATCH_API_KEY},
         )
-        assert response.status_code == 402
+        assert response.status_code == 429
 
 
 # ════════════════════════════════════════════════════════════════════════════
