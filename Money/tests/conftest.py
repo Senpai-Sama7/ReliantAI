@@ -131,9 +131,10 @@ _install_crewai_stubs()
 _install_langsmith_stub()
 
 
+from unittest.mock import MagicMock, patch  # noqa: E402
+
 # ── Pytest fixtures ────────────────────────────────────────────
 import pytest  # noqa: E402
-from unittest.mock import MagicMock, patch  # noqa: E402
 
 
 class _FakeCursor:
@@ -245,37 +246,11 @@ class _FakePool:
     """Stand-in for ``psycopg2.pool.ThreadedConnectionPool``."""
 
     def __init__(self) -> None:
-        from config import DISPATCH_API_KEY
-
-        # Seed default test customer so validate_api_key succeeds without a real DB.
-        test_customer = {
-            "id": 1,
-            "stripe_customer_id": "pytest-cus-placeholder",
-            "stripe_subscription_id": "pytest-sub-placeholder",
-            "api_key": DISPATCH_API_KEY,
-            "email": "pytest@example.com",
-            "name": "Pytest Customer",
-            "company": "Pytest Co",
-            "phone": "+15005550001",
-            "plan": "enterprise",  # unlimited dispatches by default
-            "status": "active",
-            "billing_status": "active",
-            "trial_ends_at": None,
-            "subscription_starts_at": None,
-            "subscription_ends_at": None,
-            "monthly_revenue": 0.0,
-            "lead_source": None,
-            "notes": "Auto-seeded test customer",
-            "outreach_status": "new",
-            "outreach_last_contact": None,
-            "outreach_next_contact": None,
-            "created_at": None,
-            "updated_at": None,
-        }
-
+        # FIX 2: DISPATCH_API_KEY now bypasses billing via admin-key path in main.py.
+        # Do NOT seed a customer row for it — the bypass must work without one.
         self.store: dict = {
             "dispatches": {},
-            "customers_by_key": {DISPATCH_API_KEY: test_customer},
+            "customers_by_key": {},
             "dispatch_count": 0,
         }
         self._conn = _FakeConn(self.store)
@@ -311,6 +286,7 @@ def _patch_database_pool(monkeypatch, fake_pool):
     # Also patch billing.get_pool if billing is already imported.
     try:
         import billing
+
         monkeypatch.setattr(billing, "get_pool", lambda: fake_pool)
     except ImportError:
         pass
@@ -372,6 +348,7 @@ def mock_crew(monkeypatch):
 def app():
     """Return the FastAPI application — import lazily so env setup above runs first."""
     import main
+
     return main.app
 
 
@@ -382,6 +359,7 @@ def client(app):
     as a context manager — we skip it to avoid warm-up / ``init_db`` side effects.
     """
     from fastapi.testclient import TestClient
+
     return TestClient(app, raise_server_exceptions=True)
 
 
@@ -389,6 +367,7 @@ def client(app):
 def async_client(app):
     """httpx.AsyncClient wired to the app via ASGI transport."""
     import httpx
+
     transport = httpx.ASGITransport(app=app)
     return httpx.AsyncClient(transport=transport, base_url="http://testserver")
 

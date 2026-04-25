@@ -11,13 +11,14 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import psycopg2
-from psycopg2.extras import RealDictCursor
-from psycopg2 import pool
-
 from config import setup_logging
+from psycopg2 import pool
+from psycopg2.extras import RealDictCursor
 
 # Shared graceful shutdown
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared")))
+sys.path.insert(
+    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "shared"))
+)
 from graceful_shutdown import GracefulShutdownManager
 
 logger = setup_logging("hvac_db")
@@ -25,12 +26,14 @@ logger = setup_logging("hvac_db")
 _pool = None
 _pool_lock = threading.Lock()
 
+
 def get_database_url() -> str:
     """Resolve the active database URL, honoring runtime/test overrides."""
     db_url = os.environ.get("DATABASE_URL")
     if not db_url:
         raise ValueError("DATABASE_URL environment variable must be set")
     return db_url
+
 
 def get_pool():
     global _pool
@@ -46,16 +49,21 @@ def get_pool():
                 try:
                     with test_conn.cursor() as cur:
                         cur.execute("SELECT 1")
-                    logger.info("DB pool validated (min=%d, max=%d)", min_conn, max_conn)
+                    logger.info(
+                        "DB pool validated (min=%d, max=%d)", min_conn, max_conn
+                    )
                 except Exception as exc:
                     _pool.closeall()
                     _pool = None
-                    raise RuntimeError(f"DB pool startup validation failed: {exc}") from exc
+                    raise RuntimeError(
+                        f"DB pool startup validation failed: {exc}"
+                    ) from exc
                 finally:
                     if _pool is not None:
                         _pool.putconn(test_conn)
                 GracefulShutdownManager.register_pool(_pool, name="money_db")
     return _pool
+
 
 def close_all_connections() -> None:
     """Close every tracked PostgreSQL connection."""
@@ -65,16 +73,18 @@ def close_all_connections() -> None:
             _pool.closeall()
             _pool = None
 
+
 def close_thread_local_connection() -> None:
     """
     No-op for PostgreSQL connection pool.
-    
+
     This function exists for backward compatibility with tests that were written
     for the older SQLite-based database implementation. In the PostgreSQL
     connection pool model, thread-local connections are managed automatically
     by the pool, so this function does nothing.
     """
     # No-op: connection pool manages thread-local connections automatically
+
 
 def init_db() -> None:
     """Create tables if they don't exist. Call once at startup."""
@@ -123,9 +133,10 @@ def init_db() -> None:
                     plan            TEXT DEFAULT 'free', -- free, starter, professional, enterprise
                     status          TEXT DEFAULT 'active', -- active, inactive, past_due, cancelled
                     billing_status  TEXT DEFAULT 'trialing', -- trialing, active, past_due, cancelled
-                    trial_ends_at   TIMESTAMP,
-                    subscription_starts_at TIMESTAMP,
-                    subscription_ends_at TIMESTAMP,
+                    -- FIX 7: use TIMESTAMPTZ so stored values are always timezone-aware
+                    trial_ends_at   TIMESTAMP WITH TIME ZONE,
+                    subscription_starts_at TIMESTAMP WITH TIME ZONE,
+                    subscription_ends_at TIMESTAMP WITH TIME ZONE,
                     monthly_revenue DECIMAL(10, 2) DEFAULT 0,
                     lead_source     TEXT,
                     notes           TEXT,
@@ -162,7 +173,9 @@ def init_db() -> None:
         get_pool().putconn(conn)
     logger.info("Database initialized at PostgreSQL target.")
 
+
 # ── Dispatch CRUD ──────────────────────────────────────────────
+
 
 def save_dispatch(
     dispatch_id: str,
@@ -198,10 +211,20 @@ def save_dispatch(
                     crew_result = EXCLUDED.crew_result,
                     updated_at = EXCLUDED.updated_at
                 """,
-                (dispatch_id, customer_name, customer_phone, address,
-                 issue_summary, urgency, tech_name, eta, status,
-                 json.dumps(crew_result) if crew_result else None,
-                 now, now),
+                (
+                    dispatch_id,
+                    customer_name,
+                    customer_phone,
+                    address,
+                    issue_summary,
+                    urgency,
+                    tech_name,
+                    eta,
+                    status,
+                    json.dumps(crew_result) if crew_result else None,
+                    now,
+                    now,
+                ),
             )
         conn.commit()
     except Exception:
@@ -210,7 +233,10 @@ def save_dispatch(
     finally:
         get_pool().putconn(conn)
 
-def update_dispatch_status(dispatch_id: str, status: str, result: Optional[dict] = None) -> None:
+
+def update_dispatch_status(
+    dispatch_id: str, status: str, result: Optional[dict] = None
+) -> None:
     now = datetime.now(timezone.utc).isoformat()
     conn = get_pool().getconn()
     try:
@@ -227,6 +253,7 @@ def update_dispatch_status(dispatch_id: str, status: str, result: Optional[dict]
     finally:
         get_pool().putconn(conn)
 
+
 def get_dispatch(dispatch_id: str) -> Optional[dict]:
     conn = get_pool().getconn()
     try:
@@ -238,6 +265,7 @@ def get_dispatch(dispatch_id: str) -> Optional[dict]:
             return dict(row) if row else None
     finally:
         get_pool().putconn(conn)
+
 
 def get_recent_dispatches(limit: int = 50) -> list[dict]:
     conn = get_pool().getconn()
@@ -251,7 +279,9 @@ def get_recent_dispatches(limit: int = 50) -> list[dict]:
     finally:
         get_pool().putconn(conn)
 
+
 # ── Message log ────────────────────────────────────────────────
+
 
 def log_message(
     direction: str,
@@ -309,7 +339,17 @@ def create_customer(
                    (api_key, email, name, company, phone, stripe_customer_id, plan, lead_source, notes)
                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                    RETURNING *""",
-                (api_key, email, name, company, phone, stripe_id, plan, lead_source, notes),
+                (
+                    api_key,
+                    email,
+                    name,
+                    company,
+                    phone,
+                    stripe_id,
+                    plan,
+                    lead_source,
+                    notes,
+                ),
             )
             row = cursor.fetchone()
             conn.commit()
@@ -369,16 +409,29 @@ def get_customer_by_stripe_id(stripe_customer_id: str) -> Optional[dict]:
 def update_customer(customer_id: int, **kwargs) -> Optional[dict]:
     """Update customer fields."""
     allowed_fields = {
-        'email', 'name', 'company', 'phone', 'plan', 'status', 'billing_status',
-        'stripe_customer_id', 'stripe_subscription_id', 'trial_ends_at',
-        'subscription_starts_at', 'subscription_ends_at', 'monthly_revenue',
-        'lead_source', 'notes', 'outreach_status', 'outreach_last_contact',
-        'outreach_next_contact'
+        "email",
+        "name",
+        "company",
+        "phone",
+        "plan",
+        "status",
+        "billing_status",
+        "stripe_customer_id",
+        "stripe_subscription_id",
+        "trial_ends_at",
+        "subscription_starts_at",
+        "subscription_ends_at",
+        "monthly_revenue",
+        "lead_source",
+        "notes",
+        "outreach_status",
+        "outreach_last_contact",
+        "outreach_next_contact",
     }
     updates = {k: v for k, v in kwargs.items() if k in allowed_fields}
     if not updates:
         return get_customer_by_id(customer_id)
-    
+
     conn = get_pool().getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
@@ -422,7 +475,7 @@ def list_customers(
                 params.append(outreach_status)
             query += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
             params.extend([limit, offset])
-            
+
             cursor.execute(query, params)
             rows = cursor.fetchall()
             return [dict(r) for r in rows]
@@ -450,6 +503,7 @@ def delete_customer(customer_id: int) -> bool:
 
 # ── Customer Events CRUD ───────────────────────────────────────
 
+
 def log_customer_event(
     customer_id: int,
     event_type: str,
@@ -465,7 +519,12 @@ def log_customer_event(
                    (customer_id, event_type, event_data, revenue_impact)
                    VALUES (%s, %s, %s, %s)
                    RETURNING *""",
-                (customer_id, event_type, json.dumps(event_data) if event_data else None, revenue_impact),
+                (
+                    customer_id,
+                    event_type,
+                    json.dumps(event_data) if event_data else None,
+                    revenue_impact,
+                ),
             )
             row = cursor.fetchone()
             conn.commit()
@@ -511,24 +570,30 @@ def get_dispatch_metrics() -> dict:
     conn = get_pool().getconn()
     try:
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
-            cursor.execute(
-                """SELECT
+            cursor.execute("""SELECT
                     COUNT(*) AS total,
                     COUNT(*) FILTER (WHERE urgency ILIKE 'emergency') AS emergency_count,
                     COUNT(*) FILTER (WHERE status ILIKE 'complete') AS completed_count,
                     COUNT(*) FILTER (WHERE status IN ('pending','queued')) AS pending_count,
                     COUNT(*) FILTER (WHERE created_at::date = CURRENT_DATE) AS today_count,
                     COUNT(*) FILTER (WHERE urgency ILIKE 'emergency' AND created_at::date = CURRENT_DATE) AS today_emergency
-                   FROM dispatches"""
-            )
+                   FROM dispatches""")
             row = cursor.fetchone()
             if not row:
-                return {"total": 0, "emergency_count": 0, "completed_count": 0,
-                        "pending_count": 0, "today_count": 0, "today_emergency": 0,
-                        "emergency_pct": 0}
+                return {
+                    "total": 0,
+                    "emergency_count": 0,
+                    "completed_count": 0,
+                    "pending_count": 0,
+                    "today_count": 0,
+                    "today_emergency": 0,
+                    "emergency_pct": 0,
+                }
             d = dict(row)
             total = d["total"] or 0
-            d["emergency_pct"] = round((d["emergency_count"] / total * 100), 1) if total else 0
+            d["emergency_pct"] = (
+                round((d["emergency_count"] / total * 100), 1) if total else 0
+            )
             return d
     finally:
         get_pool().putconn(conn)
@@ -573,10 +638,20 @@ def search_dispatches(
         get_pool().putconn(conn)
 
 
-_DISPATCH_UPDATABLE_FIELDS = frozenset({
-    "status", "tech_name", "eta", "urgency", "customer_name",
-    "customer_phone", "address", "issue_summary", "crew_result",
-})
+_DISPATCH_UPDATABLE_FIELDS = frozenset(
+    {
+        "status",
+        "tech_name",
+        "eta",
+        "urgency",
+        "customer_name",
+        "customer_phone",
+        "address",
+        "issue_summary",
+        "crew_result",
+    }
+)
+
 
 def update_dispatch_fields(dispatch_id: str, **fields) -> Optional[dict]:
     """Partial update for any dispatch field (status, tech_name, eta, etc.)."""
@@ -622,10 +697,10 @@ def get_revenue_summary(days: int = 30) -> dict:
                 (days,),
             )
             row = cursor.fetchone()
-            return dict(row) if row else {
-                'active_customers': 0,
-                'total_revenue': 0,
-                'total_events': 0
-            }
+            return (
+                dict(row)
+                if row
+                else {"active_customers": 0, "total_revenue": 0, "total_events": 0}
+            )
     finally:
         get_pool().putconn(conn)

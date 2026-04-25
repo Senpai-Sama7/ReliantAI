@@ -19,15 +19,13 @@ import hmac
 import json
 import time
 import uuid
-from unittest.mock import MagicMock, patch, AsyncMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import requests
+from config import DISPATCH_API_KEY
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
-
-from config import DISPATCH_API_KEY
-
 
 # ════════════════════════════════════════════════════════════════════════════
 # AUTH & RATE LIMITING TESTS
@@ -70,7 +68,10 @@ class TestAuthorizeRequest:
 
         mock_get = MagicMock()
         mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"user_id": "user-123", "role": "admin"}
+        mock_get.return_value.json.return_value = {
+            "user_id": "user-123",
+            "role": "admin",
+        }
 
         monkeypatch.setattr("requests.get", mock_get)
 
@@ -109,7 +110,9 @@ class TestAuthorizeRequest:
         """Auth service unavailable → circuit breaker opens after 3 failures → 503."""
         import main
 
-        mock_get = MagicMock(side_effect=requests.RequestException("Connection refused"))
+        mock_get = MagicMock(
+            side_effect=requests.RequestException("Connection refused")
+        )
         monkeypatch.setattr("requests.get", mock_get)
 
         fake_request = MagicMock()
@@ -334,12 +337,16 @@ class TestDispatchEndpoint:
 
     def test_dispatch_duplicate_id_is_idempotent(self, client, mock_crew, fake_pool):
         """Duplicate dispatch_id → idempotent, returns existing record."""
+        # FIX 3: seed a known dispatch row and verify it is returned without creating a new one
         fixed_id = str(uuid.uuid4())
         fake_pool.store["dispatches"][fixed_id] = {
             "dispatch_id": fixed_id,
             "status": "complete",
+            "crew_result": None,
+            "updated_at": "2026-04-24T00:00:00+00:00",
         }
 
+        # First request: existing record returned
         response = client.post(
             "/dispatch",
             json={
@@ -349,8 +356,26 @@ class TestDispatchEndpoint:
             },
             headers={"X-API-Key": DISPATCH_API_KEY},
         )
-        # UPSERT logic returns 200 OK for idempotent requests
         assert response.status_code == 200
+        data = response.json()
+        assert data["run_id"] == fixed_id
+        assert data["status"] == "complete"
+
+        # Second request with same id: still 200, still the seeded record
+        response2 = client.post(
+            "/dispatch",
+            json={
+                "customer_message": "AC failure",
+                "outdoor_temp_f": 95.0,
+                "dispatch_id": fixed_id,
+            },
+            headers={"X-API-Key": DISPATCH_API_KEY},
+        )
+        assert response2.status_code == 200
+        assert response2.json()["run_id"] == fixed_id
+
+        # Only one DB row exists (no new row was inserted)
+        assert len(fake_pool.store["dispatches"]) == 1
 
     def test_dispatch_life_safety_urgency_handled(self, client, mock_crew):
         """LIFE_SAFETY message triggers correct escalation path without error."""
@@ -518,7 +543,9 @@ class TestBillingEndpoints:
         assert "api_key" in data
         assert data["customer_id"] == 1
 
-    def test_webhook_stripe_checkout_completed_updates_customer(self, client, monkeypatch):
+    def test_webhook_stripe_checkout_completed_updates_customer(
+        self, client, monkeypatch
+    ):
         """Stripe webhook: checkout.session.completed → update customer."""
         mock_event = {
             "type": "checkout.session.completed",
@@ -546,8 +573,9 @@ class TestBillingEndpoints:
         assert response.status_code == 200
 
     def test_webhook_missing_stripe_secret_returns_500(self, client, monkeypatch):
-        """Stripe webhook without secret configured → 400 or 500."""
-        monkeypatch.setenv("STRIPE_WEBHOOK_SECRET", "")
+        """Stripe webhook without secret configured → 500."""
+        # FIX 6: patch the lazy accessor, not the env var (module-level capture is gone)
+        monkeypatch.setattr("billing._get_webhook_secret", lambda: "")
 
         response = client.post(
             "/billing/webhook",
@@ -583,8 +611,20 @@ class TestDispatchQuota:
         customer = {"id": 1, "plan": "free"}
         assert billing.check_dispatch_quota(customer) is True
 
-    def test_quota_exceeded_returns_402_on_dispatch(self, client, fake_pool, monkeypatch):
+    def test_quota_exceeded_returns_402_on_dispatch(
+        self, client, fake_pool, monkeypatch
+    ):
         """When quota exceeded, POST /dispatch returns 402."""
+        # FIX 1+2: DISPATCH_API_KEY bypasses billing; use a billing customer key
+        billing_key = "billing-test-customer-api-key-pytest"
+        fake_pool.store["customers_by_key"][billing_key] = {
+            "id": 99,
+            "api_key": billing_key,
+            "plan": "free",
+            "status": "active",
+            "billing_status": "active",
+            "trial_ends_at": None,
+        }
         import billing
 
         monkeypatch.setattr(billing, "check_dispatch_quota", lambda customer: False)
@@ -595,9 +635,10 @@ class TestDispatchQuota:
                 "customer_message": "AC failure",
                 "outdoor_temp_f": 95.0,
             },
-            headers={"X-API-Key": DISPATCH_API_KEY},
+            headers={"X-API-Key": billing_key},
         )
-        assert response.status_code == 429
+        # FIX 1: quota exhaustion is 402 (payment required), not 429 (rate limit)
+        assert response.status_code == 402
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -630,7 +671,9 @@ class TestSSEStream:
         import main
 
         broadcast_calls = []
-        original = getattr(main, "_broadcast_dispatch_event", None) or getattr(main, "broadcast_event", None)
+        original = getattr(main, "_broadcast_dispatch_event", None) or getattr(
+            main, "broadcast_event", None
+        )
 
         def fake_broadcast(event_type, data):
             broadcast_calls.append({"type": event_type, "data": data})
@@ -673,12 +716,20 @@ class TestHealthEndpoints:
         assert data.get("status") in ("ok", "healthy", "running")
 
     def test_status_endpoint_returns_system_info(self, client):
-        """GET /status → system metadata returned."""
-        response = client.get(
-            "/status",
-            headers={"X-API-Key": DISPATCH_API_KEY},
-        )
+        """GET /status → system metadata returned without authentication."""
+        # FIX 4: /status requires no auth; returns config metadata (no secrets)
+        response = client.get("/status")
         assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+        assert "version" in data
+        assert "environment" in data
+        assert "dispatch_api_configured" in data
+        assert "billing_configured" in data
+        assert "event_bus_configured" in data
+        assert isinstance(data["dispatch_api_configured"], bool)
+        assert isinstance(data["billing_configured"], bool)
+        assert isinstance(data["event_bus_configured"], bool)
 
     def test_dispatches_list_requires_auth(self, client):
         """GET /dispatches without auth → 401."""
@@ -694,3 +745,81 @@ class TestHealthEndpoints:
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# EVENT BUS RESILIENCE TESTS
+# ════════════════════════════════════════════════════════════════════════════
+
+
+class TestEventBusResilience:
+    """FIX 8: dispatch must complete even when the event bus is unreachable."""
+
+    def test_dispatch_completes_even_when_event_bus_is_down(
+        self, client, mock_crew, fake_pool, monkeypatch
+    ):
+        """Dispatch job reaches a terminal state even if event bus publish raises ConnectionError."""
+        import main
+
+        monkeypatch.setenv("EVENT_BUS_URL", "http://localhost:9999")
+        monkeypatch.setattr(
+            main,
+            "_event_bus_publish_sync",
+            MagicMock(side_effect=requests.ConnectionError("Connection refused")),
+        )
+
+        response = client.post(
+            "/dispatch",
+            json={
+                "customer_message": "AC failure event-bus-down",
+                "outdoor_temp_f": 95.0,
+            },
+            headers={"X-API-Key": DISPATCH_API_KEY},
+        )
+        assert response.status_code == 200
+        run_id = response.json()["run_id"]
+
+        # Job must reach "complete" — event bus failure must not fail the dispatch
+        job = main.job_store.get(run_id, {})
+        assert (
+            job.get("status") == "complete"
+        ), f"Expected 'complete', got {job.get('status')!r}"
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# METRICS ENDPOINT TESTS  (FIX 12)
+# ════════════════════════════════════════════════════════════════════════════
+
+
+class TestMetricsEndpoint:
+    """FIX 12: /metrics auth enforcement and /api/metrics empty-schema contract."""
+
+    def test_metrics_requires_auth(self, client):
+        """GET /metrics with no credentials → 401 or 403."""
+        response = client.get("/metrics")
+        assert response.status_code in (401, 403)
+
+    def test_metrics_accepts_dispatch_api_key(self, client):
+        """GET /metrics with X-API-Key: DISPATCH_API_KEY → 200."""
+        response = client.get(
+            "/metrics",
+            headers={"X-API-Key": DISPATCH_API_KEY},
+        )
+        assert response.status_code == 200
+
+    def test_api_metrics_empty_returns_valid_schema(self, client, fake_pool):
+        """GET /api/metrics with empty dispatches table returns required numeric keys."""
+        # Ensure dispatches table is empty (fresh fake pool already is)
+        fake_pool.store["dispatches"] = {}
+
+        response = client.get(
+            "/api/metrics",
+            headers={"X-API-Key": DISPATCH_API_KEY},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        for key in ("total_dispatches", "successful_dispatches", "failed_dispatches"):
+            assert key in data, f"Missing key: {key!r}"
+            assert isinstance(
+                data[key], (int, float)
+            ), f"{key!r} must be numeric, got {type(data[key])}"

@@ -9,6 +9,7 @@ This version is refactored for responsiveness and a better user experience,
 with agent logic running in a separate thread.
 """
 
+import os
 import sys
 import json
 import logging
@@ -18,7 +19,7 @@ from typing import List, Dict, Any, Optional
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QTextEdit, QLineEdit, QHBoxLayout
 )
-from PyQt6.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QMutex, QWaitCondition
 from qfluentwidgets import setTheme, Theme, MicaWindow, PrimaryPushButton, PushButton
 
 # Ensure the agent can be imported
