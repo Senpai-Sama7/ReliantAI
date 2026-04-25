@@ -72,8 +72,9 @@ async def health():
     try:
         import redis as redis_lib
         r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
-        r.ping()
-        redis_ok = True
+        if r is not None:
+            r.ping()
+            redis_ok = True
     except Exception:
         pass
 
