@@ -117,7 +117,7 @@ class BusinessIntelligence(Base):
     service_area = Column(String(500))
     service_specialties = Column(Text)
     owner_name = Column(String(255))
-    owner_title = Column(String(100))
+    owner_title = Column(String(255))
     gbp_profile_complete = Column(Boolean, default=False)
     gbp_review_response_rate = Column(DECIMAL(5, 2))
     site_last_updated = Column(String(100))
