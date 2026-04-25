@@ -88,8 +88,8 @@ class Query(BaseModel):
     top_k: int = 3
 
 # --- Globals ---
-model: SentenceTransformer
-index: SearchIndex
+model: SentenceTransformer = None  # Initialized at startup
+index: SearchIndex = None  # Initialized at startup
 
 # --- Service Initialization ---
 if STUB_MODE:

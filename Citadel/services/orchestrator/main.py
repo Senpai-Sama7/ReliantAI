@@ -59,9 +59,9 @@ if not all([REDIS_URL, NEO4J_URL, NEO4J_USER, NEO4J_PASSWORD, TS_HOST, TS_USER, 
     raise ValueError("One or more required environment variables are not set.")
 
 # --- Globals ---
-redis_client: redis.Redis
-neo4j_driver: AsyncGraphDatabase
-listener_task: asyncio.Task
+redis_client: redis.Redis = None  # type: ignore[assignment]
+neo4j_driver: AsyncGraphDatabase = None  # type: ignore[assignment]
+listener_task: asyncio.Task = None  # type: ignore[assignment]
 
 # --- Models ---
 class Event(BaseModel):

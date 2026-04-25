@@ -27,24 +27,27 @@ for p in (str(_MONEY_DIR), str(_SHARED_DIR), str(_REPO_ROOT)):
         sys.path.insert(0, p)
 
 # ── Required env vars for ``config.py`` ────────────────────────
+# All values below are non-functional placeholders for the test environment.
+# They satisfy format requirements without containing real credentials.
+# IMPORTANT: None of these values grant access to any real service.
 os.environ.setdefault("ENV", "test")
-os.environ.setdefault("GEMINI_API_KEY", "test-gemini-key")
-os.environ.setdefault("LANGSMITH_API_KEY", "test-langsmith-key")
-os.environ.setdefault("TWILIO_SID", "ACtest0000000000000000000000000000")
-os.environ.setdefault("TWILIO_TOKEN", "test-twilio-token-32chars-1234567890")
+os.environ.setdefault("GEMINI_API_KEY", "pytest-placeholder-not-real")
+os.environ.setdefault("LANGSMITH_API_KEY", "pytest-placeholder-not-real")
+os.environ.setdefault("TWILIO_SID", "TEST-PLACEHOLDER-SID-NOT-TWILIO")
+os.environ.setdefault("TWILIO_TOKEN", "pytest-placeholder-twilio-token-only")
 os.environ.setdefault("TWILIO_FROM_PHONE", "+15005550006")
-os.environ.setdefault("COMPOSIO_API_KEY", "test-composio-key")
+os.environ.setdefault("COMPOSIO_API_KEY", "pytest-placeholder-not-real")
 os.environ.setdefault("OWNER_PHONE", "+15005550001")
 os.environ.setdefault("TECH_PHONE_NUMBER", "+15005550002")
-os.environ.setdefault("DISPATCH_API_KEY", "test-dispatch-key-0123456789abcdef")
-os.environ.setdefault("SESSION_SECRET", "test-session-secret-32-chars-ok-go")
-os.environ.setdefault("ADMIN_USER", "admin")
-os.environ.setdefault("ADMIN_PASS", "admin-pass-test-0000000000000000")
+os.environ.setdefault("DISPATCH_API_KEY", "pytest-dispatch-api-key-placeholder")
+os.environ.setdefault("SESSION_SECRET", "pytest-session-secret-placeholder-ok")
+os.environ.setdefault("ADMIN_USER", "pytest-admin")
+os.environ.setdefault("ADMIN_PASS", "pytest-admin-placeholder-password-only")
 os.environ.setdefault("DATABASE_URL", "postgresql://test:test@localhost:5432/testdb")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173")
-os.environ.setdefault("STRIPE_WEBHOOK_SECRET", "whsec_test")
-os.environ.setdefault("MAKE_WEBHOOK_SECRET", "test-make-webhook-secret-32chars!")
-os.environ.setdefault("HUBSPOT_WEBHOOK_SECRET", "test-hubspot-webhook-secret-32cx!")
+os.environ.setdefault("STRIPE_WEBHOOK_SECRET", "pytest-stripe-placeholder-only")
+os.environ.setdefault("MAKE_WEBHOOK_SECRET", "pytest-make-webhook-placeholder-only")
+os.environ.setdefault("HUBSPOT_WEBHOOK_SECRET", "pytest-hubspot-placeholder-only")
 # Skip Twilio signature validation for most webhook tests;
 # individual signature tests flip this off explicitly.
 os.environ.setdefault("SKIP_TWILIO_VALIDATION", "true")
@@ -128,17 +131,23 @@ _install_crewai_stubs()
 _install_langsmith_stub()
 
 
+from unittest.mock import MagicMock, patch  # noqa: E402
+
 # ── Pytest fixtures ────────────────────────────────────────────
 import pytest  # noqa: E402
-from unittest.mock import MagicMock, patch  # noqa: E402
 
 
 class _FakeCursor:
-    """Mimic ``psycopg2`` cursor behaviour well enough for Money's queries."""
+    """Mimic ``psycopg2`` cursor behaviour for Money's queries.
 
-    def __init__(self, store: dict) -> None:
+    Supports both tuple mode (default cursor) and dict mode (RealDictCursor).
+    The mode is set at construction time by ``_FakeConn.cursor(cursor_factory=...)``.
+    """
+
+    def __init__(self, store: dict, dict_mode: bool = False) -> None:
         self._store = store
-        self._last_result: list[dict] = []
+        self._dict_mode = dict_mode  # True when cursor_factory=RealDictCursor
+        self._last_result: list = []
         self.rowcount = 0
         self.description = None
 
@@ -151,12 +160,19 @@ class _FakeCursor:
     def execute(self, sql: str, params=None) -> None:
         # Collapse whitespace so multi-line SQL literals are easy to pattern-match.
         normalized = " ".join(sql.lower().split())
+
         if normalized.startswith("select 1"):
             self._last_result = [{"?column?": 1}]
             self.rowcount = 1
             return
         if "count(*)" in normalized and "customer_events" in normalized:
-            self._last_result = [{"count": self._store.get("dispatch_count", 0)}]
+            # billing.check_dispatch_quota calls fetchone()[0] using default cursor
+            # (no cursor_factory) so COUNT returns a plain tuple row.
+            count = self._store.get("dispatch_count", 0)
+            if self._dict_mode:
+                self._last_result = [{"count": count}]
+            else:
+                self._last_result = [(count,)]
             self.rowcount = 1
             return
         if "from customers where api_key" in normalized:
@@ -192,7 +208,7 @@ class _FakeCursor:
             self._last_result = list(self._store.get("dispatches", {}).values())
             self.rowcount = len(self._last_result)
             return
-        # Default: empty result
+        # Default: empty result, no error
         self._last_result = []
         self.rowcount = 0
 
@@ -209,8 +225,12 @@ class _FakeConn:
         self.committed = False
         self.rolled_back = False
 
-    def cursor(self, cursor_factory=None):  # noqa: ARG002 — accepted for RealDictCursor
-        return _FakeCursor(self._store)
+    def cursor(self, cursor_factory=None):
+        # Pass dict_mode=True only for RealDictCursor; default cursor returns tuples.
+        # Both modes are valid — billing.check_dispatch_quota uses the default cursor
+        # while database helpers mandate RealDictCursor (CLAUDE.md Invariant #25).
+        is_dict = getattr(cursor_factory, "__name__", "") == "RealDictCursor"
+        return _FakeCursor(self._store, dict_mode=is_dict)
 
     def commit(self) -> None:
         self.committed = True
@@ -226,7 +246,13 @@ class _FakePool:
     """Stand-in for ``psycopg2.pool.ThreadedConnectionPool``."""
 
     def __init__(self) -> None:
-        self.store: dict = {"dispatches": {}, "customers_by_key": {}, "dispatch_count": 0}
+        # FIX 2: DISPATCH_API_KEY now bypasses billing via admin-key path in main.py.
+        # Do NOT seed a customer row for it — the bypass must work without one.
+        self.store: dict = {
+            "dispatches": {},
+            "customers_by_key": {},
+            "dispatch_count": 0,
+        }
         self._conn = _FakeConn(self.store)
 
     def getconn(self):
@@ -256,6 +282,15 @@ def _patch_database_pool(monkeypatch, fake_pool):
 
     monkeypatch.setattr(database, "_pool", fake_pool, raising=False)
     monkeypatch.setattr(database, "get_pool", lambda: fake_pool)
+
+    # Also patch billing.get_pool if billing is already imported.
+    try:
+        import billing
+
+        monkeypatch.setattr(billing, "get_pool", lambda: fake_pool)
+    except ImportError:
+        pass
+
     yield fake_pool
 
 
@@ -276,34 +311,26 @@ def _reset_rate_limit_and_circuit(monkeypatch):
     main.rate_limit_store.clear()
 
 
-@pytest.fixture
-def app():
-    """Return the FastAPI application — import lazily so env setup above runs first."""
-    import main
-    return main.app
+@pytest.fixture(autouse=True)
+def mock_state_machine(monkeypatch):
+    """Autouse: stub state machine so dispatch/webhook flows never hit PostgreSQL."""
+    import state_machine
+
+    sm = MagicMock()
+    sm.get_current_state.return_value = None
+    sm.get_time_in_state.return_value = 0.0
+    sm.get_timeline.return_value = []
+    sm.funnel_counts.return_value = {"received": 1, "completed": 1}
+    sm.transition.return_value = MagicMock()
+    sm.record_event.return_value = MagicMock()
+
+    monkeypatch.setattr(state_machine, "get_state_machine", lambda: sm)
+    return sm
 
 
-@pytest.fixture
-def client(app):
-    """
-    Plain TestClient (no lifespan).  Lifespan runs only when the client is used
-    as a context manager — we skip it to avoid warm-up / ``init_db`` side effects.
-    """
-    from fastapi.testclient import TestClient
-    return TestClient(app, raise_server_exceptions=True)
-
-
-@pytest.fixture
-def async_client(app):
-    """httpx.AsyncClient wired to the app via ASGI transport."""
-    import httpx
-    transport = httpx.ASGITransport(app=app)
-    return httpx.AsyncClient(transport=transport, base_url="http://testserver")
-
-
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def mock_crew(monkeypatch):
-    """Replace ``run_hvac_crew`` with a deterministic fake."""
+    """Autouse: replace ``run_hvac_crew`` globally so no real AI calls are made."""
     import hvac_dispatch_crew
 
     fake = MagicMock(
@@ -318,20 +345,31 @@ def mock_crew(monkeypatch):
 
 
 @pytest.fixture
-def mock_state_machine(monkeypatch):
-    """Fake state machine so transitions don't touch PostgreSQL."""
-    import state_machine
+def app():
+    """Return the FastAPI application — import lazily so env setup above runs first."""
+    import main
 
-    sm = MagicMock()
-    sm.get_current_state.return_value = None
-    sm.get_time_in_state.return_value = 0.0
-    sm.get_timeline.return_value = []
-    sm.funnel_counts.return_value = {"received": 1, "completed": 1}
-    sm.transition.return_value = MagicMock()
-    sm.record_event.return_value = MagicMock()
+    return main.app
 
-    monkeypatch.setattr(state_machine, "get_state_machine", lambda: sm)
-    return sm
+
+@pytest.fixture
+def client(app):
+    """
+    Plain TestClient (no lifespan).  Lifespan runs only when the client is used
+    as a context manager — we skip it to avoid warm-up / ``init_db`` side effects.
+    """
+    from fastapi.testclient import TestClient
+
+    return TestClient(app, raise_server_exceptions=True)
+
+
+@pytest.fixture
+def async_client(app):
+    """httpx.AsyncClient wired to the app via ASGI transport."""
+    import httpx
+
+    transport = httpx.ASGITransport(app=app)
+    return httpx.AsyncClient(transport=transport, base_url="http://testserver")
 
 
 @pytest.fixture

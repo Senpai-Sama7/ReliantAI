@@ -14,6 +14,7 @@ Cron (hourly):
 
 import argparse
 import os
+import sys
 import time
 import json
 import requests
@@ -143,7 +144,6 @@ def main():
         healthy = run_checks()
         sys.exit(0 if healthy else 1)
 
-    import sys
     while True:
         try:
             run_checks()
