@@ -1,0 +1,24 @@
+node_modules/
+.next/
+dist/
+build/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+celery_*.db
+*.log
+logs/
+.env
+.env.*
+secrets/
+*.pem
+*.key
+
+# Client site template build artifacts
+site-templates/*/node_modules/
+site-templates/*/dist/
+site-templates/*/.next/
+site-templates/*/.out/
