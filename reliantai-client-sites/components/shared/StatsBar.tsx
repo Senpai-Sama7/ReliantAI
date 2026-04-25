@@ -60,6 +60,7 @@ const ACCENT_CLASSES: Record<AccentColor, string> = {
 interface StatsBarProps {
   content: SiteContent;
   accent?: AccentColor;
+  light?: boolean;
 }
 
 function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: string; inView: boolean }) {
@@ -96,7 +97,7 @@ function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: stri
   );
 }
 
-export default function StatsBar({ content, accent = "blue-400" }: StatsBarProps) {
+export default function StatsBar({ content, accent = "blue-400", light = false }: StatsBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -121,13 +122,21 @@ export default function StatsBar({ content, accent = "blue-400" }: StatsBarProps
   ];
 
   return (
-    <div ref={ref} className="relative py-20 border-b border-slate-800/50 overflow-hidden">
-      {/* Subtle radial glow behind numbers */}
-      <div className="absolute inset-0 pointer-events-none opacity-25"
-        style={{
-          background: "radial-gradient(ellipse 120% 120% at 50% 50%, var(--stat-glow, rgba(96,165,250,0.10)) 0%, transparent 70%)",
-        }}
-      />
+    <div
+      ref={ref}
+      className={`relative py-20 overflow-hidden ${
+        light
+          ? "border-b border-stone-200 bg-white"
+          : "border-b border-slate-800/50 bg-transparent"
+      }`}
+    >
+      {!light && (
+        <div className="absolute inset-0 pointer-events-none opacity-25"
+          style={{
+            background: "radial-gradient(ellipse 120% 120% at 50% 50%, var(--stat-glow, rgba(96,165,250,0.10)) 0%, transparent 70%)",
+          }}
+        />
+      )}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {tradeStats.map((stat, i) => (
@@ -140,7 +149,9 @@ export default function StatsBar({ content, accent = "blue-400" }: StatsBarProps
                 )}
               </div>
               {values[i] && (
-                <p className="mt-3 text-sm font-medium text-slate-500 tracking-wide uppercase">
+                <p className={`mt-3 text-sm font-medium tracking-wide uppercase ${
+                  light ? "text-stone-500" : "text-slate-500"
+                }`}>
                   {stat.label}
                 </p>
               )}

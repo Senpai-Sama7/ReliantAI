@@ -40,7 +40,11 @@ export default function FAQ({ content, copy }: FAQProps) {
             return (
               <div
                 key={i}
-                className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden"
+                className={`rounded-xl overflow-hidden transition-colors duration-200 ${
+                  isOpen
+                    ? "bg-slate-900/80 border border-emerald-500/30"
+                    : "bg-slate-900/50 border border-slate-800 hover:border-slate-700"
+                }`}
               >
                 <dt>
                   <button
@@ -49,8 +53,8 @@ export default function FAQ({ content, copy }: FAQProps) {
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
-                      className={`h-5 w-5 flex-shrink-0 text-slate-500 transition-transform duration-200 ${
-                        isOpen ? "rotate-180" : ""
+                      className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-emerald-400" : "text-slate-500"
                       }`}
                     />
                   </button>
@@ -58,11 +62,10 @@ export default function FAQ({ content, copy }: FAQProps) {
                 <AnimatePresence initial={false}>
                   {isOpen && (
                     <motion.dd
-                      key="content"
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
                       <p className="px-6 pb-4 text-slate-400 text-sm leading-relaxed">

@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
 
 interface TradeCopy {
@@ -26,8 +26,8 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
-            i < rating ? "fill-yellow-400 text-yellow-400" : "text-slate-600"
+          className={`h-3.5 w-3.5 ${
+            i < rating ? "fill-amber-400 text-amber-400" : "text-slate-700"
           }`}
         />
       ))}
@@ -51,33 +51,33 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           <div className="mt-3 flex items-center justify-center gap-2">
             <StarRating rating={Math.round(business.google_rating)} />
             <span className="text-slate-400 text-sm">
-              {business.google_rating} ({business.review_count} reviews on
-              Google)
+              {business.google_rating} ({business.review_count} reviews on Google)
             </span>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
           {reviews.reviews.map((review, i) => (
             <div
               key={i}
-              className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all duration-300"
+              className="break-inside-avoid bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm hover:border-slate-600 transition-colors duration-300 relative"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-blue-300 font-semibold text-sm">
+              <Quote className="absolute top-4 right-4 h-8 w-8 text-blue-500/10 fill-current" />
+              <StarRating rating={review.rating} />
+              <p className="mt-3 text-slate-300 text-sm leading-relaxed">
+                &ldquo;{review.text}&rdquo;
+              </p>
+              <div className="mt-4 pt-3 border-t border-slate-700/50 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center text-blue-300 font-semibold text-xs">
                   {review.author.charAt(0)}
                 </div>
-                <div>
+                <div className="flex items-baseline gap-2">
                   <p className="text-white text-sm font-medium">
                     {review.author}
                   </p>
-                  <p className="text-slate-500 text-xs">{review.time}</p>
+                  <p className="text-slate-600 text-xs">{review.time}</p>
                 </div>
               </div>
-              <StarRating rating={review.rating} />
-              <p className="mt-3 text-slate-400 text-sm leading-relaxed line-clamp-4">
-                &ldquo;{review.text}&rdquo;
-              </p>
             </div>
           ))}
         </div>

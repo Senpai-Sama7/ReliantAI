@@ -17,7 +17,7 @@ export default function FAQ({ content, copy }: FAQProps) {
   return (
     <section className="py-24 bg-slate-950">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white text-center mb-16 tracking-tight">
+        <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white text-center mb-14 tracking-tight">
           {copy.faq_title}
         </h2>
 
@@ -27,7 +27,11 @@ export default function FAQ({ content, copy }: FAQProps) {
             return (
               <div
                 key={i}
-                className="bg-slate-900/60 border border-slate-800/80 rounded-xl overflow-hidden transition-colors duration-200 hover:border-slate-700/80"
+                className={`rounded-xl overflow-hidden transition-colors duration-200 border ${
+                  isOpen
+                    ? "bg-slate-900/80 border-orange-500/30"
+                    : "bg-slate-900/40 border-slate-800/70 hover:border-slate-700/80"
+                }`}
               >
                 <dt>
                   <button
@@ -36,8 +40,8 @@ export default function FAQ({ content, copy }: FAQProps) {
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
-                      className={`h-5 w-5 flex-shrink-0 text-slate-500 transition-transform duration-300 ${
-                        isOpen ? "rotate-180 text-orange-400" : ""
+                      className={`h-5 w-5 flex-shrink-0 transition-transform duration-300 ${
+                        isOpen ? "rotate-180 text-orange-400" : "text-slate-500"
                       }`}
                     />
                   </button>

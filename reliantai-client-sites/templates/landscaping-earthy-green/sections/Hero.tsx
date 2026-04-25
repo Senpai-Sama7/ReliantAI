@@ -26,29 +26,17 @@ const fadeIn = {
 export default function Hero({ content }: HeroProps) {
   const { business, hero } = content;
   const words = hero.headline.split(" ");
-
   const stars = Array.from({ length: Math.round(business.google_rating) });
 
   return (
     <section className="relative min-h-screen flex items-center pt-12 overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/30 to-slate-950">
-      {/* Layered gradient blobs — organic, nature feel */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-[640px] h-[640px] rounded-full bg-emerald-600/5 blur-3xl" />
-        <div className="absolute top-1/3 -left-20 w-[400px] h-[400px] rounded-full bg-emerald-500/4 blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-[300px] h-[300px] rounded-full bg-teal-600/4 blur-3xl" />
-      </div>
-
-      {/* Radial glow behind the nature visual */}
-      <div
-        className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[600px] pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at center, rgba(52,211,153,0.12) 0%, rgba(52,211,153,0.03) 50%, transparent 75%)",
-        }}
-      />
+      {/* Single subtle emerald glow */}
+      <div className="absolute top-1/3 right-0 w-[800px] h-[600px] pointer-events-none bg-emerald-500/5 blur-3xl rounded-full" />
+      {/* Bottom fade into next section */}
+      <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-slate-950 to-transparent pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* LEFT: text content */}
           <div>
             <motion.div
               initial="hidden"
@@ -128,23 +116,16 @@ export default function Hero({ content }: HeroProps) {
             )}
           </div>
 
-          {/* RIGHT: decorative nature visual element */}
           <motion.div
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
             className="hidden lg:flex items-center justify-center"
           >
-            <div className="relative w-full max-w-md aspect-square">
-              {/* Outer glow ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-emerald-500/15 via-emerald-600/5 to-transparent blur-2xl" />
-              {/* Center orb — earth/nature */}
-              <div className="absolute inset-[15%] rounded-full bg-gradient-to-br from-emerald-600/20 via-emerald-500/10 to-emerald-900/5 border border-emerald-500/10 shadow-[0_0_120px_rgba(52,211,153,0.08)]" />
-              {/* Inner accent */}
-              <div className="absolute inset-[35%] rounded-full bg-gradient-to-tr from-emerald-400/10 to-transparent" />
-              {/* Floating smaller orbs */}
-              <div className="absolute top-[5%] right-[10%] w-20 h-20 rounded-full bg-teal-500/10 blur-xl" />
-              <div className="absolute bottom-[10%] left-[5%] w-16 h-16 rounded-full bg-emerald-400/8 blur-xl" />
+            <div className="relative w-72 h-72">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/10 blur-2xl" />
+              <div className="absolute inset-[25%] rounded-full bg-emerald-600/15 border border-emerald-500/10" />
+              <div className="absolute inset-[45%] rounded-full bg-emerald-400/10" />
             </div>
           </motion.div>
         </div>

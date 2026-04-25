@@ -15,9 +15,9 @@ export default function FAQ({ content }: FAQProps) {
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.electrical;
 
   return (
-    <section id="faq" className="py-24 bg-slate-950">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-14 font-display">
+    <section id="faq" className="bg-slate-950 py-24">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <h2 className="mb-14 text-center font-display text-3xl font-bold text-white sm:text-4xl">
           {copy.faq_title}
         </h2>
 
@@ -27,17 +27,21 @@ export default function FAQ({ content }: FAQProps) {
             return (
               <div
                 key={i}
-                className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden"
+                className={`overflow-hidden rounded-xl border transition-colors duration-200 ${
+                  isOpen
+                    ? "border-amber-500/30 bg-slate-900/70"
+                    : "border-slate-800 bg-slate-900/50 hover:border-slate-700"
+                }`}
               >
                 <dt>
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left text-white font-medium hover:text-amber-300 transition-colors"
+                    className="flex w-full items-center justify-between px-6 py-4 text-left font-medium text-white transition-colors hover:text-amber-300"
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
-                      className={`h-5 w-5 flex-shrink-0 text-slate-500 transition-transform duration-200 ${
-                        isOpen ? "rotate-180" : ""
+                      className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-amber-400" : "text-slate-500"
                       }`}
                     />
                   </button>
@@ -52,7 +56,7 @@ export default function FAQ({ content }: FAQProps) {
                       transition={{ duration: 0.2 }}
                       className="overflow-hidden"
                     >
-                      <p className="px-6 pb-4 text-slate-400 text-sm leading-relaxed">
+                      <p className="px-6 pb-4 text-sm leading-relaxed text-slate-400">
                         {item.answer}
                       </p>
                     </motion.dd>

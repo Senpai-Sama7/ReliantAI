@@ -28,7 +28,9 @@ export default function FAQ({ content, copy }: FAQProps) {
             return (
               <div
                 key={i}
-                className="bg-white border border-stone-200 rounded-xl overflow-hidden"
+                className={`bg-white border rounded-xl overflow-hidden transition-colors duration-200 ${
+                  isOpen ? "border-violet-200 shadow-sm" : "border-stone-200 hover:border-stone-300"
+                }`}
               >
                 <dt>
                   <button
@@ -36,12 +38,11 @@ export default function FAQ({ content, copy }: FAQProps) {
                     className="w-full flex items-center justify-between px-6 py-4 text-left text-slate-800 font-medium hover:text-violet-600 transition-colors"
                   >
                     <span className="pr-4">{item.question}</span>
-                    <motion.div
-                      animate={{ rotate: isOpen ? 180 : 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ChevronDown className="h-5 w-5 flex-shrink-0 text-slate-400" />
-                    </motion.div>
+                    <ChevronDown
+                      className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
+                        isOpen ? "rotate-180 text-violet-500" : "text-slate-400"
+                      }`}
+                    />
                   </button>
                 </dt>
                 <AnimatePresence initial={false}>
@@ -50,7 +51,7 @@ export default function FAQ({ content, copy }: FAQProps) {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: "easeInOut" }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
                       className="overflow-hidden"
                     >
                       <div className="px-6 pb-4 text-slate-600 text-sm leading-relaxed">

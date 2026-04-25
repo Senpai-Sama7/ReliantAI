@@ -5,6 +5,7 @@ interface CTASectionProps {
   content: SiteContent;
   color: "blue" | "amber" | "orange" | "violet" | "emerald";
   variant?: "urgency" | "estimate";
+  light?: boolean;
 }
 
 const BG_CLASSES: Record<string, string> = {
@@ -26,13 +27,13 @@ const ACCENT_COLORS: Record<string, string> = {
 const TRADE_URGENCY: Record<string, string> = {
   hvac: "AC broken? We can be there today.",
   plumbing: "Burst pipe? 24/7 emergency response.",
-  electrical: "Sparking outlet? Don&rsquo;t wait — call now.",
+  electrical: "Sparking outlet? Don\u2019t wait \u2014 call now.",
   roofing: "Storm damage? Free inspection within 24 hours.",
   painting: "Ready to transform your space? Free color consultation.",
   landscaping: "Want a yard you love? Get a free estimate.",
 };
 
-export default function CTASection({ content, color = "blue", variant = "urgency" }: CTASectionProps) {
+export default function CTASection({ content, color = "blue", variant = "urgency", light = false }: CTASectionProps) {
   const { business } = content;
   const trade = content.site_config?.trade || "hvac";
   const message = TRADE_URGENCY[trade] || TRADE_URGENCY.hvac;
@@ -41,15 +42,15 @@ export default function CTASection({ content, color = "blue", variant = "urgency
 
   if (variant === "estimate") {
     return (
-      <section className="relative py-24 border-t border-slate-800/30">
-        <div className="absolute inset-0 bg-slate-950/80" />
+      <section className={`relative py-24 ${light ? "bg-white" : "border-t border-slate-800/30"}`}>
+        <div className={`absolute inset-0 ${light ? "bg-stone-50" : "bg-slate-950/80"}`} />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-10 sm:p-14 flex flex-col sm:flex-row items-center justify-between gap-8">
+          <div className={`${light ? "bg-white border border-stone-200" : "bg-slate-900 border border-slate-800"} rounded-2xl p-10 sm:p-14 flex flex-col sm:flex-row items-center justify-between gap-8`}>
             <div className="max-w-lg">
-              <h3 className="text-3xl font-bold text-white font-display tracking-tight">
+              <h3 className={`text-3xl font-bold font-display tracking-tight ${light ? "text-stone-900" : "text-white"}`}>
                 Ready for a Free Estimate?
               </h3>
-              <p className="mt-3 text-slate-400 text-lg leading-relaxed">
+              <p className={`mt-3 text-lg leading-relaxed ${light ? "text-slate-600" : "text-slate-400"}`}>
                 {business.business_name} serves {business.city} and surrounding areas. No obligation, no pressure.
               </p>
             </div>
@@ -61,7 +62,7 @@ export default function CTASection({ content, color = "blue", variant = "urgency
                 <Phone className="h-5 w-5" />
                 {business.phone}
               </a>
-              <span className="text-xs text-slate-500">Free estimates — no strings attached</span>
+              <span className={`text-xs ${light ? "text-slate-500" : "text-slate-500"}`}>Free estimates — no strings attached</span>
             </div>
           </div>
         </div>
@@ -70,15 +71,19 @@ export default function CTASection({ content, color = "blue", variant = "urgency
   }
 
   return (
-    <section className="relative py-8 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-y border-slate-800/50">
+    <section className={`relative py-8 border-y ${
+      light
+        ? "bg-gradient-to-r from-stone-50 via-white to-stone-50 border-stone-200"
+        : "bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-slate-800/50"
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center justify-center w-10 h-10 rounded-full bg-slate-800">
-            <Clock className={`h-5 w-5 ${accentClass}`} />
+          <div className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-full ${light ? "bg-stone-100" : "bg-slate-800"}`}>
+            <Clock className={`h-5 w-5 ${light ? color === "blue" ? "text-blue-600" : `text-${color}-600` : accentClass}`} />
           </div>
-          <p className="text-slate-300 text-lg">
-            <span className="font-semibold text-white">{message}</span>
-            <span className="hidden sm:inline text-slate-500"> — Same-day response.</span>
+          <p className={light ? "text-stone-700 text-lg" : "text-slate-300 text-lg"}>
+            <span className={`font-semibold ${light ? "text-stone-900" : "text-white"}`}>{message}</span>
+            <span className={`hidden sm:inline ${light ? "text-stone-400" : "text-slate-500"}`}>{" "}— Same-day response.</span>
           </p>
         </div>
         <a

@@ -34,7 +34,7 @@ export default function Footer({ content }: FooterProps) {
                 )}
               </div>
               <p className="mt-4 text-xs text-slate-500">
-                Licensed, Bonded &amp; Insured
+                Licensed, Bonded & Insured
               </p>
             </div>
 
@@ -66,23 +66,16 @@ export default function Footer({ content }: FooterProps) {
                 Service Areas
               </h4>
               <ul className="space-y-1 text-sm text-slate-400">
-                {content.aeo_signals.area_served.map((area, i) => (
+                {content.aeo_signals?.area_served?.map((area, i) => (
                   <li key={i}>{area}</li>
-                ))}
+                )) ?? <li className="text-slate-600">{business.city}, {business.state}</li>}
               </ul>
             </div>
           </div>
 
           <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-xs text-slate-600">
-              &copy; {currentYear} {business.business_name}. All rights reserved.
-              Built by{" "}
-              <a
-                href="https://reliantai.org"
-                className="text-slate-500 hover:text-blue-400 transition-colors"
-              >
-                ReliantAI
-              </a>
+            <p className="text-[11px] text-slate-600">
+              &copy; {currentYear} {business.business_name}
             </p>
             <a
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.business_name + " " + business.city)}`}

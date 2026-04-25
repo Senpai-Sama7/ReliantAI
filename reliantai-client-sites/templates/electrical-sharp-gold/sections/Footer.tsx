@@ -17,42 +17,38 @@ export default function Footer({ content }: FooterProps) {
   ];
 
   return (
-    <footer id="contact" className="bg-slate-950 border-t border-slate-800">
+    <footer id="contact" className="border-t border-slate-800 bg-slate-950">
       <div className="pb-24 sm:pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <h3 className="text-white font-semibold text-lg mb-3">
-                {business.business_name}
-              </h3>
+              <h3 className="mb-3 text-lg font-semibold text-white">{business.business_name}</h3>
               <div className="space-y-2 text-sm text-slate-400">
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center gap-2 hover:text-amber-300 transition-colors"
+                  className="flex items-center gap-2 transition-colors hover:text-amber-300"
                 >
                   <Phone className="h-4 w-4" />
                   {business.phone}
                 </a>
                 {business.address && (
                   <div className="flex items-start gap-2">
-                    <MapPin className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                    <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0" />
                     <span>{business.address}</span>
                   </div>
                 )}
               </div>
-              <p className="mt-4 text-xs text-amber-400/80 font-medium">
-                Licensed, Bonded &amp; Insured
+              <p className="mt-4 text-xs font-medium text-amber-400/80">
+                Licensed, Bonded & Insured
               </p>
             </div>
 
             <div>
-              <h4 className="text-white font-semibold text-sm mb-3">
-                Quick Nav
-              </h4>
+              <h4 className="mb-3 text-sm font-semibold text-white">Quick Nav</h4>
               <ul className="space-y-1.5 text-sm text-slate-400">
                 {navLinks.map((link) => (
                   <li key={link.href}>
-                    <a href={link.href} className="hover:text-amber-300 transition-colors">
+                    <a href={link.href} className="transition-colors hover:text-amber-300">
                       {link.label}
                     </a>
                   </li>
@@ -61,9 +57,7 @@ export default function Footer({ content }: FooterProps) {
             </div>
 
             <div>
-              <h4 className="text-white font-semibold text-sm mb-3">
-                Services
-              </h4>
+              <h4 className="mb-3 text-sm font-semibold text-white">Services</h4>
               <ul className="space-y-1 text-sm text-slate-400">
                 {content.services.slice(0, 6).map((s, i) => (
                   <li key={i}>{s.title}</li>
@@ -72,11 +66,9 @@ export default function Footer({ content }: FooterProps) {
             </div>
 
             <div>
-              <h4 className="text-white font-semibold text-sm mb-3">
-                Service Areas
-              </h4>
+              <h4 className="mb-3 text-sm font-semibold text-white">Service Areas</h4>
               <ul className="space-y-1 text-sm text-slate-400">
-                {content.aeo_signals.area_served.map((area, i) => (
+                {(content.aeo_signals?.area_served ?? []).map((area, i) => (
                   <li key={i}>{area}</li>
                 ))}
               </ul>
@@ -89,7 +81,7 @@ export default function Footer({ content }: FooterProps) {
                 href={business.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-slate-400 hover:text-amber-300 transition-colors"
+                className="transition-colors hover:text-amber-300 text-slate-400"
                 aria-label="Website"
               >
                 <Globe className="h-5 w-5" />
@@ -97,14 +89,14 @@ export default function Footer({ content }: FooterProps) {
             )}
           </div>
 
-          <div className="mt-10 pt-6 border-t border-slate-800 text-center text-xs text-slate-600">
-            &copy; {currentYear} {business.business_name}. All rights reserved.
-            &nbsp;&middot;&nbsp; Licensed, Bonded &amp; Insured
+          <div className="mt-10 border-t border-slate-800 pt-6 text-center text-xs text-slate-600">
+            &copy; {currentYear} {business.business_name}. All rights reserved. · Licensed, Bonded
+            & Insured
             <br />
             Built by{" "}
             <a
               href="https://reliantai.org"
-              className="text-slate-500 hover:text-amber-400 transition-colors"
+              className="transition-colors text-slate-500 hover:text-amber-400"
             >
               ReliantAI
             </a>

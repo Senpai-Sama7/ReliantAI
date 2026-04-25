@@ -18,7 +18,7 @@ export default function LandscapingTemplate({ content }: { content: SiteContent 
   return (
     <>
       <ContactBar content={content} />
-      <TrustBanner trade={content.site_config.trade} />
+      <TrustBanner trade="landscaping" />
       <Hero content={content} />
       <StatsBar content={content} accent="emerald-400" />
       <SectionDivider variant="dots" />

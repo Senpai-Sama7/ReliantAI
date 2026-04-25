@@ -44,40 +44,60 @@ export default function Services({ content }: ServicesProps) {
             {copy.services_title}
           </h2>
           <p className="mt-4 text-slate-400 max-w-2xl mx-auto">
-            {copy.services_subtitle} {content.business.city},{" "}
-            {content.business.state}
+            {copy.services_subtitle} {content.business.city}, {content.business.state}
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, i) => (
-            <motion.div
-              key={i}
-              custom={i}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-50px" }}
-              variants={cardVariants}
-              className="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-7 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-500/30 transition-all duration-300 group"
-            >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-900/30 text-blue-400 mb-5 group-hover:bg-blue-900/50 transition-colors">
-                {getIcon(service.icon)}
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2 group-hover:text-blue-200 transition-colors">
-                {service.title}
-              </h3>
-              <p className="text-slate-400 text-sm leading-relaxed mb-5">
-                {service.description}
-              </p>
-              <a
-                href={`tel:${content.business.phone}`}
-                className="inline-flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300 transition-colors"
+          {services.map((service, i) => {
+            const isFeatured = i === 0;
+
+            return (
+              <motion.div
+                key={i}
+                custom={i}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-50px" }}
+                variants={cardVariants}
+                className={`rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1.5 group ${
+                  isFeatured
+                    ? "bg-gradient-to-br from-blue-950/50 to-slate-900/60 border border-blue-500/30 shadow-lg shadow-blue-900/10 hover:shadow-blue-900/25 hover:border-blue-400/40"
+                    : "bg-slate-800/40 border border-slate-700/60 hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-500/30"
+                }`}
               >
-                {service.cta_text}
-                <span className="ml-1.5 group-hover:ml-2 transition-all">&rarr;</span>
-              </a>
-            </motion.div>
-          ))}
+                {isFeatured && (
+                  <span className="inline-block px-2.5 py-0.5 bg-blue-500/15 text-blue-300 text-[0.65rem] font-semibold tracking-widest uppercase rounded-full mb-4">
+                    Most Requested
+                  </span>
+                )}
+                <div
+                  className={`inline-flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 mb-5 group-hover:bg-blue-500/20 transition-colors ${
+                    isFeatured ? "w-14 h-14" : "w-12 h-12"
+                  }`}
+                >
+                  {getIcon(service.icon)}
+                </div>
+                <h3
+                  className={`font-semibold text-white mb-2 group-hover:text-blue-200 transition-colors ${
+                    isFeatured ? "text-xl" : "text-lg"
+                  }`}
+                >
+                  {service.title}
+                </h3>
+                <p className="text-slate-400 text-sm leading-relaxed mb-5">
+                  {service.description}
+                </p>
+                <a
+                  href={`tel:${content.business.phone}`}
+                  className="inline-flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300 transition-colors"
+                >
+                  {service.cta_text}
+                  <span className="ml-1.5 group-hover:ml-2 transition-all">&rarr;</span>
+                </a>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

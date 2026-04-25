@@ -1,6 +1,6 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SiteContent } from "@/types/SiteContent";
 import type { TradeCopy } from "@/lib/trade-copy";
@@ -16,7 +16,7 @@ function StarRating({ rating }: { rating: number }) {
       {Array.from({ length: 5 }).map((_, i) => (
         <Star
           key={i}
-          className={`h-4 w-4 ${
+          className={`h-3.5 w-3.5 ${
             i < rating ? "fill-yellow-400 text-yellow-400" : "text-slate-600"
           }`}
         />
@@ -26,14 +26,16 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.97 },
+  hidden: { opacity: 0, y: 24, scale: 0.97 },
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { delay: i * 0.08, duration: 0.4, ease: "easeOut" as const },
+    transition: { delay: i * 0.07, duration: 0.4, ease: "easeOut" as const },
   }),
 };
+
+const STAGGER = [0, 12, 0, 12, 0, 12];
 
 export default function Reviews({ content, copy }: ReviewsProps) {
   const { business, reviews } = content;
@@ -48,8 +50,7 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           <div className="mt-4 flex items-center justify-center gap-2">
             <StarRating rating={Math.round(business.google_rating)} />
             <span className="text-slate-400 text-sm font-medium">
-              {business.google_rating} ({business.review_count} reviews on
-              Google)
+              {business.google_rating} ({business.review_count} reviews on Google)
             </span>
           </div>
         </div>
@@ -64,20 +65,24 @@ export default function Reviews({ content, copy }: ReviewsProps) {
               viewport={{ once: true, amount: 0.1 }}
               variants={cardVariants}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 hover:border-orange-500/30 transition-colors duration-300"
+              className="relative bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 hover:border-orange-500/30 transition-colors duration-300"
+              style={{ marginTop: STAGGER[i % STAGGER.length] }}
             >
+              {/* Quote mark */}
+              <Quote className="absolute top-4 right-5 h-8 w-8 text-orange-500/10 fill-orange-500/10" />
+
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-300 font-semibold text-sm">
+                <div className="w-10 h-10 rounded-full bg-orange-500/15 border border-orange-500/25 flex items-center justify-center text-orange-300 font-semibold text-sm">
                   {review.author.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-white text-sm font-semibold">
-                    {review.author}
-                  </p>
+                  <p className="text-white text-sm font-semibold">{review.author}</p>
                   <p className="text-slate-500 text-xs">{review.time}</p>
                 </div>
               </div>
+
               <StarRating rating={review.rating} />
+
               <p className="mt-3 text-slate-400 text-sm leading-relaxed line-clamp-4">
                 &ldquo;{review.text}&rdquo;
               </p>
@@ -85,11 +90,9 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           ))}
         </div>
 
-        <div className="mt-10 text-center">
-          <p className="text-slate-500 text-xs font-medium">
-            {reviews.aggregate_line}
-          </p>
-        </div>
+        <p className="mt-10 text-center text-slate-500 text-xs font-medium">
+          {reviews.aggregate_line}
+        </p>
       </div>
     </section>
   );

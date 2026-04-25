@@ -8,6 +8,7 @@ interface FooterProps {
 export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
+  const areas = content.aeo_signals?.area_served || [business.city];
 
   return (
     <footer id="contact" className="bg-stone-900 border-t border-stone-800">
@@ -22,7 +23,7 @@ export default function Footer({ content }: FooterProps) {
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
-                Licensed, Bonded &amp; Insured
+                Licensed, Bonded & Insured
               </div>
               <div className="space-y-2 text-sm text-stone-400">
                 <a
@@ -59,7 +60,7 @@ export default function Footer({ content }: FooterProps) {
                 Service Areas
               </h4>
               <ul className="space-y-1 text-sm text-stone-400">
-                {content.aeo_signals.area_served.map((area, i) => (
+                {areas.map((area, i) => (
                   <li key={i}>{area}</li>
                 ))}
               </ul>
@@ -85,7 +86,7 @@ export default function Footer({ content }: FooterProps) {
           </div>
 
           <div className="mt-10 pt-6 border-t border-stone-800 text-center text-xs text-stone-600">
-            &copy; {currentYear} {business.business_name}. All rights reserved.
+            © {currentYear} {business.business_name}. All rights reserved.
             Built by{" "}
             <a
               href="https://reliantai.org"

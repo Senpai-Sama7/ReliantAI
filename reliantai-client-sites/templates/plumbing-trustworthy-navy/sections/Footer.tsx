@@ -9,6 +9,7 @@ export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
   const websiteUrl = business.website_url || "#";
+  const areasServed = content.aeo_signals?.area_served ?? [];
 
   return (
     <footer id="footer" className="bg-slate-950 border-t border-slate-800">
@@ -46,7 +47,7 @@ export default function Footer({ content }: FooterProps) {
                 )}
               </div>
               <p className="mt-3 text-xs text-blue-400 font-medium">
-                Licensed, Bonded &amp; Insured
+                Licensed, Bonded & Insured
               </p>
             </div>
 
@@ -83,7 +84,7 @@ export default function Footer({ content }: FooterProps) {
                 Service Areas
               </h4>
               <ul className="space-y-1.5 text-sm text-slate-400">
-                {content.aeo_signals.area_served.map((area, i) => (
+                {areasServed.map((area, i) => (
                   <li key={i}>{area}</li>
                 ))}
               </ul>
@@ -94,8 +95,7 @@ export default function Footer({ content }: FooterProps) {
                 {business.business_name}
               </h4>
               <p className="text-slate-400 text-sm leading-relaxed">
-                Professional plumbing services in {business.city},{" "}
-                {business.state}. Available 24/7 for emergency repairs.
+                Professional plumbing services in {business.city}, {business.state}. Available 24/7 for emergency repairs.
               </p>
               {websiteUrl !== "#" && (
                 <a
@@ -112,8 +112,7 @@ export default function Footer({ content }: FooterProps) {
           </div>
 
           <div className="mt-12 pt-6 border-t border-slate-800 text-center text-xs text-slate-600">
-            &copy; {currentYear} {business.business_name}. All rights reserved.
-            Built by{" "}
+            © {currentYear} {business.business_name}. All rights reserved. Built by{" "}
             <a
               href="https://reliantai.org"
               className="text-slate-500 hover:text-blue-400 transition-colors"

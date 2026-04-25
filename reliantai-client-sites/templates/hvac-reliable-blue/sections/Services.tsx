@@ -49,10 +49,10 @@ const cardFade = {
 
 export default function Services({ content, copy }: ServicesProps) {
   const { services } = content;
-  const theme = content.site_config.theme;
 
   return (
     <section className="relative py-24 bg-slate-900">
+      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/10 to-transparent" />
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-blue-600/3 blur-3xl" />
       </div>
@@ -80,10 +80,7 @@ export default function Services({ content, copy }: ServicesProps) {
               variants={cardFade}
               className="bg-slate-800/50 border border-slate-700/80 rounded-xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/50 transition-all duration-300 group"
             >
-              <div
-                className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4"
-                style={{ backgroundColor: `${theme.primary}20`, color: theme.accent }}
-              >
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 bg-blue-500/10 text-blue-400">
                 {getIcon(service.icon)}
               </div>
               <h3 className="text-lg font-semibold text-white mb-2">

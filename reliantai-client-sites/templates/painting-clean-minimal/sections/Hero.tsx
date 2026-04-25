@@ -30,23 +30,12 @@ export default function Hero({ content }: HeroProps) {
 
   return (
     <section className="relative min-h-screen flex items-center pt-12 overflow-hidden bg-gradient-to-b from-white via-violet-50/30 to-white">
-      {/* Primary violet glow — right side */}
-      <div
-        className="absolute top-1/4 -right-32 w-[640px] h-[640px] pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at center, rgba(124,58,237,0.10) 0%, rgba(124,58,237,0.03) 40%, transparent 70%)",
-        }}
-      />
-      {/* Secondary violet glow — left side */}
-      <div
-        className="absolute bottom-0 left-0 w-[480px] h-[480px] pointer-events-none"
-        style={{
-          background: "radial-gradient(ellipse at center, rgba(124,58,237,0.05) 0%, transparent 70%)",
-        }}
-      />
+      {/* Single subtle violet glow */}
+      <div className="absolute top-1/3 right-0 w-[800px] h-[600px] pointer-events-none bg-violet-200/20 blur-3xl rounded-full" />
+      {/* Bottom fade into next section */}
+      <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" />
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-        {/* Left: Text content */}
         <div>
           <motion.div
             initial="hidden"
@@ -126,15 +115,11 @@ export default function Hero({ content }: HeroProps) {
           )}
         </div>
 
-        {/* Right: Paint-themed abstract visual */}
         <div className="hidden lg:flex items-center justify-center">
-          <div className="relative w-80 h-80">
-            <div className="absolute top-0 right-0 w-52 h-52 rounded-full bg-violet-200/50 blur-sm" />
-            <div className="absolute bottom-8 left-4 w-40 h-40 rounded-full bg-violet-100/70 blur-sm" />
-            <div className="absolute top-16 left-14 w-28 h-28 rounded-full bg-violet-300/40 blur-sm" />
-            <div className="absolute top-6 left-28 w-10 h-10 rounded-full bg-violet-400/30" />
-            <div className="absolute bottom-2 right-20 w-7 h-7 rounded-full bg-violet-500/25" />
-            <div className="absolute top-28 right-10 w-4 h-4 rounded-full bg-stone-300/50" />
+          <div className="relative w-72 h-72">
+            <div className="absolute inset-0 rounded-full bg-violet-100/60 blur-2xl" />
+            <div className="absolute inset-[20%] rounded-full bg-violet-200/40 blur-xl" />
+            <div className="absolute inset-[40%] rounded-full bg-violet-300/30" />
           </div>
         </div>
       </div>

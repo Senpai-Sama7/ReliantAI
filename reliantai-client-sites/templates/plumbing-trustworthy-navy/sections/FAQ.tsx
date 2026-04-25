@@ -27,14 +27,15 @@ export default function FAQ({ content }: FAQProps) {
         <dl className="space-y-3">
           {content.faq.map((item, i) => {
             const isOpen = openIndex === i;
-            const chevronClasses = isOpen
-              ? "h-5 w-5 flex-shrink-0 text-blue-400 transition-transform duration-200 rotate-180"
-              : "h-5 w-5 flex-shrink-0 text-slate-500 transition-transform duration-200";
 
             return (
               <div
                 key={i}
-                className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden hover:border-slate-700/80 transition-colors"
+                className={`rounded-xl overflow-hidden transition-colors duration-150 ${
+                  isOpen
+                    ? "bg-slate-800/70 border border-blue-500/20"
+                    : "bg-slate-900/50 border border-slate-800 hover:bg-slate-800/40 hover:border-slate-700/80"
+                }`}
               >
                 <dt>
                   <button
@@ -42,7 +43,11 @@ export default function FAQ({ content }: FAQProps) {
                     className="w-full flex items-center justify-between px-6 py-5 text-left text-white font-medium hover:text-blue-200 transition-colors"
                   >
                     <span className="pr-4">{item.question}</span>
-                    <ChevronDown className={chevronClasses} />
+                    <ChevronDown
+                      className={`h-5 w-5 flex-shrink-0 transition-transform duration-150 ${
+                        isOpen ? "rotate-180 text-blue-400" : "text-slate-500"
+                      }`}
+                    />
                   </button>
                 </dt>
                 <AnimatePresence initial={false}>

@@ -61,8 +61,7 @@ export default function Services({ content, copy }: ServicesProps) {
             {copy.services_title}
           </h2>
           <p className="mt-3 text-slate-400 max-w-2xl mx-auto">
-            {copy.services_subtitle} {content.business.city},{" "}
-            {content.business.state}
+            {copy.services_subtitle} {content.business.city}, {content.business.state}
           </p>
         </div>
 
@@ -73,29 +72,46 @@ export default function Services({ content, copy }: ServicesProps) {
           variants={gridStagger}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
-          {services.map((service, i) => (
-            <motion.div
-              key={i}
-              variants={cardFade}
-              className="bg-slate-800/50 border border-slate-700/80 rounded-xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-500/50 transition-all duration-300 group"
-            >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 bg-emerald-500/10 text-emerald-400">
-                {getIcon(service.icon)}
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">
-                {service.title}
-              </h3>
-              <p className="text-slate-400 text-sm leading-relaxed mb-4">
-                {service.description}
-              </p>
-              <a
-                href={`tel:${content.business.phone}`}
-                className="inline-flex items-center text-sm font-medium text-emerald-400 group-hover:text-emerald-300 transition-colors"
+          {services.map((service, i) => {
+            const isFeatured = i === 0;
+            return (
+              <motion.div
+                key={i}
+                variants={cardFade}
+                className={`rounded-xl p-6 transition-all duration-300 group ${
+                  isFeatured
+                    ? "bg-emerald-900/30 border-2 border-emerald-500/40 hover:border-emerald-400/60 shadow-lg shadow-emerald-500/10"
+                    : "bg-slate-800/50 border border-slate-700/80 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-500/50"
+                }`}
               >
-                {service.cta_text} &rarr;
-              </a>
-            </motion.div>
-          ))}
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
+                  isFeatured ? "bg-emerald-400/20 text-emerald-300" : "bg-emerald-500/10 text-emerald-400"
+                }`}>
+                  {getIcon(service.icon)}
+                </div>
+                <h3 className={`text-lg font-semibold mb-2 ${
+                  isFeatured ? "text-emerald-100" : "text-white"
+                }`}>
+                  {service.title}
+                </h3>
+                <p className={`text-sm leading-relaxed mb-4 ${
+                  isFeatured ? "text-emerald-200/70" : "text-slate-400"
+                }`}>
+                  {service.description}
+                </p>
+                <a
+                  href={`tel:${content.business.phone}`}
+                  className={`inline-flex items-center text-sm font-medium transition-colors ${
+                    isFeatured
+                      ? "text-emerald-300 group-hover:text-emerald-200"
+                      : "text-emerald-400 group-hover:text-emerald-300"
+                  }`}
+                >
+                  {service.cta_text} →
+                </a>
+              </motion.div>
+            );
+          })}
         </motion.div>
       </div>
     </section>

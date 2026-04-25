@@ -37,7 +37,7 @@ const TRADE_TRUST: Record<string, { label: string; icon: IconKey }[]> = {
   roofing: [
     { label: "Licensed & Insured", icon: "shield" },
     { label: "GAF Certified", icon: "award" },
-    { label: "Worker&rsquo;s Comp Covered", icon: "filecheck" },
+    { label: "Worker\u2019s Comp Covered", icon: "filecheck" },
   ],
   painting: [
     { label: "Licensed & Insured", icon: "shield" },
@@ -56,7 +56,7 @@ export default function TrustBanner({ trade = "hvac", light = false }: TrustBann
 
   return (
     <div className={light
-      ? "bg-white border-b border-slate-200"
+      ? "bg-white border-b border-stone-200"
       : "relative bg-slate-950 border-b border-slate-800"
     }>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
@@ -64,8 +64,8 @@ export default function TrustBanner({ trade = "hvac", light = false }: TrustBann
           const Icon = ICONS[item.icon];
           return (
             <div key={i} className="flex items-center gap-2">
-              <Icon className="h-4 w-4 text-slate-500" />
-              <span className="text-xs font-semibold tracking-wide uppercase text-slate-400">
+              <Icon className={`h-4 w-4 ${light ? "text-stone-500" : "text-slate-500"}`} />
+              <span className={`text-xs font-semibold tracking-wide uppercase ${light ? "text-stone-600" : "text-slate-400"}`}>
                 {item.label}
               </span>
             </div>

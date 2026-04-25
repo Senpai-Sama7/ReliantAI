@@ -15,6 +15,7 @@ const SECTION_ANCHORS = [
 export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
+  const areas = content.aeo_signals?.area_served ?? [];
 
   return (
     <footer className="bg-slate-950 border-t border-slate-800">
@@ -53,7 +54,7 @@ export default function Footer({ content }: FooterProps) {
                 )}
               </div>
               <p className="mt-4 text-xs text-orange-400/70 font-semibold uppercase tracking-wider">
-                Licensed, Bonded &amp; Insured
+                Licensed, Bonded & Insured
               </p>
             </div>
 
@@ -94,15 +95,17 @@ export default function Footer({ content }: FooterProps) {
                 Service Areas
               </h4>
               <ul className="space-y-2 text-sm text-slate-400">
-                {content.aeo_signals.area_served.map((area, i) => (
-                  <li key={i}>{area}</li>
-                ))}
+                {areas.length > 0 ? (
+                  areas.map((area, i) => <li key={i}>{area}</li>)
+                ) : (
+                  <li>{business.city}, {business.state}</li>
+                )}
               </ul>
             </div>
           </div>
 
           <div className="mt-12 pt-6 border-t border-slate-800 text-center text-xs text-slate-600">
-            &copy; {currentYear} {business.business_name}. All rights reserved.
+            © {currentYear} {business.business_name}. All rights reserved.
             Built by{" "}
             <a
               href="https://reliantai.org"
