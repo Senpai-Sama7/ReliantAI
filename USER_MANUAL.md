@@ -216,6 +216,16 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 - **Revalidation Auth:** On-demand revalidation requires `Authorization: Bearer <token>` matching `REVALIDATE_SECRET`.
 - **AI-Controllable:** Yes — JIT OS can trigger revalidation, preview sites, check template health.
 
+**Customer Journey Example:**
+1. **Prospect Discovery:** GrowthEngine finds "Reliable Cooling & Heating" in Austin with 4.8★ rating.
+2. **API Registration:** Prospect saved with `trade=hvac`, `business_name=Reliable Cooling & Heating`, `city=Austin`.
+3. **Slug Generation:** `reliable-cooling-heating-austin` created via `generate_slug`.
+4. **Content Generation:** Celery worker fetches business details, generates SiteContent with HVAC-specific headers.
+5. **ISR Caching:** First visitor to `/reliable-cooling-heating-austin` triggers DB fetch, caches page for 3600s.
+6. **Live Preview:** Sales team clicks "Preview" in dashboard → sees branded site with CTA to schedule consultation.
+7. **Content Update:** Business owner changes phone number → API update triggers Celery revalidation task.
+8. **Cache Update:** Next visitor gets fresh content — outdated ISR cache purged on revalidation.
+
 See `reliantai-client-sites/README.md` for full development documentation.
 
 ### 💰 Money (Revenue & Dispatch)

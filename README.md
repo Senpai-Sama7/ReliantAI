@@ -102,6 +102,22 @@ graph TB
     O -.->|Auto-Scale / Heal| G
 ```
 
+## Monitoring & Alerting
+
+### Client Sites (Next.js ISR)
+- **ISR Cache Hit Rate:** Target >95%; alert if drops below 90% over 5m (via Cloudflare/Next.js analytics).
+- **Page Generation Latency:** 95th percentile ISR regeneration < 1s; alert if > 1.5s.
+- **Celery Beat Tasks:** Monitor task success rates; alert on 3 consecutive failures in site_generation or revalidation tasks.
+- **API Endpoint Health:** `/v2/generated-sites/{slug}` latency < 200ms, error rate < 1%; alert on degradation.
+- **Preview Domain Uptime:** Synthetic HTTP checks for `preview.reliantai.org`; alert on downtime > 30s.
+- **Lighthouse CI:** Enforced on PRs; block merge if Performance < 90 or Accessibility < 90.
+
+### Platform-Wide
+- **Service Health:** All services expose `/health` endpoint; monitored via Docker healthchecks and external pinger.
+- **Dead Letter Queue:** Celery DLQ depth > 0 triggers immediate alert.
+- **Database Lag:** Replica lag > 1s alerts on primary-replica setup.
+- **Disk Usage:** Alert at 80% disk utilization on any volume.
+
 *Note: Each service is fully isolated, enforcing CQRS and event-driven patterns. Mocks are strictly forbidden; all services interact with real external APIs or fail gracefully.*
 
 ---
