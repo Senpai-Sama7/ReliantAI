@@ -1,36 +1,102 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ReliantAI Client Sites
 
-## Getting Started
+ISR-powered landing page generator for home service businesses. Serves branded, trade-specific pages from a single Next.js app — no per-site builds.
 
-First, run the development server:
+## Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+API (FastAPI + Celery)
+  └── Prospected businesses → template_id + content → ISR cache
+                                                              ← On-demand revalidation
+Next.js App Router (revalidate=3600) ← ISR cache ← /[slug] → Branded page
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Content flows: **Prospect created** → Celery task generates content → stored in DB → fetched at build time by Next.js → served as ISR page.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quick Start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cd reliantai-client-sites
+npm install
+cp .env.example .env  # fill in API_BASE_URL
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000/hvac-reliable-cooling-austin](http://localhost:3000/hvac-reliable-cooling-austin) (sample slug).
 
-To learn more about Next.js, take a look at the following resources:
+## Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev        # dev server
+npm run build      # production build
+npx tsc --noEmit  # typecheck
+npm run test:e2e   # Playwright E2E tests
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Slug Format
 
-## Deploy on Vercel
+`generate_slug(business_name, city)` — lowercase, hyphenated.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Example: "Reliable Cooling & Heating" in "Austin, TX" → `reliable-cooling-heating-austin`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Templates
+
+| ID | Trade | Accent | Theme |
+|----|-------|--------|-------|
+| `hvac` | HVAC | Blue | Dark, professional |
+| `plumbing` | Plumbing | Blue | Dark, emergency-focused |
+| `electrical` | Electrical | Amber | Dark, safety-first |
+| `roofing` | Roofing | Orange | Dark, bold |
+| `painting` | Painting | Violet | **Light**, minimal |
+| `landscaping` | Landscaping | Emerald | Dark, organic |
+
+## ISR & Revalidation
+
+- Pages revalidate every **3600 seconds** automatically.
+- On-demand revalidation: `POST /api/revalidate` with `Authorization: Bearer <token>`.
+- Revalidation secret must match `REVALIDATE_SECRET` env var.
+
+## API Integration
+
+Templates receive a `SiteContent` object from `GET {API_BASE_URL}/v2/generated-sites/{slug}` — no hardcoded business data.
+
+## Environment Variables
+
+```
+API_BASE_URL=https://api.reliantai.com      # ReliantAI API base
+REVALIDATE_SECRET=<secret>                 # Bearer token for /api/revalidate
+NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
+```
+
+## Project Structure
+
+```
+app/
+├── [slug]/page.tsx      # Dynamic ISR route
+├── api/revalidate/      # On-demand revalidation endpoint
+└── globals.css         # Shared styles + font-display
+
+components/
+├── PreviewBanner.tsx   # Preview-mode branded banner
+└── shared/
+    ├── StatsBar.tsx
+    ├── CTASection.tsx
+    ├── TrustBanner.tsx
+    └── SectionDivider.tsx
+
+templates/
+└── [trade]/           # One subdirectory per template
+    ├── index.tsx
+    └── sections/
+        ├── Hero.tsx
+        ├── Services.tsx
+        ├── About.tsx
+        ├── Reviews.tsx
+        ├── FAQ.tsx
+        ├── Footer.tsx
+        └── ContactBar.tsx
+
+lib/
+├── api.ts              # getSiteContent() + getTemplate()
+└── trade-copy.ts       # TRADE_COPY per-trade section headers
+```

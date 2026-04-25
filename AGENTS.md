@@ -29,8 +29,8 @@ docker compose logs -f [service]
 - All tool `_run()` are sync. CrewAI threads internally.
 
 ## Current Sprint
-**Phase: 4 — E2E + Deployment**  
-In scope: reliantai-client-sites/ E2E Playwright tests, remaining 5 template builds, deployment verification
+**Phase: 5 — Deployment Verification**  
+In scope: Deploy to Vercel, configure `API_BASE_URL`, verify ISR slugs render, monitor Celery beat tasks
 
 ## Commands (reliantai-client-sites/)
 ```bash

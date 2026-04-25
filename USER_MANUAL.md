@@ -11,6 +11,8 @@ Welcome to the **ReliantAI Platform**. This manual is designed to provide you wi
 3. [Reliant JIT OS](#3-reliant-jit-os)
 4. [Core Concepts & Architecture](#4-core-concepts--architecture)
 5. [Service Deep Dives](#5-service-deep-dives)
+   - [💰 ReliantAI API (FastAPI + Celery)](#-reliantai-api-fastapi--celery)
+   - [🌐 ReliantAI Client Sites (Next.js ISR)](#-reliantai-client-sites-nextjs-isr)
    - [💰 Money (Revenue & Dispatch)](#-money-revenue--dispatch)
    - [🚀 GrowthEngine (Lead Generation)](#-growthengine-lead-generation)
    - [🛡️ ComplianceOne (Governance)](#-complianceone-governance)
@@ -193,6 +195,29 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 
 ## 5. Service Deep Dives
 
+### 🏠 ReliantAI API (FastAPI + Celery)
+**Purpose:** Central API for managing prospects, generating site content, and orchestrating background tasks.
+**Port:** 8000 (via nginx) or 8000 directly
+**Key Features:**
+- **CrewAI Agent Pipeline:** Autonomous agents for GBP scraping, PageSpeed auditing, schema building, SMS/email notifications.
+- **Site Registration:** Registers business landing pages with Google, triggers ISR revalidation on content changes.
+- **Prospects API:** Enriched prospect data with years_in_business, service_area, owner info, business intelligence.
+- **Celery Beat:** Scheduled task pipeline (prospect discovery → site generation → schema submission → review monitoring).
+- **AI-Controllable:** Yes — JIT OS can register sites, trigger revalidation, query prospects.
+
+### 🌐 ReliantAI Client Sites (Next.js ISR)
+**Purpose:** Dynamically generates branded landing pages for home service businesses at runtime via ISR.
+**Port:** 3000
+**Key Features:**
+- **ISR at /[slug]:** Pages regenerate every 3600s or on-demand via `POST /api/revalidate`.
+- **6 Trade Templates:** HVAC (blue), Plumbing (blue), Electrical (amber), Roofing (orange), Painting (violet), Landscaping (emerald).
+- **No Per-Site Builds:** One Next.js app, content driven from API — all pages served from shared ISR cache.
+- **Preview Mode:** Live preview links with branded banner, checkout CTA, and lighthouse scores.
+- **Revalidation Auth:** On-demand revalidation requires `Authorization: Bearer <token>` matching `REVALIDATE_SECRET`.
+- **AI-Controllable:** Yes — JIT OS can trigger revalidation, preview sites, check template health.
+
+See `reliantai-client-sites/README.md` for full development documentation.
+
 ### 💰 Money (Revenue & Dispatch)
 **Purpose:** Handles incoming customer requests, job dispatching, and billing.
 **Port:** 8000
@@ -354,6 +379,14 @@ See `reliant-os/README.md` for complete API documentation.
 **7. Lost Secret Vault After Restart**
 - **Cause:** Docker volume not mounted or deleted.
 - **Fix:** Re-enter keys in setup wizard. To prevent: backup volume regularly with `docker cp`.
+
+**8. Client Site Not Updating After Content Change**
+- **Cause:** ISR cache hasn't revalidated yet (default: 3600s).
+- **Fix:** Trigger on-demand revalidation: `curl -X POST https://api.reliantai.com/api/revalidate -H "Authorization: Bearer <token>" -d '{"slug":"business-name-city"}'` or wait for next Celery beat cycle.
+
+**9. Client Site Template 404**
+- **Cause:** `template_id` in DB doesn't match any known template (hvac, plumbing, electrical, roofing, painting, landscaping).
+- **Fix:** Update the prospect's `template_id` in the database to a valid value, or add a new template mapping in `reliantai-client-sites/lib/api.ts`.
 
 ---
 

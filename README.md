@@ -104,6 +104,7 @@ graph TB
 * Docker (24.0+)
 * Docker Compose (2.20+)
 * Python 3.11+ (for local scripts)
+* Node.js 18+ (for client sites development)
 
 ### Option 1: Zero-Configuration (JIT OS)
 
@@ -200,6 +201,7 @@ See `reliant-os/USER_MANUAL.md` for complete usage guide.
 | FinOps360 | 8002 | Cloud cost optimization | ✅ Yes |
 | Orchestrator | 9000 | Auto-scaling, healing | ✅ Yes |
 | Dashboard | 80 | Visual analytics | ✅ Yes |
+| Client Sites | 3000 | ISR landing pages (Next.js) | ✅ Yes |
 | Event Bus | 8081 | Redis pub/sub messaging | ❌ Infrastructure |
 | PostgreSQL | 5432 | Per-service databases | ❌ Infrastructure |
 | Redis | 6379 | Caching & sessions | ❌ Infrastructure |
@@ -229,6 +231,13 @@ All public endpoints are protected by `SecurityHeadersMiddleware` and `RateLimit
 
 ---
 
+### 🏠 Client Sites (ISR-Generated Landing Pages)
+* **ReliantAI Client Sites**: Next.js App Router with ISR rendering. Dynamically generates branded landing pages for home service businesses at `/[slug]`. Powered by the `ReliantAI` API (FastAPI + Celery). No per-site builds — all content served from a shared ISR cache refreshed on-demand via Celery tasks.
+
+See `reliantai-client-sites/README.md` for full documentation.
+
+---
+
 ## 📁 Project Structure
 
 ```
@@ -238,6 +247,23 @@ ReliantAI/
 ├── ComplianceOne/            # Compliance tracking
 ├── FinOps360/               # Cloud cost optimization
 ├── Orchestrator/            # Platform brain & auto-scaling
+├── reliantai/               # 🆕 FastAPI platform core + CrewAI agents
+│   ├── agents/             # CrewAI agents (GBP scraper, PageSpeed, SMS, email)
+│   ├── api/v2/             # API endpoints (prospects, generated_sites, webhooks)
+│   ├── celery_app.py        # Celery config with beat_schedule
+│   ├── db/                  # SQLAlchemy models + Alembic migrations
+│   └── services/            # Business logic (site_registration_service)
+├── reliantai-client-sites/  # 🆕 Next.js ISR client sites (6 trade templates)
+│   ├── app/[slug]/         # Dynamic ISR route at /[slug]
+│   ├── components/         # Shared components (StatsBar, CTASection, TrustBanner)
+│   ├── templates/           # 6 trade-specific templates
+│   │   ├── hvac-reliable-blue/
+│   │   ├── plumbing-trustworthy-navy/
+│   │   ├── electrical-sharp-gold/
+│   │   ├── roofing-bold-copper/
+│   │   ├── painting-clean-minimal/
+│   │   └── landscaping-earthy-green/
+│   └── tests/e2e/           # Playwright E2E tests
 ├── integration/             # Event bus, auth, sagas
 ├── dashboard/               # Main web dashboard
 ├── reliant-os/              # 🆕 Zero-config AI operations
