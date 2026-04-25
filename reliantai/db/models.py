@@ -31,8 +31,8 @@ class Prospect(Base):
     review_count = Column(Integer, default=0)
     website_url = Column(String(500))
     status = Column(String(50), default="identified")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     research_jobs = relationship(
         "ResearchJob", back_populates="prospect", cascade="all, delete-orphan"
