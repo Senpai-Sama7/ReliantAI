@@ -1,0 +1,99 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: reliantai
+      POSTGRES_USER: reliantai
+      POSTGRES_PASSWORD: ${DB_PASS:-reliantai_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reliantai -d reliantai"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASS:-reliantai_dev}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASS:-reliantai_dev}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: uvicorn reliantai.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
+      REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+      API_SECRET_KEY: ${API_SECRET_KEY:-dev_secret_key_change_in_production}
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_agents:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A reliantai.celery_app worker -Q agents,agents_high --concurrency 2 --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
+      REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_outreach:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A reliantai.celery_app worker -Q outreach,provisioning --concurrency 4 --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
+      REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A reliantai.celery_app beat --loglevel=info
+    environment:
+      DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
+      REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

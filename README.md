@@ -273,14 +273,21 @@ curl http://localhost:8085/health
 
 ## 📝 Documentation
 
-| Document | Purpose |
-|----------|---------|
-| `README.md` | This file — platform overview |
-| `reliant-os/README.md` | Technical API docs for JIT OS |
-| `reliant-os/USER_MANUAL.md` | User-friendly guide for JIT OS |
-| `USER_MANUAL.md` | Platform-wide service documentation |
-| `Bug-Report.md` | Known issues & fixes registry |
-| `AGENTS.md` | AI agent development guidelines |
+| Document | Purpose | Audience |
+|----------|---------|----------|
+| `README.md` | This file — platform overview & quickstart | Everyone |
+| `CLAUDE.md` | **Developer reference** — architecture, codebase intelligence, health status | Developers (especially Claude Code) |
+| `USER_MANUAL.md` | Platform-wide service documentation & operations | Platform operators |
+| `reliant-os/USER_MANUAL.md` | User guide for Reliant JIT OS | Non-technical operators |
+| `AGENTS.md` | AI agent development guidelines | Agent developers |
+| `GEMINI.md` | Gemini AI integration & configuration | AI/LLM developers |
+| `CONTRIBUTING.md` | Contribution guidelines & development process | Contributors |
+| `CHANGELOG.md` | Version history & release notes | Release managers |
+
+**Start Here:** 
+- **For Claude Code:** Read `CLAUDE.md` for architecture, codebase health, and development commands
+- **For Operations:** Read `README.md` then `USER_MANUAL.md`
+- **For Development:** Read `CLAUDE.md` then `CONTRIBUTING.md`
 
 ---
 
