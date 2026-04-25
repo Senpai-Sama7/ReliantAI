@@ -38,6 +38,8 @@ Reliant JIT OS eliminates manual configuration entirely. No `.env` files. No doc
 ReliantAI is composed of **20+ integrated microservices**. Here are the pillars of the platform:
 
 ### 💼 Business Operations
+* **ReliantAI API**: FastAPI + Celery platform core. Handles prospects, site registration, and background task pipeline (GBP scraping → site generation → schema submission → review monitoring).
+* **ReliantAI Client Sites**: Next.js App Router with ISR. Dynamically generates branded landing pages for home service businesses at `/[slug]`. One shared app, no per-site builds.
 * **Money Service**: The revenue engine. Handles real-world HVAC dispatching, automated SMS triage (via Twilio), AI-powered job assignment (via CrewAI + Gemini), and Stripe billing.
 * **GrowthEngine**: Autonomous lead generation using Google Places API. Finds home service businesses, filters by quality, and sends personalized SMS pitches.
 * **Gen-H**: High-conversion lead generation and templating library for home services.
@@ -73,10 +75,16 @@ graph TB
     JIT -.->|AI Control| G[GrowthEngine :8003]
     
     N --> M[Money :8000]
+    N --> API[ReliantAI API :8000]
     N --> C[ComplianceOne :8001]
     N --> F[FinOps360 :8002]
     N --> O[Orchestrator :9000]
     N --> G[GrowthEngine :8003]
+    N --> CS[Client Sites :3000]
+    
+    API -->|Content| DB[(PostgreSQL)]
+    API -->|ISR Revalidate| CS
+    CS -.->|ISR Fetch| API
     
     M -.->|Events| EB[Event Bus :8081]
     C -.->|Events| EB
