@@ -1,0 +1,12 @@
+{
+  "name": "@regenesis/types",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.d.ts",
+  "types": "./src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts"
+    }
+  }
+}

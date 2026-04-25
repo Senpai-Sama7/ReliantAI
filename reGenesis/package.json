@@ -1,0 +1,60 @@
+{
+  "name": "reGenesis",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.7.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm run build:tokens && pnpm run build:packages",
+    "build:tokens": "pnpm --filter @regenesis/design-tokens build && pnpm --filter @regenesis/motion-tokens build",
+    "build:packages": "pnpm -r --filter './packages/*' --parallel=false run build",
+    "dev": "pnpm --filter @regenesis/site-example dev",
+    "app:build": "pnpm --filter @regenesis/site-example build",
+    "app:start": "pnpm --filter @regenesis/site-example start",
+    "generate": "node tools/generate.mjs",
+    "replicate": "node tools/replicator.mjs replicate",
+    "verify": "node tools/replicator.mjs verify",
+    "test": "node --test packages/testing/*.mjs",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .js,.cjs,.mjs,.ts,.tsx --max-warnings 0",
+    "format": "prettier -w .",
+    "format:check": "prettier -c ."
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^2.1.1",
+    "cheerio": "^1.0.0-rc.12",
+    "cosmiconfig": "^9.0.0",
+    "csso": "^5.0.5",
+    "html-minifier-terser": "^7.2.0",
+    "p-queue": "^8.0.1",
+    "pino": "^9.3.2",
+    "pino-pretty": "^10.0.0",
+    "puppeteer": "^22.13.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "robots-parser": "^3.0.1",
+    "sharp": "^0.33.4",
+    "svgo": "^3.2.0",
+    "undici": "^6.19.8",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "c8": "^9.1.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.4",
+    "@playwright/test": "^1.47.1",
+    "eslint": "^8.57.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "eslint-config-prettier": "^9.1.0",
+    "prettier": "^3.3.3"
+  }
+}

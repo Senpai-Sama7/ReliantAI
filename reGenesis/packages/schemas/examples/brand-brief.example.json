@@ -1,0 +1,20 @@
+{
+  "brand": { "name": "Acme Quantum", "voice": "tech" },
+  "identity": {
+    "colors": { "bg": "#0b1220", "fg": "#e6edf7", "accent": "#4da3ff", "muted": "#122034" },
+    "typography": { "display": { "family": "Inter" }, "text": { "family": "Inter" } },
+    "density": "comfortable"
+  },
+  "motion": { "personality": "standard" },
+  "contentModel": [
+    { "intent": "hero", "payload": { "heading": "Faster inference. Lower cost.", "kicker": "Acme Quantum", "cta": { "href": "#cta", "label": "Get started" } } },
+    { "intent": "feature-grid", "payload": { "items": [
+      { "title": "Latency", "body": "p95 under 150ms" },
+      { "title": "Cost", "body": "Run 40% cheaper" },
+      { "title": "Security", "body": "SOC2 ready" }
+    ] } },
+    { "intent": "testimonial", "payload": { "quote": "Cut infra spend in half.", "author": "Dana Li, CTO" } },
+    { "intent": "cta", "payload": { "heading": "Ship today", "button": { "href": "#", "label": "Start free" } } }
+  ]
+}
+

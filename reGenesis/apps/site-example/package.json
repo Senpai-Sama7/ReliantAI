@@ -1,0 +1,24 @@
+{
+  "name": "@regenesis/site-example",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "serve out"
+  },
+  "dependencies": {
+    "next": "14.2.5",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@regenesis/ui": "workspace:*",
+    "@regenesis/motion": "workspace:*",
+    "@regenesis/scroll": "workspace:*",
+    "@regenesis/schemas": "workspace:*",
+    "@regenesis/design-tokens": "workspace:*"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

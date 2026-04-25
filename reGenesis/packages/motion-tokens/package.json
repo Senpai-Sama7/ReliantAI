@@ -1,0 +1,20 @@
+{
+  "name": "@regenesis/motion-tokens",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/motion.js",
+  "module": "./dist/motion.js",
+  "types": "./dist/motion.d.ts",
+  "scripts": {
+    "build": "node build.cjs",
+    "dev": "node build.cjs --watch"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/motion.js",
+      "types": "./dist/motion.d.ts"
+    },
+    "./motion.css": "./dist/motion.css"
+  },
+  "license": "MIT"
+}
