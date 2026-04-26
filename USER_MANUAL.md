@@ -224,6 +224,14 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 - **Template Preview (`/preview`):** Simplified browser with JSON data viewer and grid layout
 - **AI-Controllable:** Yes — JIT OS can trigger revalidation, preview sites, check template health.
 
+**🎯 Current Sprint - Phase 5: Deployment Verification**
+✅ **Completed:** Interactive template showcase with device frames, live editing, generation prompts
+🔲 **Remaining:**
+- Configure `API_BASE_URL` environment variable for Vercel deployment
+- Verify ISR slugs render correctly
+- Monitor Celery beat tasks
+- Final deployment verification
+
 **Customer Journey Example:**
 1. **Prospect Discovery:** GrowthEngine finds "Reliable Cooling & Heating" in Austin with 4.8★ rating.
 2. **API Registration:** Prospect saved with `trade=hvac`, `business_name=Reliable Cooling & Heating`, `city=Austin`.

@@ -2,6 +2,27 @@
 
 ISR-powered landing page generator for home service businesses. Serves branded, trade-specific pages from a single Next.js app — no per-site builds.
 
+## 🎯 Current Status
+
+**Phase 5: Deployment Verification** — Interactive template showcase complete, preparing for production deployment
+
+✅ **Completed:**
+- Interactive `/showcase` with 4 view modes (Preview, Grid, Prompt, Compare)
+- Premium DeviceFrame components with realistic OS chrome
+- Live data editing with real-time preview updates
+- CodeBlock component with syntax highlighting and copy-to-clipboard
+- Rich template metadata system with generation prompts
+- Complete mock data for all 6 trades
+- Simplified `/preview` page with JSON viewer
+- Build success with clean TypeScript checks
+- Vercel configuration with environment variables
+
+🔲 **Remaining:**
+- Configure `API_BASE_URL` environment variable for Vercel deployment
+- Verify ISR slugs render correctly in preview.reliantai.org
+- Monitor Celery beat tasks for content regeneration
+- Final deployment verification
+
 ## Architecture
 
 ```mermaid

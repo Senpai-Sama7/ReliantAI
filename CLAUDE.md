@@ -22,5 +22,5 @@ tests:    pytest tests/ -x -v
 migrate:  alembic upgrade head
 
 ## Current sprint
-Phase: 1 — Infrastructure + Schema
-In scope: DB migrations, models, FastAPI skeleton, Celery setup, Docker Compose
+Phase: 5 — Deployment Verification
+In scope: Deploy to Vercel, configure `API_BASE_URL`, verify ISR slugs render, monitor Celery beat tasks
