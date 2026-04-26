@@ -1,4 +1,4 @@
-import json
+import os
 import time
 import httpx
 from crewai.tools import BaseTool
@@ -13,7 +13,7 @@ class GooglePlacesTool(BaseTool):
     )
 
     def _run(self, query: str = None, place_id: str = None) -> str:
-        api_key = __import__("os").environ.get("GOOGLE_PLACES_API_KEY", "")
+        api_key = os.environ.get("GOOGLE_PLACES_API_KEY", "")
         if not api_key:
             return str({"error": "GOOGLE_PLACES_API_KEY not set"})
 
