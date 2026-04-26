@@ -1,3 +1,4 @@
+import os
 import httpx
 from crewai.tools import BaseTool
 
@@ -13,7 +14,7 @@ class PageSpeedTool(BaseTool):
         if not url:
             return str({"score": 0, "error": "no_url"})
 
-        api_key = __import__("os").environ.get("GOOGLE_PAGESPEED_API_KEY", "")
+        api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY", "")
         params = {
             "url": url,
             "strategy": "mobile",

@@ -91,8 +91,8 @@ class ResearchJob(Base):
     step = Column(String(50))
     error_message = Column(Text)
     completed_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="research_jobs")
 
@@ -130,8 +130,8 @@ class BusinessIntelligence(Base):
     business_hours = Column(Text)
     payment_methods = Column(Text)
     certifications = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="business_intel")
 
@@ -162,8 +162,8 @@ class CompetitorIntelligence(Base):
     pricing_strategy = Column(Text)
     estimated_monthly_volume = Column(Integer)
     search_ranking_position = Column(Integer)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="competitors")
 
@@ -187,8 +187,8 @@ class Client(Base):
     package = Column(String(50))
     custom_domain = Column(String(255))
     status = Column(String(50), default="active")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect")
     generated_sites = relationship("GeneratedSite", back_populates="client")
@@ -221,8 +221,8 @@ class GeneratedSite(Base):
     meta_title = Column(String(255))
     meta_description = Column(String(500))
     lighthouse_score = Column(Integer)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="generated_site")
     client = relationship("Client", back_populates="generated_sites")
@@ -252,8 +252,8 @@ class OutreachSequence(Base):
     current_step = Column(Integer, default=0)
     max_steps = Column(Integer, default=4)
     next_send_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="outreach_sequences")
     messages = relationship(
@@ -293,8 +293,8 @@ class OutreachMessage(Base):
     clicked_at = Column(DateTime)
     replied_at = Column(DateTime)
     error_message = Column(Text)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     sequence = relationship("OutreachSequence", back_populates="messages")
     prospect = relationship("Prospect", back_populates="outreach_messages")
@@ -322,7 +322,7 @@ class LeadEvent(Base):
     from_address = Column(String(255))
     message_body = Column(Text)
     is_hot_lead = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
     prospect = relationship("Prospect", back_populates="lead_events")
 

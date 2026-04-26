@@ -1,10 +1,10 @@
+import os
 import structlog
 from celery import shared_task
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from ..db import get_db_session
 from ..db.models import Prospect, ResearchJob, OutreachSequence, OutreachMessage, LeadEvent
 from ..agents.home_services_crew import create_prospect_crew
-from ..services.site_registration_service import SiteRegistrationService
 
 log = structlog.get_logger()
 
@@ -13,13 +13,16 @@ STOP_WORDS = {"stop", "unsubscribe", "quit", "cancel", "end", "no more", "opt ou
 
 @shared_task(bind=True, name="prospect_tasks.run_prospect_pipeline", queue="agents")
 def run_prospect_pipeline(self, prospect_id: str):
-    job = None
+    job_id = None
     try:
         with get_db_session() as db:
             prospect = db.query(Prospect).filter_by(id=prospect_id).first()
             if not prospect:
                 log.error("pipeline_prospect_not_found", prospect_id=prospect_id)
                 return {"error": "prospect_not_found"}
+
+            # Capture data before commit expires the instance
+            prospect_data = prospect.to_dict()
 
             job = ResearchJob(
                 prospect_id=prospect_id,
@@ -30,8 +33,6 @@ def run_prospect_pipeline(self, prospect_id: str):
             db.commit()
             job_id = job.id
 
-        prospect_data = prospect.to_dict()
-
         crew = create_prospect_crew(prospect_data)
         result = crew.kickoff()
 
@@ -39,7 +40,7 @@ def run_prospect_pipeline(self, prospect_id: str):
             job = db.query(ResearchJob).filter_by(id=job_id).first()
             job.status = "completed"
             job.step = "done"
-            job.completed_at = datetime.utcnow()
+            job.completed_at = datetime.now(timezone.utc)
 
             prospect = db.query(Prospect).filter_by(id=prospect_id).first()
             prospect.status = "outreach_sent"
@@ -50,9 +51,9 @@ def run_prospect_pipeline(self, prospect_id: str):
 
     except Exception as exc:
         log.error("pipeline_failed", prospect_id=prospect_id, error=str(exc))
-        if job:
+        if job_id:
             with get_db_session() as db:
-                db_job = db.query(ResearchJob).filter_by(id=job.id).first()
+                db_job = db.query(ResearchJob).filter_by(id=job_id).first()
                 if db_job:
                     db_job.status = "failed"
                     db_job.error_message = str(exc)[:500]
@@ -88,7 +89,7 @@ def process_inbound_response(self, prospect_id: str, phone: str, body: str):
             db.commit()
 
         if not is_stop and len(body) > 10:
-            owner_phone = __import__("os").environ.get("OWNER_PHONE", "")
+            owner_phone = os.environ.get("OWNER_PHONE", "")
             if owner_phone:
                 log.info("hot_lead_detected", prospect_id=prospect_id, phone_last4=phone[-4:])
 
@@ -102,7 +103,7 @@ def process_inbound_response(self, prospect_id: str, phone: str, body: str):
 def process_scheduled_followups():
     try:
         with get_db_session() as db:
-            now = datetime.utcnow()
+            now = datetime.now(timezone.utc)
             due = db.query(OutreachSequence).filter(
                 OutreachSequence.next_send_at <= now,
                 OutreachSequence.status == "active",
@@ -116,14 +117,31 @@ def process_scheduled_followups():
                     seq.status = "completed"
                     seq.next_send_at = None
                 else:
+                    if seq.channel == "sms":
+                        from_address = os.environ.get("TWILIO_FROM_NUMBER", "")
+                        to_address = seq.prospect.phone or ""
+                    else:
+                        from_address = os.environ.get("FROM_EMAIL", "noreply@reliantai.org")
+                        to_address = seq.prospect.email or ""
+
+                    if not to_address:
+                        log.warning(
+                            "followup_skipped_no_address",
+                            sequence_id=seq.id,
+                            channel=seq.channel,
+                        )
+                        seq.status = "completed"
+                        seq.next_send_at = None
+                        continue
+
                     msg = OutreachMessage(
                         sequence_id=seq.id,
                         prospect_id=seq.prospect_id,
                         step_number=next_step,
                         channel=seq.channel,
-                        to_address=seq.prospect.phone if seq.channel == "sms" else seq.prospect.email,
-                        from_address=__import__("os").environ.get("TWILIO_FROM_NUMBER", ""),
-                        body="Follow-up message placeholder — replace with template",
+                        to_address=to_address,
+                        from_address=from_address,
+                        body=f"followup:{seq.sequence_template}:step{next_step}",
                         status="queued",
                     )
                     db.add(msg)

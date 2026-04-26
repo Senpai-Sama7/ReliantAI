@@ -27,7 +27,3 @@ def get_gemini_flash():
             google_api_key=os.environ.get("GOOGLE_AI_API_KEY", ""),
         )
     return _gemini_flash
-
-
-gemini_pro = None
-gemini_flash = None

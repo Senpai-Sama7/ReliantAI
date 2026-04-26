@@ -1,46 +1,40 @@
-import httpx
+import os
 import structlog
 from crewai.tools import BaseTool
 
 log = structlog.get_logger()
 
+_REQUIRED_FIELDS = ["@context", "@type", "name", "address", "telephone"]
+
 
 class SchemaValidatorTool(BaseTool):
     name: str = "schema_validator"
     description: str = (
-        "Validate schema.org structured data using Google Rich Results Test API. "
-        "Returns True if valid, False with warning on failure. Non-fatal."
+        "Validate schema.org structured data for local businesses. "
+        "Returns a dict with 'valid' (bool) and any missing fields."
     )
 
     def _run(self, schema: dict) -> str:
         if not schema:
             return str({"valid": False, "error": "no_schema"})
+        return str(self._local_validation(schema))
 
-        try:
-            with httpx.Client(timeout=15.0) as client:
-                resp = client.post(
-                    "https://searchconsole.googleapis.com/v1/urlTestingTools/mobileFriendlyTest:run",
-                    json={"url": "https://example.com", "requestScreenshot": False},
-                    params={"key": __import__("os").environ.get("GOOGLE_PAGESPEED_API_KEY", "")},
-                )
-            if resp.status_code == 200:
-                data = resp.json()
-                valid = not data.get("mobileFriendlyIssues")
-                return str({"valid": valid, "source": "google_api"})
-        except Exception as e:
-            log.warning("schema_api_failed", error=str(e))
-
-        valid = self._local_validation(schema)
-        return str({"valid": valid, "source": "local_fallback"})
-
-    def _local_validation(self, schema: dict) -> bool:
-        required = ["@context", "@type", "name", "address"]
-        for field in required:
-            if field not in schema:
+    def _local_validation(self, schema: dict) -> dict:
+        missing = [f for f in _REQUIRED_FIELDS if f not in schema]
+        if missing:
+            for field in missing:
                 log.warning("schema_missing_field", field=field)
-                return False
+            return {"valid": False, "missing_fields": missing, "source": "local"}
+
         if schema.get("@context") != "https://schema.org":
-            return False
-        if not isinstance(schema.get("@type"), list):
-            return False
-        return True
+            return {"valid": False, "error": "invalid_context", "source": "local"}
+
+        schema_type = schema.get("@type")
+        if not schema_type:
+            return {"valid": False, "error": "missing_type", "source": "local"}
+
+        address = schema.get("address", {})
+        if not isinstance(address, dict) or "@type" not in address:
+            return {"valid": False, "error": "invalid_address", "source": "local"}
+
+        return {"valid": True, "source": "local"}
