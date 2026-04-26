@@ -31,8 +31,8 @@ def upgrade():
         sa.Column("review_count", sa.Integer, server_default="0"),
         sa.Column("website_url", sa.String(500)),
         sa.Column("status", sa.String(50), server_default="identified"),
-        sa.Column("created_at", sa.DateTime),
-        sa.Column("updated_at", sa.DateTime),
+        sa.Column("created_at", sa.DateTime(timezone=True)),
+        sa.Column("updated_at", sa.DateTime(timezone=True)),
     )
 
     op.create_table(
