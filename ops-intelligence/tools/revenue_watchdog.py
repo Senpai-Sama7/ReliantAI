@@ -57,7 +57,7 @@ def send_alert(message: str, severity: str = "HIGH") -> None:
     if slack_url:
         try:
             requests.post(slack_url, json={"text": formatted}, timeout=5)
-        except Exception as e:
+        except (requests.TimeoutException, requests.RequestError) as e:
             print(f"  [Slack alert failed: {e}]")
 
     pagerduty_key = os.getenv("PAGERDUTY_ROUTING_KEY")
@@ -76,7 +76,7 @@ def send_alert(message: str, severity: str = "HIGH") -> None:
                 },
                 timeout=5,
             )
-        except Exception as e:
+        except (requests.TimeoutException, requests.RequestError) as e:
             print(f"  [PagerDuty alert failed: {e}]")
 
 
@@ -87,8 +87,14 @@ def run_checks() -> bool:
 
     try:
         health = check_income_health()
-    except Exception as e:
+    except requests.TimeoutException:
+        send_alert("ops-intelligence API timeout", "HIGH")
+        return False
+    except (requests.HTTPError, requests.RequestError) as e:
         send_alert(f"Cannot reach ops-intelligence API: {e}", "HIGH")
+        return False
+    except (ValueError, KeyError) as e:
+        send_alert(f"Invalid API response: {e}", "HIGH")
         return False
 
     # Print status line
@@ -150,7 +156,7 @@ def main():
         except KeyboardInterrupt:
             print("\nWatchdog stopped.")
             break
-        except Exception as e:
+        except (requests.RequestError, ValueError, KeyError) as e:
             print(f"[ERROR] Check failed: {e}")
         time.sleep(args.interval)
 

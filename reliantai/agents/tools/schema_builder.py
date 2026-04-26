@@ -1,4 +1,5 @@
 import structlog
+from typing import Dict, List, Optional
 
 log = structlog.get_logger()
 
@@ -12,11 +13,47 @@ TRADE_TO_SCHEMA_TYPE = {
 }
 
 
+def _format_geo_coordinates(lat: Optional[float], lng: Optional[float]) -> Dict:
+    return {
+        "@type": "GeoCoordinates",
+        "latitude": float(lat),
+        "longitude": float(lng),
+    }
+
+
+def _format_address(address_str: str) -> Dict:
+    return {
+        "@type": "PostalAddress",
+        "streetAddress": address_str.split(",")[0] if address_str else "",
+        "addressLocality": "",
+        "addressRegion": "",
+        "postalCode": "",
+        "addressCountry": "US",
+    }
+
+
+def _format_reviews(reviews_data: Optional[Dict]) -> List:
+    reviews = reviews_data.get("reviews", [])
+    return [
+        {
+            "@type": "Review",
+            "author": {"@type": "Person", "name": r.get("author", "Customer")},
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": r.get("rating", 5),
+                "bestRating": 5,
+            },
+            "reviewBody": r.get("text", "")[:200],
+        }
+        for r in reviews[:3]
+    ]
+
+
 def build_local_business_schema(
-    business_data: dict,
-    review_data: dict = None,
-    competitor_keywords: list = None,
-) -> dict:
+    business_data: Dict,
+    review_data: Optional[Dict] = None,
+    competitor_keywords: Optional[List] = None,
+) -> Dict:
     trade = business_data.get("trade", "hvac")
     schema_type = TRADE_TO_SCHEMA_TYPE.get(trade, "LocalBusiness")
     slug = business_data.get("slug", "")
@@ -44,22 +81,11 @@ def build_local_business_schema(
         "image": business_data.get("photos", [None])[0],
         "logo": business_data.get("logo"),
         "priceRange": "$$",
-        "address": {
-            "@type": "PostalAddress",
-            "streetAddress": address.split(",")[0] if address else "",
-            "addressLocality": city,
-            "addressRegion": state,
-            "postalCode": business_data.get("postal_code", ""),
-            "addressCountry": "US",
-        },
+        "address": _format_address(address),
     }
 
     if lat and lng:
-        schema["geo"] = {
-            "@type": "GeoCoordinates",
-            "latitude": float(lat),
-            "longitude": float(lng),
-        }
+        schema["geo"] = _format_geo_coordinates(lat, lng)
 
     if rating and review_count:
         schema["aggregateRating"] = {
@@ -71,20 +97,7 @@ def build_local_business_schema(
         }
 
     if review_data and isinstance(review_data, dict):
-        reviews = review_data.get("reviews", [])
-        schema["review"] = [
-            {
-                "@type": "Review",
-                "author": {"@type": "Person", "name": r.get("author", "Customer")},
-                "reviewRating": {
-                    "@type": "Rating",
-                    "ratingValue": r.get("rating", 5),
-                    "bestRating": 5,
-                },
-                "reviewBody": r.get("text", "")[:200],
-            }
-            for r in reviews[:3]
-        ]
+        schema["review"] = _format_reviews(review_data)
 
     social_urls = []
     for key in ["facebook_url", "instagram_url", "linkedin_url", "youtube_url", "yelp_url"]:

@@ -1,7 +1,7 @@
 /**
  * bun-server.ts
  *
- * Entry point for the Nexus documentation site.
+ * Entry point for the sovereign_ai documentation and visualization service.
  *
  * The Cross-Origin-Opener-Policy and Cross-Origin-Embedder-Policy headers
  * are not optional configuration — they are the security prerequisite that
@@ -74,13 +74,29 @@ function mimeFor(path: string): string {
   return MIME_TYPES[ext] ?? "application/octet-stream";
 }
 
+const PORT = parseInt(process.env.PORT ?? "8106");
+const HOST = process.env.HOST ?? "0.0.0.0";
+
 serve({
-  port: parseInt(process.env.PORT ?? "4321"),
-  hostname: process.env.HOST ?? "0.0.0.0",
+  port: PORT,
+  hostname: HOST,
 
   async fetch(req: Request): Promise<Response> {
     const url = new URL(req.url);
     let pathname = url.pathname;
+
+    // Health check endpoint for Docker
+    if (pathname === "/health") {
+      return new Response(
+        JSON.stringify({ status: "healthy", service: "sovereign-ai" }),
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...SECURITY_HEADERS,
+          },
+        }
+      );
+    }
 
     // Normalize trailing slash to index.html
     if (pathname.endsWith("/")) pathname += "index.html";
@@ -124,5 +140,5 @@ serve({
   },
 });
 
-console.log(`Nexus docs running on http://localhost:${process.env.PORT ?? 4321}`);
+console.log(`sovereign-ai running on http://localhost:${PORT}`);
 console.log("COOP/COEP headers active — SharedArrayBuffer available");

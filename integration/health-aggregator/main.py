@@ -246,7 +246,9 @@ async def _evaluate_self_heal():
 async def _self_heal(service: str) -> Dict:
     """Trigger self-healing through the Orchestrator."""
     try:
-        async with httpx.AsyncClient() as client:
+        api_key = os.environ.get("ORCHESTRATOR_API_KEY", "")
+        headers = {"X-API-Key": api_key} if api_key else {}
+        async with httpx.AsyncClient(headers=headers) as client:
             # Step 1: Try restart
             response = await client.post(
                 f"{ORCHESTRATOR_URL}/services/{service}/restart",
@@ -271,6 +273,14 @@ async def _self_heal(service: str) -> Dict:
                     "service": service,
                     "action": "scale",
                     "status": "triggered",
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                }
+            else:
+                return {
+                    "service": service,
+                    "action": "none",
+                    "status": "failed",
+                    "error": f"Orchestrator returned {response.status_code}",
                     "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
     except Exception as e:

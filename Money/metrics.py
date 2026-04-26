@@ -35,7 +35,7 @@ else:
     GEMINI_TOKEN_USAGE = None
     DISPATCH_JOB_DURATION = None
 
-def track_agent_execution(agent_name: str):
+def track_agent_execution(agent_name: str) -> Callable:
     """Decorator to track Gemini agent execution time and status."""
     def decorator(func: Callable) -> Callable:
         @wraps(func)
@@ -60,7 +60,7 @@ def track_agent_execution(agent_name: str):
         return wrapper
     return decorator
 
-def get_metrics_response():
+def get_metrics_response() -> Response:
     """Returns the Prometheus metrics payload."""
     if generate_latest:
         return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)

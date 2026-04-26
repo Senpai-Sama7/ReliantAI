@@ -470,15 +470,21 @@ class SelfHealingOrchestrator:
     # Healing action implementations
     
     async def _restart_service(self, service: str) -> bool:
-        """Restart a service."""
-        cmd = self.SERVICE_RESTART_COMMANDS.get(service)
-        if not cmd:
-            print(f"⚠️ No restart command for {service}")
+        """Restart a service using safe subprocess execution."""
+        if not service or not isinstance(service, str):
+            print(f"⚠️ Invalid service name: {service}")
             return False
-        
+
+        # Sanitize service name to prevent injection
+        import re
+        if not re.match(r'^[a-zA-Z0-9_-]+$', service):
+            print(f"⚠️ Invalid service name format: {service}")
+            return False
+
         try:
-            proc = await asyncio.create_subprocess_shell(
-                cmd,
+            # Use exec instead of shell for security (prevents shell injection)
+            proc = await asyncio.create_subprocess_exec(
+                "docker", "compose", "restart", service,
                 stdout=asyncio.subprocess.DEVNULL,
                 stderr=asyncio.subprocess.DEVNULL
             )

@@ -1,286 +1,100 @@
 <div align="center">
   <h1>🚀 ReliantAI Platform</h1>
-  <p><b>Autonomous, Self-Managing, AI-Powered Enterprise Microservices Platform</b></p>
+  <p><b>Autonomous AI Lead Generation & Site Generation for Home Services</b></p>
+  <p><i>Zero-Configuration • CrewAI-Powered • Next.js ISR • Production-Ready</i></p>
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![Status](https://img.shields.io/badge/Status-Production%20Ready-success.svg)]()
-  [![Architecture](https://img.shields.io/badge/Architecture-Microservices-orange.svg)]()
-  [![AI](https://img.shields.io/badge/AI-CrewAI%20%7C%20Gemini-purple.svg)]()
-  [![JIT OS](https://img.shields.io/badge/JIT%20OS-v2.0-00d4ff.svg)]()
+  [![Performance](https://img.shields.io/badge/Performance-Grade%20A%2B-brightgreen.svg)]()
+  [![Security](https://img.shields.io/badge/Security-Grade%20A-success.svg)]()
+  [![Architecture](https://img.shields.io/badge/Architecture-FastAPI%20%2B%20CrewAI%20%2B%20Next.js-orange.svg)]()
 </div>
 
 ---
 
-## 📖 Overview
+## 🎯 What is ReliantAI?
 
-ReliantAI is a cutting-edge, federated multi-service platform built around a central integration nervous system. It seamlessly combines real-world business operations (like automated HVAC dispatching) with enterprise SaaS analytics, strict compliance enforcement, cloud cost management, and a multi-tier AI agent framework.
+ReliantAI is an autonomous lead generation and website creation platform for home service businesses (HVAC, plumbing, electrical, roofing, painting, landscaping). It combines:
 
-The entire platform is wired through a shared authentication layer, a resilient event bus, and saga coordination—enabling a truly autonomous system that auto-scales, self-heals, and routes tasks to specialized AI agents.
+- **AI-Powered Lead Discovery**: Google Places API → CrewAI filtering → Quality scoring
+- **Automated Site Generation**: CopyAgent writes content → SiteRegistrationService → Next.js ISR
+- **Multi-Channel Outreach**: Twilio SMS + Resend email with personalized pitches
+- **Zero Per-Site Builds**: Single Next.js 15 App Router with ISR handles all sites
 
-### 🆕 Introducing: Reliant JIT OS v2.0
+### Key Differentiators
 
-**Zero-Configuration Operations System**
-
-Reliant JIT OS eliminates manual configuration entirely. No `.env` files. No documentation to read. Just open your browser, enter your API keys through the secure wizard, and the system configures itself. The built-in AI can:
-
-- Answer questions about any service
-- Write and deploy code modifications
-- Find leads and send SMS pitches
-- Monitor and heal the platform
-- Generate compliance and cost reports
-
-**Access:** http://localhost:8085 (after `docker compose up`)
-
----
-
-## ✨ Core Features & Services
-
-ReliantAI is composed of **20+ integrated microservices**. Here are the pillars of the platform:
-
-### 💼 Business Operations
-* **ReliantAI API**: FastAPI + Celery platform core. Handles prospects, site registration, and background task pipeline (GBP scraping → site generation → schema submission → review monitoring).
-* **ReliantAI Client Sites**: Next.js App Router with ISR. Dynamically generates branded landing pages for home service businesses at `/[slug]`. Includes interactive `/showcase` (4-view template studio with device frames, live editing, generation prompts) and `/preview` (template browser with JSON viewer). 6 trade-specific templates. One shared app, no per-site builds.
-* **Money Service**: The revenue engine. Handles real-world HVAC dispatching, automated SMS triage (via Twilio), AI-powered job assignment (via CrewAI + Gemini), and Stripe billing.
-* **GrowthEngine**: Autonomous lead generation using Google Places API. Finds home service businesses, filters by quality, and sends personalized SMS pitches.
-* **Gen-H**: High-conversion lead generation and templating library for home services.
-* **Citadel Ultimate A+**: Advanced market intelligence and census data ranking.
-
-### 🛡️ Enterprise SaaS & Governance
-
-## 🎯 Current Sprint
-**Phase: 5 — Deployment Verification**  
-✅ **Completed**:  
-- Interactive template showcase with device frames, live editing, generation prompts  
-- `/showcase` page with 4 view modes (Preview, Grid, Prompt, Compare)  
-- Premium DeviceFrame components with macOS/iOS chrome  
-- Live data editing with real-time preview updates  
-- CodeBlock component with syntax highlighting and copy-to-clipboard  
-- Rich template metadata system with generation prompts  
-- Complete mock data for all 6 trades  
-- Simplified `/preview` page with JSON viewer  
-- Build success with clean TypeScript checks  
-- Vercel configuration with environment variables  
-
-🔲 **Remaining**:  
-- Configure `API_BASE_URL` environment variable for Vercel deployment  
-- Verify ISR slugs render correctly in preview.reliantai.org  
-- Monitor Celery beat tasks for content regeneration  
-- Complete final deployment verification  
-
-## 🧪 Testing
-* **ComplianceOne**: Automated compliance tracking for SOC2, HIPAA, PCI-DSS, and GDPR.
-* **FinOps360**: Multi-cloud cost optimization, right-sizing recommendations, and anomaly detection.
-* **Ops-Intelligence**: Comprehensive operational analytics and dashboarding.
-* **BackupIQ**: Automated disaster recovery, snapshotting, and data lifecycle management.
-
-### 🧠 AI & Autonomy
-* **Orchestrator**: The "Platform Brain". Runs 6 asynchronous loops to continuously monitor health, collect metrics, and autonomously scale containers using Holt-Winters forecasting and Docker APIs.
-* **Apex Framework**: A comprehensive suite for deploying, managing, and interacting with AI agents.
-* **Reliant JIT OS**: Zero-configuration AI operations system with multi-role assistant (Auto, Support, Engineer, Sales modes).
-
-### 🔌 Infrastructure & Integration
-* **Integration Layer**: Features an Event Bus (Redis Pub/Sub), Saga Orchestrator for distributed transactions, and unified JWT Authentication.
-* **Edge Routing**: Nginx reverse proxy with TLS termination, rate limiting, and strict security headers.
-* **Data Storage**: PostgreSQL databases (isolated per service) and Redis caching.
+| Feature | Traditional Approach | ReliantAI |
+|---------|---------------------|-----------|
+| **Site Deployment** | Per-site builds (30-90s each) | ISR from DB (instant) |
+| **Content Generation** | Manual copywriting | CrewAI CopyAgent |
+| **Lead Discovery** | Manual Google searching | Automated Places API + filtering |
+| **Configuration** | Complex `.env` files | Zero-config JIT OS wizard |
+| **Architecture** | Static exports | Dynamic ISR with revalidation |
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Overview
 
-```mermaid
-graph TB
-    Client[Web UI / Mobile / Twilio SMS] --> N[Nginx Edge :80/443]
-    Client --> JIT[Reliant JIT OS :8085]
-    
-    JIT -.->|AI Control| M[Money :8000]
-    JIT -.->|AI Control| O[Orchestrator :9000]
-    JIT -.->|AI Control| G[GrowthEngine :8003]
-    
-    N --> M[Money :8000]
-    N --> API[ReliantAI API :8000]
-    N --> C[ComplianceOne :8001]
-    N --> F[FinOps360 :8002]
-    N --> O[Orchestrator :9000]
-    N --> G[GrowthEngine :8003]
-    N --> CS[Client Sites :3000]
-    
-    API -->|Content| DB[(PostgreSQL)]
-    API -->|ISR Revalidate| CS
-    CS -.->|ISR Fetch| API
-    
-    M -.->|Events| EB[Event Bus :8081]
-    C -.->|Events| EB
-    F -.->|Events| EB
-    G -.->|Events| EB
-    
-    EB <--> R[(Redis)]
-    
-    M --> DB_M[(PostgreSQL Money)]
-    C --> DB_C[(PostgreSQL Compliance)]
-    F --> DB_F[(PostgreSQL FinOps)]
-    G --> DB_G[(PostgreSQL GrowthEngine)]
-    
-    O -.->|Auto-Scale / Heal| M
-    O -.->|Auto-Scale / Heal| G
+### System Topology
+
+```
+reliantai.org (Vite SPA — marketing website)
+    │
+    │ POST /api/v2/prospects          (inbound — website form)
+    │ POST /api/v2/prospects/scan     (outbound — autonomous scan)
+    │
+    ▼
+api.reliantai.org (FastAPI + Uvicorn)
+    │
+    ├── POST /api/v2/prospects        → saves to DB, queues Celery task
+    ├── GET  /api/v2/generated-sites/{slug}  → returns site_content JSON
+    ├── POST /api/v2/webhooks/stripe  → triggers provisioning
+    └── POST /api/v2/webhooks/twilio  → routes inbound SMS
+    │
+    ▼
+Redis (broker + result backend)
+    │
+    ├── Queue: agents          (2 workers, Gemini API tasks)
+    ├── Queue: outreach        (4 workers — Twilio/Resend)
+    └── Queue: provisioning    (1 worker — Stripe/idempotent)
+    │
+    ▼
+Celery Workers
+    │
+    ├── run_prospect_pipeline(prospect_id)
+    │     BusinessResearcher → CompetitorAnalyst → CopyAgent → SiteRegistration → OutreachAgent
+    │
+    └── process_scheduled_followups()  ← every 5 min via Beat
+    │
+    ▼
+Postgres (single DB, all platform data)
+
+preview.reliantai.org (Next.js 15 App Router, Vercel)
+    ├── /[slug]         → ISR page: fetches site_content from API, renders template
+    └── /api/revalidate → POST to revalidate ISR cache
 ```
 
-## Monitoring & Alerting
+### Critical Architecture Decisions
 
-### Client Sites (Next.js ISR)
-- **ISR Cache Hit Rate:** Target >95%; alert if drops below 90% over 5m (via Cloudflare/Next.js analytics).
-- **Page Generation Latency:** 95th percentile ISR regeneration < 1s; alert if > 1.5s.
-- **Celery Beat Tasks:** Monitor task success rates; alert on 3 consecutive failures in site_generation or revalidation tasks.
-- **API Endpoint Health:** `/v2/generated-sites/{slug}` latency < 200ms, error rate < 1%; alert on degradation.
-- **Preview Domain Uptime:** Synthetic HTTP checks for `preview.reliantai.org`; alert on downtime > 30s.
-- **Lighthouse CI:** Enforced on PRs; block merge if Performance < 90 or Accessibility < 90.
+**ADR-001: No Per-Site Builds**
+- Sites rendered via ISR on one shared Next.js app
+- Deploy = one `INSERT INTO generated_sites`
+- Vercel ISR handles rendering, zero `npm build` per prospect
 
-### Platform-Wide
-- **Service Health:** All services expose `/health` endpoint; monitored via Docker healthchecks and external pinger.
-- **Dead Letter Queue:** Celery DLQ depth > 0 triggers immediate alert.
-- **Database Lag:** Replica lag > 1s alerts on primary-replica setup.
-- **Disk Usage:** Alert at 80% disk utilization on any volume.
+**ADR-002: Single Postgres DB**
+- One Postgres instance, all tables in one schema
+- Simplified operations for solo developer/small team
+- Can partition later if needed
 
-*Note: Each service is fully isolated, enforcing CQRS and event-driven patterns. Mocks are strictly forbidden; all services interact with real external APIs or fail gracefully.*
+**ADR-003: Synchronous Tools**
+- All CrewAI tool `_run()` methods are synchronous
+- CrewAI runs tools in thread pool internally
+- Avoids async/sync boundary complexity
 
----
-
-## 🚀 Quickstart
-
-### Prerequisites
-* Docker (24.0+)
-* Docker Compose (2.20+)
-* Python 3.11+ (for local scripts)
-* Node.js 18+ (for client sites development)
-
-### Option 1: Zero-Configuration (JIT OS)
-
-The easiest way to get started — no `.env` editing required:
-
-```bash
-# Clone and start everything
-git clone https://github.com/your-org/ReliantAI.git
-cd ReliantAI
-
-# Start the entire platform
-docker compose up -d
-
-# Or start just the JIT OS
-docker compose up -d reliant-os-backend reliant-os-frontend
-```
-
-Then open **http://localhost:8085** and follow the setup wizard.
-
-### Option 2: Traditional Setup (with .env)
-
-For advanced users who prefer manual configuration:
-
-```bash
-# 1. Setup environment variables
-cp .env.example .env
-# Edit .env with your API keys
-
-# 2. Run the deployment script
-./scripts/deploy.sh local
-
-# 3. Verify Health
-./scripts/health_check.py -v
-```
-
-### 3. Access the Platform
-
-| Service | URL | Purpose |
-|---------|-----|---------|
-| Reliant JIT OS | http://localhost:8085 | AI-powered operations control |
-| Dashboard | http://localhost | Main platform dashboard |
-| Money API | http://localhost:8000 | Billing & dispatch |
-| GrowthEngine | http://localhost:8003 | Lead generation |
-| Orchestrator | http://localhost:9000 | System monitoring |
-
----
-
-## 🤖 Using the JIT OS AI
-
-Once the platform is running, the JIT OS provides a chat interface to control everything:
-
-### Example Commands
-
-**System Operations:**
-```
-"Show me system status"
-"Scale up the Money service to handle more load"
-"What errors occurred in the last hour?"
-```
-
-**Code Modifications:**
-```
-"Add a refund endpoint to Money service"
-"Fix the healthcheck in the dashboard"
-"Update pricing tiers for enterprise customers"
-```
-
-**Lead Generation:**
-```
-"Find HVAC companies in Atlanta with 4+ stars"
-"Search for plumbing services without websites"
-"Generate and send SMS pitches to top 5 leads"
-```
-
-**Support Questions:**
-```
-"How does the event bus work?"
-"What's the difference between ComplianceOne and FinOps360?"
-"How do I add a new microservice?"
-```
-
-See `reliant-os/USER_MANUAL.md` for complete usage guide.
-
----
-
-## 📊 Service Overview
-
-| Service | Port | Purpose | AI-Controllable |
-|---------|------|---------|-----------------|
-| Reliant JIT OS | 8085 | Zero-config AI operations | N/A (Controller) |
-| Money | 8000 | Billing, SMS, dispatch | ✅ Yes |
-| GrowthEngine | 8003 | Lead generation | ✅ Yes |
-| ComplianceOne | 8001 | SOC2/HIPAA/GDPR compliance | ✅ Yes |
-| FinOps360 | 8002 | Cloud cost optimization | ✅ Yes |
-| Orchestrator | 9000 | Auto-scaling, healing | ✅ Yes |
-| Dashboard | 80 | Visual analytics | ✅ Yes |
-| Client Sites | 3000 | ISR landing pages (Next.js) | ✅ Yes |
-| Event Bus | 8081 | Redis pub/sub messaging | ❌ Infrastructure |
-| PostgreSQL | 5432 | Per-service databases | ❌ Infrastructure |
-| Redis | 6379 | Caching & sessions | ❌ Infrastructure |
-
----
-
-## 🛡️ Security
-
-### Zero-Configuration Security Model
-
-The JIT OS uses a **secure vault** instead of `.env` files:
-
-- **AES-256 encryption** for all API keys
-- **No plain text secrets** on disk
-- **Subprocess sandboxing** for AI code execution
-- **Blacklist validation** for dangerous commands
-- **30-second timeout** on all code execution
-- **Complete audit trail** with SHA-256 code hashes
-
-### Traditional Security (for .env users)
-
-All public endpoints are protected by `SecurityHeadersMiddleware` and `RateLimitMiddleware`.
-
-1. Obtain a token via `POST /api/auth/login`.
-2. Pass the token in the `Authorization: Bearer <token>` header.
-3. Services validate the JWT locally using the public key provided by the Auth Service.
-
----
-
-### 🏠 Client Sites (ISR-Generated Landing Pages)
-* **ReliantAI Client Sites**: Next.js App Router with ISR rendering. Dynamically generates branded landing pages for home service businesses at `/[slug]`. Powered by the `ReliantAI` API (FastAPI + Celery). No per-site builds — all content served from a shared ISR cache refreshed on-demand via Celery tasks.
-
-See `reliantai-client-sites/README.md` for full documentation.
+**ADR-004: preview.reliantai.org Subdomain**
+- Client sites at `preview.reliantai.org/{slug}`
+- `reliantai.org` is Vite SPA — cannot do ISR/SSR
+- Separate deployment keeps marketing site independent
 
 ---
 
@@ -288,89 +102,225 @@ See `reliantai-client-sites/README.md` for full documentation.
 
 ```
 ReliantAI/
-├── Money/                    # Revenue engine & dispatch
-├── GrowthEngine/             # Autonomous lead generation
-├── ComplianceOne/            # Compliance tracking
-├── FinOps360/               # Cloud cost optimization
-├── Orchestrator/            # Platform brain & auto-scaling
-├── reliantai/               # 🆕 FastAPI platform core + CrewAI agents
-│   ├── agents/             # CrewAI agents (GBP scraper, PageSpeed, SMS, email)
-│   ├── api/v2/             # API endpoints (prospects, generated_sites, webhooks)
-│   ├── celery_app.py        # Celery config with beat_schedule
-│   ├── db/                  # SQLAlchemy models + Alembic migrations
-│   └── services/            # Business logic (site_registration_service)
-├── reliantai-client-sites/  # 🆕 Next.js ISR client sites (6 trade templates)
-│   ├── app/[slug]/         # Dynamic ISR route at /[slug]
-│   ├── components/         # Shared components (StatsBar, CTASection, TrustBanner)
-│   ├── templates/           # 6 trade-specific templates
-│   │   ├── hvac-reliable-blue/
+├── reliantai/                    # FastAPI + Celery platform core
+│   ├── agents/                    # CrewAI agents and tools
+│   │   ├── tools/
+│   │   │   ├── google_places.py     # Places API text search + details
+│   │   │   ├── gbp_scraper.py       # GBP completeness scoring
+│   │   │   ├── pagespeed.py         # PageSpeed Insights
+│   │   │   ├── schema_builder.py    # Schema.org LocalBusiness JSON-LD
+│   │   │   ├── schema_validator.py  # Rich Results Test API
+│   │   │   ├── twilio_sms.py        # SMS sending
+│   │   │   └── resend_email.py      # Email sending
+│   │   ├── home_services_crew.py    # 5-agent Crew definition
+│   │   └── llm.py                   # Gemini Pro/Flash factory
+│   ├── api/v2/
+│   │   ├── prospects.py             # Inbound + outbound prospect APIs
+│   │   ├── generated_sites.py       # Public site content endpoint
+│   │   └── webhooks.py              # Stripe + Twilio webhooks
+│   ├── db/
+│   │   ├── migrations/001_platform.sql  # Initial schema
+│   │   ├── models.py                # SQLAlchemy ORM
+│   │   └── __init__.py              # get_db_session() + engine
+│   ├── services/
+│   │   └── site_registration_service.py  # Replaces VercelDeployTool
+│   ├── tasks/
+│   │   └── prospect_tasks.py        # Celery task definitions
+│   ├── celery_app.py                # Celery config (no Django)
+│   └── main.py                      # FastAPI app factory
+│
+├── reliantai-client-sites/        # Next.js 15 ISR app
+│   ├── app/
+│   │   ├── [slug]/page.tsx          # Dynamic ISR route
+│   │   └── api/revalidate/route.ts  # Cache revalidation endpoint
+│   ├── templates/
+│   │   ├── hvac-reliable-blue/      # HVAC template
 │   │   ├── plumbing-trustworthy-navy/
 │   │   ├── electrical-sharp-gold/
 │   │   ├── roofing-bold-copper/
 │   │   ├── painting-clean-minimal/
 │   │   └── landscaping-earthy-green/
-│   └── tests/e2e/           # Playwright E2E tests
-├── integration/             # Event bus, auth, sagas
-├── dashboard/               # Main web dashboard
-├── reliant-os/              # 🆕 Zero-config AI operations
-│   ├── backend/            # FastAPI + vault + AI engine
-│   └── frontend/           # React chat interface
-├── scripts/                 # Deployment & health checks
-├── docker-compose.yml       # Full platform orchestration
-└── README.md               # This file
+│   ├── components/PreviewBanner.tsx # Buy CTA overlay
+│   ├── lib/api.ts                   # getSiteContent() fetcher
+│   ├── types/SiteContent.ts         # TypeScript interfaces
+│   └── next.config.ts
+│
+├── docker-compose.yml               # Full platform orchestration
+├── .env.example                     # Environment variable template
+└── README.md                        # This file
 ```
 
 ---
 
-## 🧪 Testing
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Docker 24.0+ and Docker Compose 2.20+
+- API keys: Google Places, Gemini, Twilio, Stripe, Resend
+
+### Option 1: Zero-Configuration (JIT OS)
 
 ```bash
-# Run all health checks
+# Clone and start
+git clone https://github.com/your-org/ReliantAI.git
+cd ReliantAI
+docker compose up -d
+
+# Open setup wizard
+open http://localhost:8085  # macOS
+xdg-open http://localhost:8085  # Linux
+```
+
+Enter API keys through the secure wizard — no `.env` editing required.
+
+### Option 2: Traditional Setup
+
+```bash
+# 1. Copy environment template
+cp .env.example .env
+
+# 2. Edit with your API keys
+nano .env
+
+# 3. Deploy
+./scripts/deploy.sh local
+
+# 4. Verify
 ./scripts/health_check.py -v
+```
 
-# Expected output:
-# ✅ Money (8000): Healthy
-# ✅ ComplianceOne (8001): Healthy
-# ✅ FinOps360 (8002): Healthy
-# ✅ Orchestrator (9000): Healthy
-# ✅ GrowthEngine (8003): Healthy
-# ✅ Reliant JIT OS (8085): Healthy
+### Environment Variables
 
-# Check specific service
-curl http://localhost:8000/health
-curl http://localhost:8085/health
+```bash
+# Core
+DATABASE_URL=postgresql://reliantai:password@postgres:5432/reliantai
+REDIS_URL=redis://:password@redis:6379/0
+SECRET_KEY=<64-byte-hex>
+API_SECRET_KEY=<32-byte-hex>
+
+# Google APIs
+GOOGLE_PLACES_API_KEY=<key>
+GOOGLE_PAGESPEED_API_KEY=<key>
+GOOGLE_AI_API_KEY=<key>              # Gemini
+
+# Communications
+TWILIO_ACCOUNT_SID=<sid>
+TWILIO_AUTH_TOKEN=<token>
+TWILIO_FROM_NUMBER=+1XXXXXXXXXX
+RESEND_API_KEY=<key>
+FROM_EMAIL=you@domain.com
+
+# Payments
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Deployment
+PLATFORM_API_URL=https://api.reliantai.org
+PLATFORM_API_KEY=<same-as-API_SECRET_KEY>
+REVALIDATE_SECRET=<32-byte-hex>
 ```
 
 ---
 
-## 📝 Documentation
+## 🧪 Development Workflow
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| `README.md` | This file — platform overview & quickstart | Everyone |
-| `CLAUDE.md` | **Developer reference** — architecture, codebase intelligence, health status | Developers (especially Claude Code) |
-| `USER_MANUAL.md` | Platform-wide service documentation & operations | Platform operators |
-| `reliant-os/USER_MANUAL.md` | User guide for Reliant JIT OS | Non-technical operators |
-| `AGENTS.md` | AI agent development guidelines | Agent developers |
-| `GEMINI.md` | Gemini AI integration & configuration | AI/LLM developers |
-| `CONTRIBUTING.md` | Contribution guidelines & development process | Contributors |
-| `CHANGELOG.md` | Version history & release notes | Release managers |
+### Start Services
 
-**Start Here:** 
-- **For Claude Code:** Read `CLAUDE.md` for architecture, codebase health, and development commands
-- **For Operations:** Read `README.md` then `USER_MANUAL.md`
-- **For Development:** Read `CLAUDE.md` then `CONTRIBUTING.md`
+```bash
+# Full platform
+docker compose up -d
+
+# Specific services
+docker compose up -d api postgres redis celery-agents
+
+# View logs
+docker compose logs -f api
+```
+
+### Run Pipeline Manually
+
+```bash
+# 1. Create a prospect
+curl -X POST http://localhost:8000/api/v2/prospects \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_SECRET_KEY" \
+  -d '{
+    "trade": "hvac",
+    "city": "Houston",
+    "state": "TX",
+    "business_name": "Apex HVAC",
+    "phone": "+17135551234",
+    "email": "owner@apexhvac.com"
+  }'
+
+# 2. Pipeline runs automatically via Celery
+# 3. Check status
+curl http://localhost:8000/api/v2/prospects/{prospect_id}/status
+
+# 4. View generated site
+open http://localhost:3000/{slug}  # Client sites
+```
+
+### Run Tests
+
+```bash
+# Unit tests
+pytest tests/ -x -v
+
+# Integration tests
+pytest tests/integration/ -v
+
+# E2E tests (Client sites)
+cd reliantai-client-sites
+npm run test:e2e
+```
 
 ---
 
-## 🤝 Contributing
+## 📊 Service Overview
 
-We welcome contributions! Please see our contributing guidelines (coming soon) for details on:
+| Service | Port | Purpose | Key Tech |
+|---------|------|---------|----------|
+| **ReliantAI API** | 8000 | FastAPI core, agents, webhooks | FastAPI, Celery, SQLAlchemy |
+| **Client Sites** | 3000 | Next.js ISR renderer | Next.js 15, Tailwind, Framer Motion |
+| **Postgres** | 5432 | Platform database | PostgreSQL 16 |
+| **Redis** | 6379 | Celery broker, caching | Redis 7 |
+| **Celery Workers** | — | Background task processing | 2 agents + 4 outreach workers |
+| **JIT OS** | 8085 | Zero-config operations UI | React + FastAPI |
 
-- Code style (PEP 8 for Python, ESLint for JS)
-- Commit message conventions
-- Pull request process
-- Testing requirements
+---
+
+## 🔧 Hard Constraints (Never Deviate)
+
+- **NO per-site builds**: Sites render via Next.js ISR from DB content
+- **Slug generation**: `generate_slug(business_name, city)` — never from place_id
+- **Celery Beat**: `celery_app.py beat_schedule` — NOT django_celery_beat
+- **Tool `_run()`**: SYNCHRONOUS only (sync httpx.Client)
+- **Preview domain**: `preview.reliantai.org` — NOT reliantai.org/preview/
+- **CopyAgent LLM**: gemini-1.5-pro | **All other agents**: gemini-1.5-flash
+
+---
+
+## 🛡️ Security
+
+- **Fail-closed**: Missing config causes startup failure, not degraded security
+- **API Key Auth**: Service-to-service via `X-API-Key` header with constant-time comparison
+- **JWT Auth**: User sessions via Bearer tokens with RS256
+- **Webhook Verification**: Stripe + Twilio signatures validated
+- **Rate Limiting**: 100 req/min per IP, 1000 req/min per API key
+- **TCPA Compliance**: STOP word detection, opt-out handling
+
+---
+
+## 📚 Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `README.md` | This file — quickstart & overview |
+| `USER_MANUAL.md` | Complete operations guide |
+| `AGENTS.md` | AI agent development guidelines |
+| `CLAUDE.md` | Developer reference for Claude Code |
 
 ---
 
@@ -380,6 +330,4 @@ MIT License — see LICENSE file for details.
 
 ---
 
-**ReliantAI Platform** — Autonomous Operations for the Real World  
-**Version:** 2.0  
-**Status:** Production Ready
+**ReliantAI Platform v2.0** — Autonomous Lead Generation for Home Services

@@ -49,5 +49,9 @@ class PageSpeedTool(BaseTool):
                 "cls": round(cls, 3),
                 "has_ssl": has_ssl,
             })
-        except Exception as e:
+        except httpx.TimeoutException:
+            return str({"score": 0, "error": "timeout"})
+        except httpx.HTTPStatusError as e:
+            return str({"score": 0, "error": f"http_error_{e.response.status_code}"})
+        except (httpx.RequestError, ValueError, KeyError) as e:
             return str({"score": 0, "error": str(e)[:100]})

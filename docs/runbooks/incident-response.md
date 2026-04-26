@@ -54,7 +54,7 @@
 | documancer | 8103 |
 | backupiq | 8104 |
 | cyberarchitect | 8105 |
-| sovieren-ai | 8106 |
+| sovereign-ai | 8106 |
 | regenesis | 8107 |
 
 ---

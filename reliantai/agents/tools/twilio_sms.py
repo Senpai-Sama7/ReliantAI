@@ -52,6 +52,12 @@ class TwilioSMSTool(BaseTool):
             else:
                 log.error("sms_failed", status_code=resp.status_code, to_last4=to[-4:])
                 return str({"error": f"HTTP {resp.status_code}"})
-        except Exception as e:
-            log.error("sms_exception", error=str(e), to_last4=to[-4:])
+        except httpx.TimeoutException:
+            log.error("sms_timeout", to_last4=to[-4:] if len(to) >= 4 else "???")
+            return str({"error": "timeout"})
+        except httpx.HTTPStatusError as e:
+            log.error("sms_http_error", status_code=e.response.status_code, to_last4=to[-4:] if len(to) >= 4 else "???")
+            return str({"error": f"http_error_{e.response.status_code}"})
+        except (httpx.RequestError, ValueError) as e:
+            log.error("sms_exception", error=str(e), to_last4=to[-4:] if len(to) >= 4 else "???")
             return str({"error": str(e)[:100]})

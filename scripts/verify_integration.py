@@ -10,6 +10,16 @@ import json
 from typing import Dict, List, Any
 from datetime import datetime
 
+# Load environment variables from .env
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+if os.path.exists(env_path):
+    with open(env_path) as f:
+        for line in f:
+            line = line.strip()
+            if line and '=' in line and not line.startswith('#'):
+                key, val = line.split('=', 1)
+                os.environ[key] = val.strip(' "\'')
+
 # Add integration path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'integration'))
 
@@ -124,7 +134,7 @@ class IntegrationVerifier:
             # Test 2: Create account
             account = self.finops.create_account(
                 provider="aws",
-                account_id="123456789012",
+                account_id=f"aws-{datetime.now().strftime('%H%M%S')}",
                 account_name="Test AWS Account"
             )
             account_id = account.get("id")
@@ -218,6 +228,9 @@ class IntegrationVerifier:
                 "status": "error",
                 "error": str(e)
             })
+        passed = sum(1 for t in results["tests"] if t["status"] == "pass")
+        total = len(results["tests"])
+        results["summary"] = {"passed": passed, "total": total, "status": "ok" if passed == total else "partial"}
         
         return results
     

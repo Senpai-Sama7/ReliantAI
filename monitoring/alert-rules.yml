@@ -13,7 +13,7 @@ groups:
           description: "Service {{ $labels.job }} has been down for more than 1 minute."
 
       - alert: SupportingServiceDown
-        expr: up{job=~"bap|apex-agents|apex-ui|apex-mcp|ops-intelligence-backend|ops-intelligence-frontend|citadel|citadel-ultimate-a-plus|documancer|backupiq|cyberarchitect|sovieren-ai|regenesis|acropolis|cleardesk|gen-h"} == 0
+        expr: up{job=~"bap|apex-agents|apex-ui|apex-mcp|ops-intelligence-backend|ops-intelligence-frontend|citadel|citadel-ultimate-a-plus|documancer|backupiq|cyberarchitect|sovereign-ai|regenesis|acropolis|cleardesk|gen-h"} == 0
         for: 5m
         labels:
           severity: warning

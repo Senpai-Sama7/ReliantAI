@@ -42,10 +42,9 @@ LOG_LEVEL: str = os.environ.get("LOG_LEVEL", "INFO")
 ENV: str = os.environ.get("ENV", "dev").lower()
 
 # ── LangSmith tracing env vars (set once at import time) ─────
-# NOTE: LangSmith tracing temporarily disabled during Gemini migration.
-# Re-enable once LangSmith API key permissions are verified.
-os.environ["LANGCHAIN_TRACING_V2"] = "false"
-os.environ.pop("LANGCHAIN_API_KEY", None)
+os.environ["LANGCHAIN_TRACING_V2"] = "true"
+if LANGSMITH_API_KEY and LANGSMITH_API_KEY != "placeholder":
+    os.environ["LANGCHAIN_API_KEY"] = LANGSMITH_API_KEY
 
 if not DISPATCH_API_KEY and ENV != "test":
     raise RuntimeError("DISPATCH_API_KEY must be set to a real value.")
@@ -55,7 +54,7 @@ if not DISPATCH_API_KEY and ENV != "test":
 # "gemini/" prefix tells litellm to use the Google Gemini provider.
 # litellm reads from GEMINI_API_KEY or GOOGLE_API_KEY env vars.
 os.environ["GOOGLE_API_KEY"] = GEMINI_API_KEY  # litellm compat
-LLM_MODEL: str = "gemini/gemini-3.1-flash"
+LLM_MODEL: str = "gemini/gemini-1.5-flash"
 LLM_TEMPERATURE: float = 0.0
 LLM_MAX_TOKENS: int = 900
 

@@ -1,4 +1,5 @@
 import os
+import re
 import requests
 import googlemaps
 from fastapi import FastAPI, HTTPException, Security, Depends
@@ -8,6 +9,23 @@ import structlog
 
 logger = structlog.get_logger()
 app = FastAPI(title="ReliantAI GrowthEngine", version="1.0.0")
+
+
+
+def _generate_slug(name: str) -> str:
+    """Generate URL-safe slug from business name with robust sanitization."""
+    # Convert to lowercase
+    slug = name.lower()
+    # Remove apostrophes and quote characters
+    slug = slug.replace("'", "").replace('"', "").replace("`", "")
+    # Replace non-alphanumeric with hyphens
+    slug = re.sub(r"[^a-z0-9]+", "-", slug)
+    # Remove leading/trailing hyphens
+    slug = slug.strip("-")
+    # Collapse multiple hyphens
+    slug = re.sub(r"-+", "-", slug)
+    return slug[:60]  # Limit length
+
 
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
@@ -71,13 +89,19 @@ def scan_prospects(req: ScanRequest, _: str = Depends(verify_api_key)):
                     
         logger.info("prospects_scanned", count=len(prospects))
         return {"prospects": prospects}
-    except Exception as e:
+    except requests.TimeoutException:
+        logger.error("scan_timeout")
+        raise HTTPException(status_code=504, detail="Google Places API timeout")
+    except requests.HTTPError as e:
+        logger.error("scan_http_error", status_code=e.response.status_code)
+        raise HTTPException(status_code=e.response.status_code, detail="Google Places API error")
+    except (requests.RequestError, ValueError, KeyError) as e:
         logger.error("scan_failed", error=str(e))
         raise HTTPException(status_code=500, detail="Failed to scan places")
 
 @app.post("/api/prospect/outreach")
 def trigger_outreach(req: OutreachRequest, _: str = Depends(verify_api_key)):
-    slug = req.name.lower().replace(" ", "-").replace("'", "")
+    slug = _generate_slug(req.name)
     preview_url = f"https://reliantai.org/preview/{slug}"
     
     message = (
@@ -102,6 +126,9 @@ def trigger_outreach(req: OutreachRequest, _: str = Depends(verify_api_key)):
     except requests.HTTPError as e:
         logger.error("outreach_failed", status=resp.status_code, error=str(e))
         raise HTTPException(status_code=resp.status_code, detail="Failed to trigger outreach")
-    except Exception as e:
+    except requests.TimeoutException:
+        logger.error("outreach_timeout")
+        raise HTTPException(status_code=504, detail="Money service timeout")
+    except (requests.RequestError, ValueError) as e:
         logger.error("outreach_failed", error=str(e))
         raise HTTPException(status_code=500, detail="Failed to trigger outreach")

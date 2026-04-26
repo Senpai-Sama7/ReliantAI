@@ -65,14 +65,9 @@ async def ensure_consumer_groups(r: AsyncRedis):
                 print(f"⚠️  Consumer group creation failed [{stream}]: {e}")
 
 
-def docker_scale(service: str, replicas: int) -> bool:
-    """Execute docker compose scale via subprocess.
-    Returns True on success, False on failure.
-
-    docker compose up --scale <service>=<n> --no-recreate --no-deps
-      --no-recreate: do not restart containers that have not changed
-      --no-deps:     do not start linked services
-    This is the correct idempotent scale command for Compose v2."""
+async def docker_scale(service: str, replicas: int) -> bool:
+    """Execute docker compose scale via async subprocess.
+    Returns True on success, False on failure."""
     compose_svc = SERVICE_MAP.get(service)
     if not compose_svc:
         print(f"⚠️  No compose mapping for service: {service}")
@@ -92,28 +87,32 @@ def docker_scale(service: str, replicas: int) -> bool:
         return True
 
     try:
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=120,  # 2-minute hard timeout on scale operations
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
         )
-        if result.returncode == 0:
+        try:
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=120.0)
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.communicate()
+            print(f"❌ Scale timeout [{service}→{replicas}] -- operation took >120s")
+            return False
+
+        if process.returncode == 0:
             print(f"✅ Scaled {service} to {replicas} replicas")
             return True
         else:
-            print(f"❌ Scale failed [{service}→{replicas}]: {result.stderr.strip()}")
+            print(f"❌ Scale failed [{service}→{replicas}]: {stderr.decode().strip()}")
             return False
-    except subprocess.TimeoutExpired:
-        print(f"❌ Scale timeout [{service}→{replicas}] -- operation took >120s")
-        return False
     except Exception as e:
         print(f"❌ Scale error [{service}]: {e}")
         return False
 
 
-def docker_restart(service: str) -> bool:
-    """Execute docker compose restart via subprocess."""
+async def docker_restart(service: str) -> bool:
+    """Execute docker compose restart via async subprocess."""
     compose_svc = SERVICE_MAP.get(service)
     if not compose_svc:
         return False
@@ -130,12 +129,24 @@ def docker_restart(service: str) -> bool:
         return True
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-        if result.returncode == 0:
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=60.0)
+        except asyncio.TimeoutError:
+            process.kill()
+            await process.communicate()
+            print(f"❌ Restart timeout [{service}] -- operation took >60s")
+            return False
+
+        if process.returncode == 0:
             print(f"✅ Restarted {service}")
             return True
         else:
-            print(f"❌ Restart failed [{service}]: {result.stderr.strip()}")
+            print(f"❌ Restart failed [{service}]: {stderr.decode().strip()}")
             return False
     except Exception as e:
         print(f"❌ Restart error [{service}]: {e}")
@@ -152,7 +163,7 @@ async def process_scale_intent(r: AsyncRedis, message_id: str, fields: Dict):
 
     print(f"⚙️  Executing scale: {service} → {target} replicas ({reason})")
 
-    success = docker_scale(service, target)
+    success = await docker_scale(service, target)
 
     await r.xadd(
         STREAM_PLATFORM_EVENTS,
@@ -181,7 +192,7 @@ async def process_heal_intent(r: AsyncRedis, message_id: str, fields: Dict):
 
     success = False
     if action == "restart":
-        success = docker_restart(service)
+        success = await docker_restart(service)
 
     await r.xadd(
         STREAM_PLATFORM_EVENTS,

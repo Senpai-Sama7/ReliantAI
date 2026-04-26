@@ -35,6 +35,7 @@ def run_prospect_pipeline(self, prospect_id: str):
 
         crew = create_prospect_crew(prospect_data)
         result = crew.kickoff()
+        log.info("crew_result", prospect_id=prospect_id, result_summary=str(result)[:200])
 
         with get_db_session() as db:
             job = db.query(ResearchJob).filter_by(id=job_id).first()
@@ -49,7 +50,7 @@ def run_prospect_pipeline(self, prospect_id: str):
         log.info("pipeline_completed", prospect_id=prospect_id, job_id=job_id)
         return {"status": "completed", "prospect_id": prospect_id}
 
-    except Exception as exc:
+    except (RuntimeError, ValueError, KeyError) as exc:
         log.error("pipeline_failed", prospect_id=prospect_id, error=str(exc))
         if job_id:
             with get_db_session() as db:
@@ -94,7 +95,7 @@ def process_inbound_response(self, prospect_id: str, phone: str, body: str):
                 log.info("hot_lead_detected", prospect_id=prospect_id, phone_last4=phone[-4:])
 
         return {"processed": True, "is_stop": is_stop}
-    except Exception as exc:
+    except (RuntimeError, ValueError) as exc:
         log.error("inbound_response_failed", prospect_id=prospect_id, error=str(exc))
         raise self.retry(exc=exc, max_retries=3, countdown=30)
 
@@ -152,6 +153,6 @@ def process_scheduled_followups():
             db.commit()
             log.info("followups_processed", count=processed)
             return {"processed": processed}
-    except Exception as exc:
+    except (RuntimeError, ValueError) as exc:
         log.error("followups_failed", error=str(exc))
         return {"error": str(exc)[:200]}

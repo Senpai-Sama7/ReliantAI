@@ -18,7 +18,7 @@ try:
     import redis.asyncio as aioredis
 except ImportError:
     aioredis = None
-from datetime import datetime, timedelta
+from datetime import datetime
 
 # Configure structured logging
 audit_logger = logging.getLogger('audit')
@@ -88,7 +88,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     self._redis_url, decode_responses=True
                 )
                 await self._redis.ping()
-            except Exception:
+            except (aioredis.ConnectionError, aioredis.TimeoutError, OSError):
                 self._redis = None
         return self._redis
 
@@ -105,7 +105,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             pipe.expire(key, 120)
             results = await pipe.execute()
             return results[2] > self.requests_per_minute
-        except Exception as e:
+        except (aioredis.ConnectionError, aioredis.TimeoutError, aioredis.RedisError) as e:
             self.logger.warning(f"Redis rate limit error: {e}")
             return False
 
@@ -196,8 +196,6 @@ class InputValidationMiddleware(BaseHTTPMiddleware):
     
     def _is_suspicious(self, value: str) -> bool:
         """Check if input contains suspicious patterns"""
-        value_lower = value.lower()
-        
         # Check SQL injection patterns
         for pattern in self.SQL_PATTERNS:
             if re.search(pattern, value, re.IGNORECASE):

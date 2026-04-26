@@ -1,5 +1,6 @@
 import os
 import structlog
+import httpx
 from crewai.tools import BaseTool
 
 log = structlog.get_logger()
@@ -23,7 +24,6 @@ class ResendEmailTool(BaseTool):
             return str({"error": "RESEND_API_KEY not set"})
 
         try:
-            import httpx
             with httpx.Client(timeout=10.0) as client:
                 resp = client.post(
                     "https://api.resend.com/emails",
@@ -45,6 +45,12 @@ class ResendEmailTool(BaseTool):
             else:
                 log.error("email_failed", status_code=resp.status_code, to_domain=to.split("@")[-1])
                 return str({"error": f"HTTP {resp.status_code}"})
-        except Exception as e:
+        except httpx.TimeoutException:
+            log.error("email_timeout", to_domain=to.split("@")[-1] if to else "unknown")
+            return str({"error": "timeout"})
+        except httpx.HTTPStatusError as e:
+            log.error("email_http_error", status_code=e.response.status_code)
+            return str({"error": f"http_error_{e.response.status_code}"})
+        except (httpx.RequestError, ValueError) as e:
             log.error("email_exception", error=str(e))
             return str({"error": str(e)[:100]})

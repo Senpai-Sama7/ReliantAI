@@ -196,8 +196,21 @@ async def call_tool(call: MCPToolCall, background: BackgroundTasks, _auth: str =
             if placeholder in resolved_url:
                 resolved_url = resolved_url.replace(placeholder, str(params_copy[param_name]))
                 del params_copy[param_name]
+        # Determine the appropriate API key based on the target service
+        service_upper = tool.service.upper().replace("-", "_")
+        api_key = ""
+        if service_upper == "MONEY":
+            api_key = os.environ.get("DISPATCH_API_KEY", os.environ.get("API_KEY", ""))
+        elif service_upper == "INTEGRATION":
+            api_key = os.environ.get("EVENT_BUS_API_KEY", "")
+        elif service_upper == "RELIANT_OS":
+            api_key = os.environ.get("OS_API_KEY", "")
+        else:
+            api_key = os.environ.get(f"{service_upper}_API_KEY", os.environ.get("API_KEY", ""))
+            
+        headers = {"X-API-Key": api_key} if api_key else {}
         
-        async with httpx.AsyncClient(timeout=tool.timeout_ms / 1000) as client:
+        async with httpx.AsyncClient(timeout=tool.timeout_ms / 1000, headers=headers) as client:
             if tool.method.upper() == "GET":
                 response = await client.get(resolved_url, params=params_copy)
             else:

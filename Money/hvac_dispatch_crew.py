@@ -42,12 +42,14 @@ logger = setup_logging("hvac_dispatch")
 
 # ── Twilio helper (with tenacity retry) ──────────────────────
 
+# Global Twilio client to reuse HTTP session connection pool
+_twilio_client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
+
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2))
 def _twilio_send(to: str, body: str) -> str:
     """Send SMS via Twilio with automatic retry on transient failure."""
     try:
-        client = TwilioClient(TWILIO_SID, TWILIO_TOKEN)
-        msg = client.messages.create(body=body, from_=TWILIO_FROM_PHONE, to=to)
+        msg = _twilio_client.messages.create(body=body, from_=TWILIO_FROM_PHONE, to=to)
         logger.info("SMS sent to %s: SID=%s", to, msg.sid)
         log_message(direction="outbound", phone=to, body=body, sms_sid=msg.sid)
         return msg.sid
@@ -115,6 +117,10 @@ def triage_urgency(description: str, outdoor_temp_f: float = 80.0) -> str:
     return json.dumps(result)
 
 
+# Global HTTPX client to reuse HTTP session connection pool
+import httpx
+_http_client = httpx.Client(timeout=8.0)
+
 @crewai_tool
 def check_tech_availability(requested_date: str, skill_needed: str = "general") -> str:
     """
@@ -122,34 +128,30 @@ def check_tech_availability(requested_date: str, skill_needed: str = "general") 
     Returns JSON list of available slots and technician names.
     Raises RuntimeError if the Composio calendar integration is unavailable.
     """
-    import urllib.request
-    import urllib.error
-
     try:
         url = (
             "https://backend.composio.dev/api/v1/actions/"
             "GOOGLECALENDAR_LIST_EVENTS/execute"
         )
-        payload = json.dumps({
+        payload = {
             "connectedAccountId": COMPOSIO_API_KEY,
             "input": {
                 "calendarId": "primary",
                 "q": skill_needed,
                 "timeMin": requested_date,
             },
-        }).encode()
-        req = urllib.request.Request(
+        }
+        
+        resp = _http_client.post(
             url,
-            data=payload,
+            json=payload,
             headers={
-                "Content-Type": "application/json",
                 "x-api-key": COMPOSIO_API_KEY,
-            },
-            method="POST",
+            }
         )
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            data = json.loads(resp.read())
-            return json.dumps({"status": "live", "calendar_data": data})
+        resp.raise_for_status()
+        
+        return json.dumps({"status": "live", "calendar_data": resp.json()})
     except Exception as exc:
         logger.error("Calendar API unavailable: %s", exc)
         raise RuntimeError(f"Composio calendar integration failed: {exc}") from exc

@@ -15,8 +15,24 @@ DATABASE_URL = os.getenv(
     "postgresql://apex:changeme@postgres:5432/apex_db"
 )
 
+# Connection pool for efficient database access
+_db_pool: asyncpg.Pool | None = None
+
 MAX_ITERATIONS      = 3
 MIN_DELTA_THRESHOLD = 0.05
+
+
+async def _get_db_pool() -> asyncpg.Pool:
+    """Get or create database connection pool."""
+    global _db_pool
+    if _db_pool is None:
+        _db_pool = await asyncpg.create_pool(
+            DATABASE_URL,
+            min_size=1,
+            max_size=10,
+            command_timeout=30,
+        )
+    return _db_pool
 
 
 class RemediationStep(BaseModel):
@@ -54,28 +70,28 @@ Rules:
 async def _load_human_corrections(task_summary: str, limit: int = 5) -> list[dict]:
     """Loads recent human corrections from episodic memory as Evolver training signal."""
     try:
-        conn = await asyncpg.connect(DATABASE_URL)
-        rows = await conn.fetch(
-            """
-            SELECT task_summary, correction, outcome, confidence, created_at
-            FROM episodic_memory
-            WHERE agent_name = 'human_correction'
-            ORDER BY created_at DESC
-            LIMIT $1
-            """,
-            limit,
-        )
-        await conn.close()
-        return [
-            {
-                "task":       r["task_summary"],
-                "correction": r["correction"],
-                "outcome":    r["outcome"],
-                "confidence": float(r["confidence"] or 0),
-            }
-            for r in rows
-        ]
-    except Exception:
+        pool = await _get_db_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """
+                SELECT task_summary, correction, outcome, confidence, created_at
+                FROM episodic_memory
+                WHERE agent_name = 'human_correction'
+                ORDER BY created_at DESC
+                LIMIT $1
+                """,
+                limit,
+            )
+            return [
+                {
+                    "task":       r["task_summary"],
+                    "correction": r["correction"],
+                    "outcome":    r["outcome"],
+                    "confidence": float(r["confidence"] or 0),
+                }
+                for r in rows
+            ]
+    except (asyncpg.PostgresError, OSError, TimeoutError):
         return []
 
 

@@ -1,4 +1,4 @@
-# sovieren_ai — Bun + Astro + WASM Documentation Site
+# sovereign_ai — Bun + Astro + WASM Documentation Site
 # Serves static Astro output with COOP/COEP headers via Bun
 
 FROM oven/bun:1-alpine

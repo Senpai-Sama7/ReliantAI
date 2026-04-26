@@ -88,7 +88,7 @@ rollback() {
         actuator bap apex-agents apex-ui apex-mcp \
         acropolis citadel-ultimate-a-plus citadel \
         cleardesk gen-h documancer backupiq cyberarchitect \
-        sovieren-ai regenesis ops-intelligence-backend ops-intelligence-frontend || true
+        sovereign-ai regenesis ops-intelligence-backend ops-intelligence-frontend || true
 
     log_info "Rollback complete. ${idle} stack is active. ${target} services stopped (infra preserved for forensics)."
     log_info "To fully destroy ${target} stack: docker compose -p reliantai-${target} down -v"
@@ -195,7 +195,7 @@ docker compose \
     actuator nginx bap apex-agents apex-ui apex-mcp \
     acropolis citadel-ultimate-a-plus citadel \
     cleardesk gen-h documancer backupiq cyberarchitect \
-    sovieren-ai regenesis ops-intelligence-backend ops-intelligence-frontend
+    sovereign-ai regenesis ops-intelligence-backend ops-intelligence-frontend
 
 # ── Phase 5: Health checks on target ───────────────────────────────────
 log_info "Phase 5: Running health checks on ${TARGET_STACK} stack..."

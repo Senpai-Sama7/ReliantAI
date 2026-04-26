@@ -372,7 +372,7 @@ async def get_budget_status(budget_id: int, api_key: str = Depends(verify_api_ke
                 WHERE account_id = %s 
                 AND usage_date >= DATE_TRUNC('month', CURRENT_DATE)
             """, (budget["account_id"],))
-            month_spend = cur.fetchone()[0]
+            month_spend = cur.fetchone()["month_spend"]
             
             # Update current spend
             cur.execute(
@@ -570,8 +570,8 @@ async def finops_dashboard(api_key: str = Depends(verify_api_key)):
             top_services = [dict(row) for row in cur.fetchall()]
             
             # Unacknowledged alerts
-            cur.execute("SELECT COUNT(*) FROM cost_alerts WHERE is_acknowledged = FALSE")
-            open_alerts = cur.fetchone()[0]
+            cur.execute("SELECT COUNT(*) as alert_count FROM cost_alerts WHERE is_acknowledged = FALSE")
+            open_alerts = cur.fetchone()["alert_count"]
         
         change_pct = ((month_spend - last_month_spend) / last_month_spend * 100) if last_month_spend > 0 else 0
         
@@ -603,7 +603,7 @@ async def check_budget_alerts():
             pool = get_db_pool()
             conn = pool.getconn()
             try:
-                with conn.cursor() as cur:
+                with conn.cursor(cursor_factory=RealDictCursor) as cur:
                     # Get all active budgets
                     cur.execute("""
                         SELECT b.id, b.name, b.monthly_limit, b.alert_threshold, b.account_id,
@@ -621,12 +621,12 @@ async def check_budget_alerts():
                         if utilization >= row["alert_threshold"]:
                             # Check if alert already exists for this budget
                             cur.execute("""
-                                SELECT COUNT(*) FROM cost_alerts
+                                SELECT COUNT(*) as alert_count FROM cost_alerts
                                 WHERE budget_id = %s AND alert_type = 'threshold' 
                                 AND created_at > DATE_TRUNC('month', CURRENT_DATE)
                             """, (row["id"],))
                             
-                            if cur.fetchone()[0] == 0:
+                            if cur.fetchone()["alert_count"] == 0:
                                 # Create new alert
                                 cur.execute(
                                     """INSERT INTO cost_alerts (budget_id, alert_type, message, severity)

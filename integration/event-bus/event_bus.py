@@ -19,13 +19,15 @@ from contextlib import asynccontextmanager  # noqa: E402
 from datetime import datetime, UTC  # noqa: E402
 import time  # noqa: E402
 
-from fastapi import FastAPI, HTTPException, Request, Depends
-from pydantic import ValidationError
-from prometheus_client import Counter, Histogram, Gauge, generate_latest
-from fastapi.responses import Response
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import structlog
-import redis.asyncio as redis
+from fastapi import FastAPI, HTTPException, Request, Depends  # noqa: E402
+from pydantic import ValidationError  # noqa: E402
+from prometheus_client import Counter, Histogram, Gauge, generate_latest  # noqa: E402
+from fastapi.responses import Response  # noqa: E402
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials  # noqa: E402
+import structlog  # noqa: E402
+import redis.asyncio as redis  # noqa: E402
+from docs_branding import configure_docs_branding  # noqa: E402
+from tracing import configure_tracing  # noqa: E402
 
 # Configuration
 REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
@@ -125,11 +127,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="ReliantAI Event Bus", lifespan=lifespan, docs_url=None, redoc_url=None)
 
 # Apply ReliantAI platform branding to API docs
-from docs_branding import configure_docs_branding
 configure_docs_branding(app, service_name="Event Bus", service_color="#DC2626")
 
 # Distributed tracing (OpenTelemetry)
-from tracing import configure_tracing
 configure_tracing(service_name="event-bus")
 
 try:

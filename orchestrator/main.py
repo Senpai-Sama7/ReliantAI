@@ -972,7 +972,13 @@ async def manual_scale(service: str, target_instances: int, _=Depends(verify_api
             detail=f"Target must be between {s.min_instances} and {s.max_instances}"
         )
     
-    s.current_instances = target_instances
+    action = ScaleAction(
+        service=service,
+        target_instances=target_instances,
+        reason="Manual scale requested"
+    )
+    await orchestrator._execute_scale_action(action)
+    
     return {"service": service, "instances": target_instances, "scaled": True}
 
 @app.post("/services/{service}/restart")

@@ -347,9 +347,14 @@ def validate_production_config() -> None:
         'COMPLIANCEONE_API_KEY',
         'FINOPS360_API_KEY',
         'ORCHESTRATOR_API_KEY',
+        'EVENT_BUS_API_KEY',
+        'API_KEY',
+        'MCP_API_KEY',
+        'OS_API_KEY',
+        'HEAL_API_KEY',
+        'API_SECRET_KEY',
         'POSTGRES_PASSWORD',
         'DATABASE_URL',
-        'SECRET_KEY',
         'JWT_SECRET',
         'ENCRYPTION_KEY',
         'GEMINI_API_KEY',
@@ -392,28 +397,35 @@ async def verify_api_key(request: Request):
             headers={"WWW-Authenticate": "ApiKey"}
         )
     
-    # Get expected API key from environment using a known-service whitelist
-    KNOWN_SERVICES = {"money", "complianceone", "finops360", "orchestrator", "integration", "bap", "apex", "citadel"}
-    raw_segment = request.url.path.split('/')[1] if request.url.path else ''
-    service_name = raw_segment if raw_segment in KNOWN_SERVICES else 'default'
-    expected_key = os.getenv(f'{service_name.upper()}_API_KEY') or os.getenv('API_KEY')
-    
+    # Build list of valid keys for this container
+    valid_keys = []
+    if os.getenv('API_KEY'):
+        valid_keys.append(os.getenv('API_KEY'))
+        
+    # Check all internal service key names
+    KNOWN_PREFIXES = {"MONEY", "COMPLIANCEONE", "FINOPS360", "ORCHESTRATOR", "INTEGRATION", "EVENT_BUS", "DISPATCH", "OS", "HEAL", "MCP"}
+    for prefix in KNOWN_PREFIXES:
+        val = os.getenv(f"{prefix}_API_KEY")
+        if val:
+            valid_keys.append(val)
+            
     # HIGH-2 fix: Fail closed if no expected key is configured
-    if not expected_key:
+    if not valid_keys:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Service authentication not configured"
         )
     
     # Use constant-time comparison to prevent timing attacks (bytes path)
-    if not secrets.compare_digest(
-        api_key.encode("utf-8"),
-        expected_key.encode("utf-8")
-    ):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid API key"
-        )
+    api_key_bytes = api_key.encode("utf-8")
+    for expected_key in valid_keys:
+        if secrets.compare_digest(api_key_bytes, expected_key.encode("utf-8")):
+            return api_key
+            
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid API key"
+    )
     
     return api_key
 

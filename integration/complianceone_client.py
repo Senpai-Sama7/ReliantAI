@@ -32,14 +32,15 @@ class ComplianceOneClient:
         response = requests.post(
             f"{self.base_url}/frameworks",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
     
     def list_frameworks(self) -> List[Dict]:
         """List all compliance frameworks"""
-        response = requests.get(f"{self.base_url}/frameworks", headers=self.headers)
+        response = requests.get(f"{self.base_url}/frameworks", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json().get("frameworks", [])
     
@@ -57,7 +58,8 @@ class ComplianceOneClient:
         response = requests.post(
             f"{self.base_url}/controls",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -66,7 +68,8 @@ class ComplianceOneClient:
         """List controls for a framework"""
         response = requests.get(
             f"{self.base_url}/frameworks/{framework_id}/controls",
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json().get("controls", [])
@@ -77,14 +80,15 @@ class ComplianceOneClient:
         response = requests.post(
             f"{self.base_url}/audits",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
     
     def list_audits(self) -> List[Dict]:
         """List all audits"""
-        response = requests.get(f"{self.base_url}/audits", headers=self.headers)
+        response = requests.get(f"{self.base_url}/audits", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json().get("audits", [])
     
@@ -94,7 +98,8 @@ class ComplianceOneClient:
             f"{self.base_url}/audits/{audit_id}/complete",
             params={"score": score},
             json=findings,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -109,7 +114,8 @@ class ComplianceOneClient:
         response = requests.post(
             f"{self.base_url}/evidence",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -124,7 +130,8 @@ class ComplianceOneClient:
         response = requests.post(
             f"{self.base_url}/violations",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -137,14 +144,15 @@ class ComplianceOneClient:
         response = requests.get(
             f"{self.base_url}/violations",
             params=params,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json().get("violations", [])
     
     def get_dashboard(self) -> Dict:
         """Get compliance dashboard data"""
-        response = requests.get(f"{self.base_url}/dashboard", headers=self.headers)
+        response = requests.get(f"{self.base_url}/dashboard", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json()
     

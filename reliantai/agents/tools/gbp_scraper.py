@@ -75,7 +75,13 @@ class GBPScraperTool(BaseTool):
             }
             log.info("gbp_scrape_complete", place_id=place_id, completeness=completeness)
             return str(result)
-        except Exception as e:
+        except httpx.TimeoutException:
+            log.error("gbp_scrape_timeout", place_id=place_id)
+            return str({"error": "timeout"})
+        except httpx.HTTPStatusError as e:
+            log.error("gbp_scrape_http_error", place_id=place_id, status_code=e.response.status_code)
+            return str({"error": f"http_error_{e.response.status_code}"})
+        except (httpx.RequestError, ValueError, KeyError) as e:
             log.error("gbp_scrape_failed", place_id=place_id, error=str(e))
             return str({"error": str(e)[:100]})
 

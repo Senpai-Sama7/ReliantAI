@@ -1,7 +1,6 @@
 import type { SiteContent } from "@/types/SiteContent";
 
 const API_URL = process.env.PLATFORM_API_URL || "http://localhost:8000";
-const API_KEY = process.env.PLATFORM_API_KEY || "";
 
 export async function getSiteContent(
   slug: string
@@ -10,13 +9,19 @@ export async function getSiteContent(
     const res = await fetch(
       `${API_URL}/api/v2/generated-sites/${slug}`,
       {
-        headers: { Authorization: `Bearer ${API_KEY}` },
+        // Note: This endpoint is public (no auth required) per AGENTS.md
         next: { revalidate: 3600 },
       }
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.error(
+        `[API] Failed to fetch site content: ${res.status} for slug: ${slug}`
+      );
+      return null;
+    }
     return res.json();
-  } catch {
+  } catch (error) {
+    console.error(`[API] Error fetching site content for ${slug}:`, error);
     return null;
   }
 }

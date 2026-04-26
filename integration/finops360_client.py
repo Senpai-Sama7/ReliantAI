@@ -36,14 +36,15 @@ class FinOps360Client:
         response = requests.post(
             f"{self.base_url}/accounts",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
     
     def list_accounts(self) -> List[Dict]:
         """List all cloud accounts"""
-        response = requests.get(f"{self.base_url}/accounts", headers=self.headers)
+        response = requests.get(f"{self.base_url}/accounts", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json().get("accounts", [])
     
@@ -63,7 +64,8 @@ class FinOps360Client:
         response = requests.post(
             f"{self.base_url}/costs",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -83,7 +85,8 @@ class FinOps360Client:
         response = requests.get(
             f"{self.base_url}/costs",
             params=params,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json().get("costs", [])
@@ -100,14 +103,15 @@ class FinOps360Client:
         response = requests.post(
             f"{self.base_url}/budgets",
             json=data,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
     
     def list_budgets(self) -> List[Dict]:
         """List all budgets"""
-        response = requests.get(f"{self.base_url}/budgets", headers=self.headers)
+        response = requests.get(f"{self.base_url}/budgets", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json().get("budgets", [])
     
@@ -115,7 +119,8 @@ class FinOps360Client:
         """Get budget utilization status"""
         response = requests.get(
             f"{self.base_url}/budgets/{budget_id}/status",
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -125,7 +130,8 @@ class FinOps360Client:
         response = requests.post(
             f"{self.base_url}/recommendations/generate",
             params={"account_id": account_id},
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -142,7 +148,8 @@ class FinOps360Client:
         response = requests.get(
             f"{self.base_url}/recommendations",
             params=params,
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json().get("recommendations", [])
@@ -151,7 +158,8 @@ class FinOps360Client:
         """Mark a recommendation as implemented"""
         response = requests.post(
             f"{self.base_url}/recommendations/{rec_id}/implement",
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
@@ -161,7 +169,8 @@ class FinOps360Client:
         response = requests.get(
             f"{self.base_url}/alerts",
             params={"is_acknowledged": is_acknowledged},
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json().get("alerts", [])
@@ -170,14 +179,15 @@ class FinOps360Client:
         """Acknowledge an alert"""
         response = requests.post(
             f"{self.base_url}/alerts/{alert_id}/acknowledge",
-            headers=self.headers
+            headers=self.headers,
+            timeout=10
         )
         response.raise_for_status()
         return response.json()
     
     def get_dashboard(self) -> Dict:
         """Get FinOps dashboard data"""
-        response = requests.get(f"{self.base_url}/dashboard", headers=self.headers)
+        response = requests.get(f"{self.base_url}/dashboard", headers=self.headers, timeout=10)
         response.raise_for_status()
         return response.json()
     

@@ -21,12 +21,29 @@ TEMPLATE_MAP = {
 
 
 def generate_slug(business_name: str, city: str) -> str:
+    """Generate a unique URL-safe slug from business name and city.
+    
+    Args:
+        business_name: Name of the business.
+        city: City where the business is located.
+    
+    Returns:
+        URL-safe slug with UUID suffix for uniqueness.
+    """
     raw = f"{business_name.lower()}-{city.lower()}"
     slug = re.sub(r"[^a-z0-9]+", "-", raw).strip("-")[:55]
     return f"{slug}-{str(uuid.uuid4())[:4]}"
 
 
-def _get_theme(template_id: str) -> dict:
+def _get_theme(template_id: str) -> dict[str, str]:
+    """Get theme configuration for a template ID.
+    
+    Args:
+        template_id: Template identifier (e.g., 'hvac-reliable-blue').
+    
+    Returns:
+        Dict with primary color, accent color, and font preferences.
+    """
     themes = {
         "hvac-reliable-blue": {"primary": "#1d4ed8", "accent": "#93c5fd", "font_display": "Outfit", "font_body": "Inter"},
         "plumbing-trustworthy-navy": {"primary": "#1e3a5f", "accent": "#60a5fa", "font_display": "Sora", "font_body": "Inter"},
@@ -47,6 +64,17 @@ class SiteRegistrationService:
         research_data: dict,
         competitor_data: list,
     ) -> dict:
+        """Register a new generated site for a prospect.
+        
+        Args:
+            prospect_id: Database ID of the prospect.
+            copy_package: Marketing copy and content package.
+            research_data: Business intelligence and research data.
+            competitor_data: List of competitor analysis data.
+        
+        Returns:
+            Dict with slug, preview_url, and schema_valid status.
+        """
         with get_db_session() as db:
             prospect = db.query(Prospect).filter_by(id=prospect_id).first()
             if not prospect:

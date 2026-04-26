@@ -502,6 +502,12 @@ services:
     environment:
     - REDIS_URL=${REDIS_URL}
     - MCP_API_KEY=${MCP_API_KEY:-mcp-dev-key}
+    - API_KEY=${API_KEY}
+    - DISPATCH_API_KEY=${DISPATCH_API_KEY}
+    - COMPLIANCEONE_API_KEY=${COMPLIANCEONE_API_KEY}
+    - FINOPS360_API_KEY=${FINOPS360_API_KEY}
+    - ORCHESTRATOR_API_KEY=${ORCHESTRATOR_API_KEY}
+    - EVENT_BUS_API_KEY=${EVENT_BUS_API_KEY}
     depends_on:
       redis:
         condition: service_healthy
@@ -577,6 +583,38 @@ services:
         reservations:
           cpus: '0.25'
           memory: 128M
+
+  sovereign-ai:
+    build:
+      context: ./sovereign_ai
+      dockerfile: Dockerfile
+    container_name: reliantai-sovereign-ai
+    ports:
+    - 8106:8106
+    environment:
+    - PORT=8106
+    - HOST=0.0.0.0
+    - NODE_ENV=production
+    networks:
+    - reliantai-network
+    healthcheck:
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8106/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
 
 volumes:
   postgres_data: null
