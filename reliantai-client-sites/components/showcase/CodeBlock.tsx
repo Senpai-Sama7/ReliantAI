@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, Fragment } from "react";
 
 interface CodeBlockProps {
   code: string;
@@ -42,53 +42,109 @@ function CollapseIcon() {
   );
 }
 
-function highlightSyntax(code: string): React.ReactNode[] {
-  const lines = code.split("\n");
-  return lines.map((line, i) => {
-    let highlighted = line;
+type TokenType = "heading" | "bold" | "bullet" | "property" | "number" | "color" | "plain";
 
-    // Headers (## ... )
-    if (highlighted.match(/^#{1,6}\s/)) {
-      highlighted = `<span class="text-amber-400/90 font-semibold">${highlighted}</span>`;
-    }
-    // Bold (**...**)
-    else if (highlighted.match(/\*\*.*?\*\*/)) {
-      highlighted = highlighted.replace(/\*\*(.*?)\*\*/g, '<span class="text-emerald-400/90 font-semibold">$1</span>');
-    }
-    // Bullet points (- ...)
-    else if (highlighted.match(/^[-*]\s/)) {
-      highlighted = `<span class="text-zinc-600">•</span> ${highlighted.slice(2)}`;
-    }
-    // Property: value pairs
-    else if (highlighted.match(/^[A-Za-z].*?:\s/)) {
-      const colonIndex = highlighted.indexOf(":");
-      const key = highlighted.slice(0, colonIndex);
-      const value = highlighted.slice(colonIndex + 1);
-      highlighted = `<span class="text-sky-400/80">${key}</span><span class="text-zinc-600">:</span>${value}`;
-    }
-    // Numbers and classes
-    highlighted = highlighted.replace(
-      /\b(\d+(?:px|rem|em|vh|vw|%|xl|lg|md|sm|xs)?)\b/g,
-      '<span class="text-orange-400/80">$1</span>'
-    );
-    // Color references
-    highlighted = highlighted.replace(
-      /\b(slate|zinc|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:\d{2,3}|white|black)\b/g,
-      '<span class="text-violet-400/80">$&</span>'
-    );
+interface Token {
+  type: TokenType;
+  text: string;
+}
 
-    return (
-      <div key={i} className="flex">
-        <span className="w-10 flex-shrink-0 text-right pr-4 text-zinc-700 select-none text-[11px] leading-6">
-          {i + 1}
-        </span>
-        <span
-          className="flex-1 text-[12px] leading-6 text-zinc-400"
-          dangerouslySetInnerHTML={{ __html: highlighted || "&nbsp;" }}
-        />
-      </div>
-    );
-  });
+function tokenizeLine(line: string): Token[] {
+  const tokens: Token[] = [];
+
+  if (line.match(/^#{1,6}\s/)) {
+    return [{ type: "heading", text: line }];
+  }
+
+  if (line.match(/^[-*]\s/)) {
+    tokens.push({ type: "bullet", text: "•" }, { type: "plain", text: " " + line.slice(2) });
+    return tokens;
+  }
+
+  const propMatch = line.match(/^([A-Za-z][A-Za-z ]*?):\s/);
+  if (propMatch) {
+    const colonIndex = line.indexOf(":");
+    tokens.push({ type: "property", text: line.slice(0, colonIndex) });
+    tokens.push({ type: "plain", text: ":" });
+    const remainder = line.slice(colonIndex + 1);
+    tokens.push(...tokenizeInline(remainder));
+    return tokens;
+  }
+
+  tokens.push(...tokenizeInline(line));
+  return tokens;
+}
+
+function tokenizeInline(text: string): Token[] {
+  const tokens: Token[] = [];
+  let remaining = text;
+
+  const patterns: [RegExp, TokenType][] = [
+    [/\*\*(.+?)\*\*/g, "bold"],
+    [/\b(\d+(?:px|rem|em|vh|vw|%|xl|lg|md|sm|xs)?)\b/g, "number"],
+    [/\b(slate|zinc|stone|red|orange|amber|yellow|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:\d{2,3}|white|black)\b/g, "color"],
+  ];
+
+  while (remaining.length > 0) {
+    let earliestMatch: RegExpMatchArray | null = null;
+    let earliestType: TokenType = "plain";
+    let earliestIndex = remaining.length;
+
+    for (const [pattern, type] of patterns) {
+      pattern.lastIndex = 0;
+      const match = pattern.exec(remaining);
+      if (match && match.index < earliestIndex) {
+        earliestMatch = match;
+        earliestType = type;
+        earliestIndex = match.index;
+      }
+    }
+
+    if (!earliestMatch) {
+      if (remaining) tokens.push({ type: "plain", text: remaining });
+      break;
+    }
+
+    if (earliestIndex > 0) {
+      tokens.push({ type: "plain", text: remaining.slice(0, earliestIndex) });
+    }
+
+    if (earliestType === "bold") {
+      tokens.push({ type: "bold", text: earliestMatch[1] });
+    } else {
+      tokens.push({ type: earliestType, text: earliestMatch[0] });
+    }
+
+    remaining = remaining.slice(earliestIndex + earliestMatch[0].length);
+  }
+
+  return tokens;
+}
+
+const TOKEN_STYLES: Record<TokenType, string> = {
+  heading: "text-amber-400/90 font-semibold",
+  bold: "text-emerald-400/90 font-semibold",
+  bullet: "text-zinc-600",
+  property: "text-sky-400/80",
+  number: "text-orange-400/80",
+  color: "text-violet-400/80",
+  plain: "text-zinc-400",
+};
+
+function highlightLine(line: string, lineNum: number) {
+  const tokens = tokenizeLine(line);
+  return (
+    <div key={lineNum} className="flex">
+      <span className="w-10 flex-shrink-0 text-right pr-4 text-zinc-700 select-none text-[11px] leading-6">
+        {lineNum + 1}
+      </span>
+      <span className="flex-1 text-[12px] leading-6">
+        {tokens.map((token, i) => (
+          <span key={i} className={TOKEN_STYLES[token.type]}>{token.text}</span>
+        ))}
+      </span>
+    </div>
+  );
 }
 
 export default function CodeBlock({
@@ -159,7 +215,7 @@ export default function CodeBlock({
         }}
       >
         <div className="p-4 font-mono">
-          {highlightSyntax(code)}
+          {code.split("\n").map((line, i) => highlightLine(line, i))}
         </div>
       </div>
 

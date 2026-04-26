@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 function timingSafeEqual(a: string, b: string): boolean {
@@ -23,9 +23,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { slug } = body as { slug: string };
+    const { slug } = body as { slug?: string };
 
-    revalidatePath("/[slug]", "page");
+    if (!slug || typeof slug !== "string") {
+      return NextResponse.json(
+        { revalidated: false, error: "slug is required" },
+        { status: 400 }
+      );
+    }
+
+    revalidatePath(`/${slug}`);
 
     return NextResponse.json({ revalidated: true, slug });
   } catch {

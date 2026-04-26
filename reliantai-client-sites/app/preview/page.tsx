@@ -144,16 +144,16 @@ export default function PreviewPage() {
       )}
 
       {!showJson && layout === "full" && (
-        <div className="bg-zinc-950">
-          <div className="absolute top-20 right-4 z-40">
-            <span className={`px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md bg-black/70 text-white backdrop-blur-sm border border-white/10 shadow-lg`}>
-              {TEMPLATE_META[active].label}
-            </span>
-          </div>
+        <div className="relative bg-zinc-950">
           {(() => {
             const Template = DynamicTemplates[active];
             return Template ? <Template content={content} /> : null;
           })()}
+          <div className="absolute top-4 right-4 z-40">
+            <span className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider rounded-md bg-black/70 text-white backdrop-blur-sm border border-white/10 shadow-lg">
+              {TEMPLATE_META[active].label}
+            </span>
+          </div>
         </div>
       )}
 

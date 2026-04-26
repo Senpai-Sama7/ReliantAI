@@ -5,6 +5,10 @@ import PreviewBanner from "@/components/PreviewBanner";
 
 export const revalidate = 3600;
 
+export async function generateStaticParams() {
+  return [];
+}
+
 export async function generateMetadata({
   params,
 }: {

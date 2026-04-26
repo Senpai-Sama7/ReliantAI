@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, type ComponentType } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, type ComponentType } from "react";
 import dynamic from "next/dynamic";
 import MOCK_DATA from "@/lib/mock-data";
 import { TEMPLATES, type TemplateMeta } from "@/lib/template-meta";
@@ -8,7 +8,7 @@ import type { SiteContent } from "@/types/SiteContent";
 import DeviceFrame from "@/components/showcase/DeviceFrame";
 import CodeBlock from "@/components/showcase/CodeBlock";
 
-// ─── Types ───────────────────────────────────────────────────────────
+const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 type TemplateId = (typeof TEMPLATES)[number]["id"];
 type View = "preview" | "grid" | "prompt" | "compare";
 type Device = "desktop" | "tablet" | "mobile";
@@ -67,6 +67,7 @@ function TemplateCard({ meta, isActive, onClick }: { meta: TemplateMeta; isActiv
   return (
     <button
       onClick={onClick}
+      aria-label={`Select ${meta.tradeLabel} template`}
       className={`group relative w-full text-left rounded-xl transition-all duration-200 ease-out ${
         isActive
           ? "bg-gradient-to-br from-zinc-800/80 to-zinc-900 ring-1 ring-white/10 shadow-lg shadow-black/20"
@@ -111,10 +112,13 @@ function TemplateCard({ meta, isActive, onClick }: { meta: TemplateMeta; isActiv
 }
 
 // ─── View Tab ─────────────────────────────────────────────────────────
-function ViewTab({ icon, label, active, onClick }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void }) {
+function ViewTab({ icon, label, active, onClick, ariaLabel }: { icon: React.ReactNode; label: string; active: boolean; onClick: () => void; ariaLabel?: string }) {
   return (
     <button
       onClick={onClick}
+      aria-label={ariaLabel || label}
+      role="tab"
+      aria-selected={active}
       className={`relative flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all duration-150 ${
         active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
       }`}
@@ -137,9 +141,17 @@ export default function ShowcasePage() {
   const [screenKey, setScreenKey] = useState(0);
   const [compareIds, setCompareIds] = useState<[TemplateId, TemplateId]>(["hvac-reliable-blue", "plumbing-trustworthy-navy"]);
   const [mounted, setMounted] = useState(false);
+  const [overrides, setOverrides] = useState<Partial<{ business_name: string; phone: string; city: string; state: string; headline: string }>>({});
 
   const meta = TEMPLATES.find((t) => t.id === active)!;
-  const content = MOCK_DATA[active];
+  const baseContent = MOCK_DATA[active];
+  const content = useMemo(() => ({
+    ...baseContent,
+    business: { ...baseContent.business, ...overrides },
+    hero: { ...baseContent.hero, ...(overrides.headline && { headline: overrides.headline }) },
+  }), [baseContent, overrides]);
+
+  useEffect(() => setOverrides({}), [active]);
 
   useEffect(() => setMounted(true), []);
 
@@ -200,10 +212,10 @@ export default function ShowcasePage() {
 
           {/* Center: View tabs */}
           <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06]">
-            <ViewTab icon={<IconSparkles className="w-3.5 h-3.5" />} label="Preview" active={view === "preview"} onClick={() => setView("preview")} />
-            <ViewTab icon={<IconGrid className="w-3.5 h-3.5" />} label="Grid" active={view === "grid"} onClick={() => setView("grid")} />
-            <ViewTab icon={<IconCode className="w-3.5 h-3.5" />} label="Prompt" active={view === "prompt"} onClick={() => setView("prompt")} />
-            <ViewTab icon={<IconColumns className="w-3.5 h-3.5" />} label="Compare" active={view === "compare"} onClick={() => setView("compare")} />
+<ViewTab icon={<IconSparkles className="w-3.5 h-3.5" />} label="Preview" active={view === "preview"} onClick={() => setView("preview")} aria-label="Preview view" />
+              <ViewTab icon={<IconGrid className="w-3.5 h-3.5" />} label="Grid" active={view === "grid"} onClick={() => setView("grid")} aria-label="Grid view" />
+              <ViewTab icon={<IconCode className="w-3.5 h-3.5" />} label="Prompt" active={view === "prompt"} onClick={() => setView("prompt")} aria-label="Prompt view" />
+              <ViewTab icon={<IconColumns className="w-3.5 h-3.5" />} label="Compare" active={view === "compare"} onClick={() => setView("compare")} aria-label="Compare view" />
           </div>
 
           {/* Right: Device & sidebar toggle */}
@@ -213,7 +225,8 @@ export default function ShowcasePage() {
                 {([["desktop", <IconDesktop className="w-3.5 h-3.5" />], ["tablet", <IconTablet className="w-3.5 h-3.5" />], ["mobile", <IconPhone className="w-3.5 h-3.5" />]] as const).map(([d, icon]) => (
                   <button
                     key={d}
-                    onClick={() => { setDevice(d); setScreenKey((k) => k + 1); }}
+                    onClick={() => { setDevice(d as Device); setScreenKey((k) => k + 1); }}
+                    aria-label={`Switch to ${d} view`}
                     className={`relative p-1.5 rounded-md transition-all ${
                       device === d ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                     }`}
@@ -301,13 +314,13 @@ export default function ShowcasePage() {
                 <div className="pt-3 border-t border-white/[0.04]">
                   <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Live Data</span>
                   <div className="mt-2 space-y-2">
-                    <DataInput label="Business" value={content.business.business_name} onChange={(v) => { MOCK_DATA[active].business.business_name = v; }} />
-                    <DataInput label="Phone" value={content.business.phone} onChange={(v) => { MOCK_DATA[active].business.phone = v; }} />
+                    <DataInput label="Business" value={content.business.business_name} onChange={(v) => setOverrides((o) => ({ ...o, business_name: v }))} />
+                    <DataInput label="Phone" value={content.business.phone} onChange={(v) => setOverrides((o) => ({ ...o, phone: v }))} />
                     <DataInput label="Location" value={`${content.business.city}, ${content.business.state}`} onChange={(v) => {
                       const p = v.split(", ");
-                      if (p.length === 2) { MOCK_DATA[active].business.city = p[0]; MOCK_DATA[active].business.state = p[1]; }
+                      if (p.length === 2) setOverrides((o) => ({ ...o, city: p[0], state: p[1] }));
                     }} />
-                    <DataInput label="Headline" value={content.hero.headline} onChange={(v) => { MOCK_DATA[active].hero.headline = v; }} />
+                    <DataInput label="Headline" value={content.hero.headline} onChange={(v) => setOverrides((o) => ({ ...o, headline: v }))} />
                   </div>
                 </div>
 
@@ -341,7 +354,7 @@ export default function ShowcasePage() {
           {/* Preview */}
           {view === "preview" && (
             <div key={screenKey} className="h-full">
-              <DeviceFrame device={device} url={`${content.business.business_name.toLowerCase().replace(/\s+/g, "")}.reliantai.org`}>
+              <DeviceFrame device={device} url={`${slugify(content.business.business_name)}.reliantai.org`}>
                 {Template ? <Template content={content} /> : <Loader />}
               </DeviceFrame>
             </div>
