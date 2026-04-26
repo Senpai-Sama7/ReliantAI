@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-_No unreleased changes at this time._
+### Added
+- Interactive template showcase (`/showcase`) with 4 view modes (Preview, Grid, Prompt, Compare)
+  - Premium device frames: Desktop (macOS chrome), Tablet, Mobile (notch + home indicator)
+  - Real-time live data editing (business name, phone, location, headline)
+  - Keyboard navigation: `↑↓` cycle templates, `\` toggle sidebar
+  - CodeBlock component with syntax highlighting, line numbers, copy-to-clipboard
+- Template preview page (`/preview`) with JSON data viewer
+- Rich template metadata system (`lib/template-meta.ts`) with personality, best-for, differentiators
+- Complete mock data (`lib/mock-data.ts`) for all 6 trades with realistic content
+- Generation prompts for every template (color system, layout, animations, unique features)
+- `lib/api.ts` and `lib/trade-copy.ts` now tracked in repo (were gitignored by root `lib/` pattern)
+
+### Changed
+- Root `/` now redirects to `/showcase` instead of default Next.js page
+- `app/globals.css` fixed `@import` order (font before Tailwind) to suppress CSS warning
+- `app/layout.tsx` metadata updated to "ReliantAI — Client Sites"
+- Documentation updated: README with new routes, showcase guide, file structure, template table
+
+### Fixed
+- Root `.gitignore` `lib/` pattern was incorrectly ignoring `reliantai-client-sites/lib/` source files
+- Added force-tracking for client-sites library files (`api.ts`, `trade-copy.ts`, `mock-data.ts`, `template-meta.ts`)
 
 ---
 

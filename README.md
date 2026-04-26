@@ -39,7 +39,7 @@ ReliantAI is composed of **20+ integrated microservices**. Here are the pillars 
 
 ### 💼 Business Operations
 * **ReliantAI API**: FastAPI + Celery platform core. Handles prospects, site registration, and background task pipeline (GBP scraping → site generation → schema submission → review monitoring).
-* **ReliantAI Client Sites**: Next.js App Router with ISR. Dynamically generates branded landing pages for home service businesses at `/[slug]`. One shared app, no per-site builds.
+* **ReliantAI Client Sites**: Next.js App Router with ISR. Dynamically generates branded landing pages for home service businesses at `/[slug]`. Includes interactive `/showcase` (4-view template studio with device frames, live editing, generation prompts) and `/preview` (template browser with JSON viewer). 6 trade-specific templates. One shared app, no per-site builds.
 * **Money Service**: The revenue engine. Handles real-world HVAC dispatching, automated SMS triage (via Twilio), AI-powered job assignment (via CrewAI + Gemini), and Stripe billing.
 * **GrowthEngine**: Autonomous lead generation using Google Places API. Finds home service businesses, filters by quality, and sends personalized SMS pitches.
 * **Gen-H**: High-conversion lead generation and templating library for home services.

@@ -43,7 +43,7 @@ sequenceDiagram
         Cache->>User: Serve page (ISR)
     end
 
-    %% On-Demand Revalidation (from Dashboard/Webhook)
+    %% On-Demand Revalidation
     User->>API: POST /api/revalidate (slug + auth)
     API->>Worker: Trigger revalidation task
     Worker->>API: GET /v2/generated-sites/{slug}
@@ -67,16 +67,53 @@ cp .env.example .env  # fill in API_BASE_URL
 npm run dev
 ```
 
-Open [http://localhost:3000/hvac-reliable-cooling-austin](http://localhost:3000/hvac-reliable-cooling-austin) (sample slug).
+Open [http://localhost:3000/showcase](http://localhost:3000/showcase) to browse templates.
+
+## Routes
+
+| Path | Type | Purpose |
+|------|------|---------|
+| `/` | Static | Redirects to `/showcase` |
+| `/[slug]` | ISR (dynamic) | Renders a client site page from API content. Revalidates every 3600s. |
+| `/showcase` | Static | Interactive template showcase — 4 view modes, device frames, live editing |
+| `/preview` | Static | Simplified template preview with JSON data viewer |
+| `/api/revalidate` | Server (POST) | On-demand ISR cache purge for a specific slug |
+
+### Showcase (`/showcase`)
+
+Interactive design studio for browsing, comparing, and generating all 6 templates:
+
+- **Preview** — Full template with device frames (Desktop w/ macOS chrome, Tablet, Mobile w/ notch)
+- **Grid** — All 6 templates rendered simultaneously with hover actions
+- **Prompt** — Syntax-highlighted generation prompt with metadata cards and copy-to-clipboard
+- **Compare** — Side-by-side with independent selectors for each panel
+
+**Keyboard shortcuts:** `↑↓` cycle templates, `\` toggle sidebar
+
+**Live data editing:** Override business name, phone, city/state, and headline in the sidebar with real-time preview updates.
+
+### Preview (`/preview`)
+
+Simpler template selector with:
+- Full-page rendering for each template
+- Grid layout (all templates side-by-side)
+- Raw JSON data viewer with copy-to-clipboard
 
 ## Development
 
 ```bash
-npm run dev        # dev server
+npm run dev        # dev server (Turbopack)
 npm run build      # production build
 npx tsc --noEmit  # typecheck
 npm run test:e2e   # Playwright E2E tests
 ```
+
+> **Turbopack note:** If `next dev` crashes with file watch errors, increase inotify limit:
+> ```bash
+> echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+> sudo sysctl -p
+> ```
+> Or use `next build && next start` instead.
 
 ## Slug Format
 
@@ -86,14 +123,37 @@ Example: "Reliable Cooling & Heating" in "Austin, TX" → `reliable-cooling-heat
 
 ## Templates
 
-| ID | Trade | Accent | Theme |
-|----|-------|--------|-------|
-| `hvac` | HVAC | Blue | Dark, professional |
-| `plumbing` | Plumbing | Blue | Dark, emergency-focused |
-| `electrical` | Electrical | Amber | Dark, safety-first |
-| `roofing` | Roofing | Orange | Dark, bold |
-| `painting` | Painting | Violet | **Light**, minimal |
-| `landscaping` | Landscaping | Emerald | Dark, organic |
+All 6 templates share a common 15-section layout (ContactBar → TrustBanner → Hero → StatsBar → Services → CTASection → About → Reviews → CTASection → FAQ → Footer) with trade-specific variations:
+
+| ID | Trade | Accent | Theme | Hero Layout | Personality | Best For |
+|----|-------|--------|-------|-------------|-------------|----------|
+| `hvac-reliable-blue` | HVAC | Blue | Dark | Single-column | Dependable & Authoritative | Any trade where trust is paramount |
+| `plumbing-trustworthy-navy` | Plumbing | Navy (Blue) | Dark | Single-column | Urgent & Trustworthy | Emergency/24/7 services |
+| `electrical-sharp-gold` | Electrical | Amber/Gold | Dark | Dual + Safety Card | Bold & Safety-First | Safety-credentialed trades |
+| `roofing-bold-copper` | Roofing | Orange/Copper | Dark | Dual + Credential Stack | Bold & Action-Oriented | Free-inspection offers |
+| `painting-clean-minimal` | Painting | Violet | **Light** | Dual + Decorative | Clean & Design-Forward | Aesthetics-driven trades |
+| `landscaping-earthy-green` | Landscaping | Emerald | Dark | Dual + Decorative | Organic & Sustainable | Outdoor services |
+
+### Key Differentiators
+
+| Template | Unique Features |
+|----------|----------------|
+| **HVAC** | Editorial narrative About (sentence-split), equal service cards, masonry reviews |
+| **Plumbing** | Red emergency alert badge with animate-ping, featured service card, featured review split |
+| **Electrical** | SAFETY FIRST hero card, uniform slate-950 bg, `rounded-lg` CTAs, featured at index 2 |
+| **Roofing** | Animated ping dot, 3-card hero credential stack, trust points as card grid, `border-2` CTAs |
+| **Painting** | Only light theme, concentric violet circles, serif quote marks, dark footer contrast |
+| **Landscaping** | Scale animation on hero, concentric emerald circles, centered About with vertical bar |
+
+### Generation Prompts
+
+Each template has a complete, production-ready generation prompt viewable in the **Prompt** tab of the Showcase. Prompts include:
+- Complete color system with hex values and Tailwind classes
+- Exact layout structure with section order and grid configurations
+- All animation patterns (framer-motion variants, stagger timing)
+- Unique visual features specific to that template
+- CTA styling (border-radius, hover effects, shadow configurations)
+- Typography scale (heading sizes, weight, tracking)
 
 ## ISR & Revalidation
 
@@ -104,6 +164,16 @@ Example: "Reliable Cooling & Heating" in "Austin, TX" → `reliable-cooling-heat
 ## API Integration
 
 Templates receive a `SiteContent` object from `GET {API_BASE_URL}/v2/generated-sites/{slug}` — no hardcoded business data.
+
+### Mock Data (`lib/mock-data.ts`)
+
+Each trade has a complete mock dataset with:
+- Realistic business name, city, phone, email, address
+- 5 unique reviews per trade with trade-appropriate text
+- 4 trade-specific services with descriptions and CTAs
+- 3–4 trade-specific FAQs
+- Full SEO metadata and AEO signals
+- Schema.org structured data
 
 ## API Contract Examples
 
@@ -125,75 +195,51 @@ Templates receive a `SiteContent` object from `GET {API_BASE_URL}/v2/generated-s
       "google_rating": 4.8,
       "review_count": 142,
       "years_in_business": 15,
-      "service_area": "Greater Austin Metro",
-      "owner": {
-        "name": "John Smith",
-        "certifications": ["EPA 608", "NATE"]
-      }
+      "service_area": "Greater Austin Metro"
     },
     "site_config": {
-      "theme": "hvac-reliable-blue",
-      "status": "live",
-      "preview_expires": null
+      "template_id": "hvac-reliable-blue",
+      "trade": "hvac",
+      "theme": { "primary": "#1e40af", "accent": "#60a5fa", "font_display": "Outfit", "font_body": "Inter" }
     },
     "hero": {
-      "headline": "Expert HVAC Services in Austin, TX",
-      "subheadline": "Licensed & Insured • 24/7 Emergency Service • Free Estimates",
-      "cta_text": "Schedule Service",
-      "cta_url": "#contact",
-      "image_url": "/assets/hvac-hero.jpg"
+      "headline": "Stay Comfortable Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling",
+      "cta_primary": "Call Now",
+      "cta_primary_url": "tel:+15125550199",
+      "cta_secondary": "View Services",
+      "cta_secondary_url": "#services",
+      "trust_bar": ["Licensed & Insured", "EPA Certified"]
     },
-    "services": {
-      "title": "Our HVAC Services",
-      "subtitle": "Comprehensive heating and cooling solutions for your home",
-      "items": [
-        {
-          "name": "Air Conditioning Installation",
-          "description": "Professional AC installation with SEER ratings up to 21",
-          "icon": "Snowflake"
-        },
-        {
-          "name": "Heating System Repair",
-          "description": "Fast, reliable furnace and heat pump repairs",
-          "icon": "Flame"
-        },
-        {
-          "name": "Indoor Air Quality",
-          "description": "Air purifiers, humidifiers, and ventilation solutions",
-          "icon": "Wind"
-        }
-      ]
-    },
+    "services": [
+      {
+        "icon": "thermometer",
+        "title": "AC Repair & Install",
+        "description": "Same-day diagnostics and repair with 10-year warranty",
+        "cta_text": "Get AC Help"
+      }
+    ],
     "about": {
-      "title": "Why Choose Reliable Cooling & Heating?",
-      "trust_title": "Our Commitment to Excellence",
-      "content": "Family-owned and serving Austin for over 15 years...",
-      "trust_content": "We stand behind every installation with our satisfaction guarantee..."
+      "story": "Comfort Pro started in 2009...",
+      "trust_points": ["15+ years serving Austin homeowners", "4.9-star rating"],
+      "certifications": ["EPA 608 Certified", "NATE Certified"]
     },
     "reviews": {
-      "title": "What Our Customers Say",
-      "items": [
-        {
-          "name": "Sarah J.",
-          "rating": 5,
-          "date": "2024-01-15",
-          "comment": "They fixed our AC in under an hour! Professional and courteous."
-        }
-      ]
+      "reviews": [{ "author": "Sarah M.", "rating": 5, "text": "They came out same day...", "time": "2 weeks ago" }],
+      "aggregate_line": "4.9 average from 342 reviews"
     },
-    "faq": {
-      "title": "Frequently Asked Questions",
-      "items": [
-        {
-          "question": "Do you offer financing?",
-          "answer": "Yes! We provide flexible financing options through trusted partners."
-        }
-      ]
-    },
+    "faq": [
+      { "question": "How fast can you get here?", "answer": "For emergencies, we typically arrive within 2 hours." }
+    ],
     "seo": {
-      "title": "Expert HVAC Services in Austin, TX | Reliable Cooling",
-      "description": "Licensed HVAC contractor serving Austin since 2009. Specializing in AC installation, heating repair, and indoor air quality solutions.",
-      "keywords": "HVAC, air conditioning, heating repair, Austin TX"
+      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
+      "keywords": ["hvac austin", "ac repair austin"]
+    },
+    "aeo_signals": {
+      "local_business_type": "HVACContractor",
+      "primary_category": "HVAC Repair",
+      "area_served": ["Austin", "Round Rock", "Cedar Park"]
     }
   }
 }
@@ -204,28 +250,22 @@ Templates receive a `SiteContent` object from `GET {API_BASE_URL}/v2/generated-s
 **Auth:** `Authorization: Bearer <REVALIDATE_SECRET>`  
 **Request:**
 ```json
-{
-  "slug": "reliable-cooling-heating-austin"
-}
+{ "slug": "reliable-cooling-heating-austin" }
 ```
 **Response:**
 ```json
-{
-  "success": true,
-  "message": "Revalidation triggered for reliable-cooling-heating-austin"
-}
+{ "success": true, "message": "Revalidation triggered for reliable-cooling-heating-austin" }
 ```
 **Errors:**
 - `401`: Invalid or missing authorization token
 - `400`: Missing slug parameter
 - `404`: Slug not found in database
-- `500`: Internal server error during revalidation
 
 ## Environment Variables
 
 ```
 API_BASE_URL=https://api.reliantai.com      # ReliantAI API base
-REVALIDATE_SECRET=<secret>                 # Bearer token for /api/revalidate
+REVALIDATE_SECRET=<secret>                   # Bearer token for /api/revalidate
 NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
 ```
 
@@ -234,16 +274,11 @@ NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
 ### Vercel (Recommended)
 1. Push code to GitHub repository
 2. Import project in Vercel dashboard
-3. Set environment variables:
-   - `API_BASE_URL`: Your ReliantAI API URL (e.g., `https://api.reliantai.com`)
-   - `REVALIDATE_SECRET`: Shared secret for revalidation endpoint
-   - `NEXT_PUBLIC_PREVIEW_DOMAIN`: `preview.reliantai.org`
-4. Vercel automatically detects Next.js project and sets up builds
-5. ISR works out-of-the-box with edge caching
+3. Set environment variables
+4. Vercel automatically detects Next.js and sets up ISR
 
 ### Docker
 ```dockerfile
-# Dockerfile
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -267,208 +302,114 @@ ENV NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
 CMD ["npm", "start"]
 ```
 
-### Manual Server
-```bash
-npm run build
-npm start
-# Set environment variables before starting:
-# API_BASE_URL, REVALIDATE_SECRET, NEXT_PUBLIC_PREVIEW_DOMAIN
+## Routes Summary
+
+```
+/                  → redirects to /showcase
+/[slug]            → ISR-rendered client site (revalidate: 3600)
+/showcase          → interactive template studio (4 views)
+/preview           → simplified template browser
+/api/revalidate    → POST endpoint for ISR cache purge
+/api/health        → health check (returns 200)
+```
+
+## File Structure
+
+```
+app/
+├── [slug]/                 # ISR dynamic route
+│   └── page.tsx
+├── api/
+│   └── revalidate/         # POST handler
+├── showcase/page.tsx       # Interactive template studio
+├── preview/page.tsx        # Simplified template browser
+├── page.tsx                # Redirects to /showcase
+├── layout.tsx
+└── globals.css
+
+components/
+├── shared/                 # StatsBar, CTASection, TrustBanner, SectionDivider
+└── showcase/               # DeviceFrame, CodeBlock
+
+templates/
+├── hvac-reliable-blue/sections/
+├── plumbing-trustworthy-navy/sections/
+├── electrical-sharp-gold/sections/
+├── roofing-bold-copper/sections/
+├── painting-clean-minimal/sections/
+└── landscaping-earthy-green/sections/
+
+lib/
+├── api.ts                  # SiteContent fetcher + template loader
+├── mock-data.ts            # Complete mock SiteContent per trade
+├── template-meta.ts        # Rich metadata + generation prompts
+└── trade-copy.ts           # Trade-specific copy for all sections
+
+types/
+└── SiteContent.ts           # TypeScript interfaces
+
+tests/
+└── e2e/                    # Playwright E2E tests
 ```
 
 ## Health Checks
-- `/api/health` - Returns 200 if Next.js server is running
+- `GET /api/health` — Returns 200 if Next.js server is running
 - Page-level: Visit any `/[slug]` to verify ISR is working
 - Revalidation test: `curl -X POST -H "Authorization: Bearer <secret>" -d '{"slug":"test-slug"}' /api/revalidate`
 
 ## Troubleshooting FAQ
 
-### Common Issues and Solutions
-
 **Problem:** Page shows 404 after deploying  
-**Solution:** 
-1. Verify the slug exists in the database via the API: `GET {API_BASE_URL}/v2/prospects`
-2. Check that the prospect has a valid `template_id` (hvac, plumbing, electrical, roofing, painting, landscaping)
-3. Ensure the API is accessible from the Next.js instance (network/firewall rules)
-4. Check Next.js logs for errors during `getSiteContent()` call
+**Solution:** Verify the slug exists in the database and has a valid `template_id`.
 
 **Problem:** Content not updating after API change  
-**Solution:**
-1. ISR cache has a default TTL of 3600 seconds (1 hour)
-2. To force update: trigger on-demand revalidation via `/api/revalidate`
-3. Verify the Celery beat task is running: `celery -A reliantai.celery_app beat`
-4. Check that the `revalidation` task is succeeding in Celery worker logs
+**Solution:** Trigger on-demand revalidation via `/api/revalidate`. ISR cache has a 3600s TTL.
 
 **Problem:** Preview mode not showing branded banner  
-**Solution:**
-1. Confirm the request includes `?preview=1` or is coming from the preview domain
-2. Check that `NEXT_PUBLIC_PREVIEW_DOMAIN` is set correctly in environment variables
-3. Verify the API returns `status: "preview_live"` in the site_config for preview requests
+**Solution:** Confirm the API returns `status: "preview_live"` in the site_config.
 
 **Problem:** Layout shifts or visual flickering  
-**Solution:**
-1. Ensure all images have explicit width and height attributes
-2. Verify that dynamic content doesn't cause unexpected DOM changes during hydration
-3. Use `next/image` component for automatic optimization and layout stability
+**Solution:** Ensure images have explicit dimensions, verify dynamic content doesn't cause DOM changes.
 
 **Problem:** Slow initial load (>2s)  
-**Solution:**
-1. Check API response time - should be <200ms for `/v2/generated-sites/{slug}`
-2. Verify Next.js is running in production mode (`npm start` not `npm run dev`)
-3. Enable React Server Components and streaming where applicable
-4. Optimize Hero section assets (compress images, use modern formats)
+**Solution:** Check API response time (<200ms), ensure production mode, optimize hero assets.
 
 ## Contribution Guidelines
 
-### Development Setup
-1. Fork the repository and clone your fork
-2. Install dependencies: `npm install`
-3. Copy `.env.example` to `.env` and fill in `API_BASE_URL`
-4. Run development server: `npm run dev`
-5. Run tests: `npm run test:e2e` (requires running API instance)
-
-### Code Style
-- Follow existing code formatting (Prettier, ESLint)
-- Use TypeScript strict mode - no `any` types without justification
-- Components must be in `templates/[trade]/sections/` with PascalCase filenames
-- Export components as named exports (not default) for consistency
-- Use `className` for styling, never inline `style` objects (except for dynamic values requiring JS)
-
-### Pull Request Process
-1. Create a feature branch from `main`
-2. Write clear, conventional commit messages
-3. Update documentation if adding/changing features
-4. Ensure all E2E tests pass
-5. Squash commits before merging if multiple small changes
-6. Request review from at least one platform engineer
-
-### Template Contributions
 When adding a new trade template:
 1. Create a new directory under `templates/` with kebab-case name
 2. Implement all required sections (Hero, Services, About, Reviews, FAQ, Footer, ContactBar)
-3. Add the template to the import map in `lib/api.ts`
-4. Ensure the template uses the correct accent color from the design system
-5. Add appropriate test cases in `tests/e2e/` if applicable
-6. Update the Templates table in this README
+3. Add the template to the import map in `lib/api.ts` and `lib/mock-data.ts`
+4. Add metadata and generation prompt to `lib/template-meta.ts`
+5. Add a TemplateCard entry in `app/showcase/page.tsx`
+6. Use the correct accent color variant for StatsBar, CTASection, and SectionDivider
+7. Add appropriate test cases in `tests/e2e/`
+8. Update the Templates table in this README
 
 ## Security Considerations
 
-### Authentication & Authorization
-- The `/api/revalidate` endpoint requires a Bearer token matching `REVALIDATE_SECRET`
-- Use `crypto.timingSafeEqual` for token comparison to prevent timing attacks
-- Store `REVALIDATE_SECRET` as an environment variable, never in code
-- Rotate secrets periodically and update all dependent services
-
-### Data Validation
-- All incoming data from the API is validated at the TypeScript level via `SiteContent` interface
-- Additional runtime validation should be considered for critical paths
-- Never trust client-side input - all authorization happens server-side
-
-### Content Security
-- All content served via ISR is server-generated - no user-generated content is stored or rendered
-- HTML is properly escaped where dynamic content is inserted
-- External links in content should use `rel="noopener noreferrer"` when applicable
-- Script injection is prevented by Next.js's built-in XSS protection
-
-### Infrastructure Security
-- Run Next.js behind a reverse proxy (nginx, Vercel, etc.) in production
-- Implement rate limiting on the `/api/revalidate` endpoint to prevent abuse
-- Keep Node.js and dependencies updated to patch known vulnerabilities
-- Use HTTPS in production - Vercel provides this automatically
-
-### Dependency Security
-- Regularly run `npm audit` and update dependencies
-- Use `npm audit fix` for automatic fixes where safe
-- Monitor for vulnerabilities in framer-motion, lucide-react, and other direct dependencies
-
-## Testing Strategies
-
-### Unit Testing
-- While not currently implemented, consider adding unit tests for:
-  - Utility functions in `lib/` (slug generation, content transformations)
-  - Component props validation and rendering with various data inputs
-  - Use Jest or Vitest with React Testing Library
-
-### Integration Testing
-- Test API contracts:
-  - Verify `/v2/generated-sites/{slug}` returns correct shape and data types
-  - Test `/api/revalidate` authorization and error cases
-  - Ensure Celery tasks correctly update the database
-- Use tools like Supertest or manual API calls in test scripts
-
-### End-to-End Testing (Current)
-- Playwright tests in `tests/e2e/isr-routes.spec.ts` cover:
-  - Home page redirect to sample slug
-  - 404 handling for invalid slugs
-  - Revalidation endpoint with valid/invalid tokens
-  - Preview mode detection
-  - Basic page load and element presence for each template
-- Run with: `npm run test:e2e`
-
-### Performance Testing
-- Use Lighthouse CI in CI/CD pipeline to enforce performance budgets
-- Test ISR regeneration times under load (e.g., 50 concurrent requests)
-- Monitor bundle size with `next-bundle-analyzer` or similar
-- Track Core Web Vitals via web-vitals library in production
-
-### Visual Regression Testing
-- Consider adding Storybook for component visual testing
-- Use Chromatic or Percy for visual diff detection on template changes
-- Particularly useful for ensuring styling consistency across trades
+- The `/api/revalidate` endpoint requires a Bearer token using `crypto.timingSafeEqual`
+- All content served via ISR is server-generated
+- External links use `rel="noopener noreferrer"`
+- Run behind a reverse proxy (nginx, Vercel) in production
 
 ## Performance Benchmarks
 
-| Metric | Target | Measurement |
-|--------|--------|-------------|
-| **ISR Regeneration Time** | < 800ms | Time from cache miss to full HTML response |
-| **First Contentful Paint (FCP)** | < 1.2s | Measured via Lighthouse on mobile |
-| **Largest Contentful Paint (LCP)** | < 2.5s | Critical rendering path optimized |
-| **Cumulative Layout Shift (CLS)** | < 0.1 | No unexpected layout shifts |
-| **Time to Interactive (TTI)** | < 3.8s | Main thread not blocked by JS |
-| **Total Bundle Size** | < 120KB (gzip) | Including framer-motion, lucide-react |
-| **API Response Time** | < 200ms | `/v2/generated-sites/{slug}` endpoint |
-| **Concurrent Users** | 50+ | Tested with 50 simultaneous ISR requests |
+| Metric | Target |
+|--------|--------|
+| ISR Regeneration Time | < 800ms |
+| First Contentful Paint | < 1.2s |
+| Largest Contentful Paint | < 2.5s |
+| Cumulative Layout Shift | < 0.1 |
+| Total Bundle Size | < 120KB (gzip) |
+| API Response Time | < 200ms |
 
 All templates achieve **90+ Lighthouse scores** for Performance, Accessibility, Best Practices, and SEO.
 
-## Template Customization
+## Styling Guidelines
 
-Each template follows the same structure but can be customized per trade:
-
-### Color System
-- **Accent Colors:** Use the template's accent color via props (not dynamic strings)
-  - HVAC/Plumbing: `blue-400` (for StatsBar accent, CTASection color)
-  - Electrical: `amber-400`
-  - Roofing: `orange-400`
-  - Painting: `violet-600` (note: violet-600 for light theme readability)
-  - Landscaping: `emerald-400`
-
-### Section Order (fixed in index.tsx)
-1. ContactBar
-2. TrustBanner
-3. Hero
-4. StatsBar
-5. SectionDivider (dots)
-6. Services
-7. CTASection (urgency variant)
-8. SectionDivider (line)
-9. About
-10. SectionDivider
-11. Reviews
-12. CTASection (estimate variant)
-13. SectionDivider (wave)
-14. FAQ
-15. Footer
-
-### Adding New Sections
-To add a new section (e.g., "Financing"):
-1. Create `templates/[trade]/sections/Financing.tsx`
-2. Import and add it to the section order in `index.tsx`
-3. Ensure it receives `content` prop typed from `SiteContent`
-4. Follow the pattern: use `font-display`, appropriate py-* padding, and background color alternating between slate-900 and slate-950 (or light theme equivalents for painting)
-
-### Styling Guidelines
-- **Font:** Use `className="font-display"` (never inline `style={{ fontFamily }}`)
-- **Colors:** Hardcode Tailwind classes (no `bg-${accent}` or dynamic template literals)
+- **Font:** Use `font-display` (never inline `style={{ fontFamily }}`)
+- **Colors:** Hardcode Tailwind classes (no `bg-${accent}` dynamic strings)
 - **Spacing:** Vary py-* values (py-20, py-24, py-28) to avoid rigid alternation
-- **Icons:** Use `lucide-react` icons (replace inline SVGs where possible)
+- **Icons:** Use `lucide-react` icons
 - **Animations:** Use `framer-motion` with `AnimatePresence` and staggered children where appropriate

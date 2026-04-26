@@ -210,10 +210,18 @@ External integrations (Twilio, Stripe, Cloud APIs) are wrapped in Circuit Breake
 **Port:** 3000
 **Key Features:**
 - **ISR at /[slug]:** Pages regenerate every 3600s or on-demand via `POST /api/revalidate`.
-- **6 Trade Templates:** HVAC (blue), Plumbing (blue), Electrical (amber), Roofing (orange), Painting (violet), Landscaping (emerald).
+- **6 Trade Templates:** HVAC (blue), Plumbing (blue), Electrical (amber), Roofing (orange), Painting — light theme (violet), Landscaping (emerald).
 - **No Per-Site Builds:** One Next.js app, content driven from API — all pages served from shared ISR cache.
 - **Preview Mode:** Live preview links with branded banner, checkout CTA, and lighthouse scores.
 - **Revalidation Auth:** On-demand revalidation requires `Authorization: Bearer <token>` matching `REVALIDATE_SECRET`.
+- **Interactive Showcase (`/showcase`):** Four-view template studio:
+  - *Preview:* Template rendering in device frames (Desktop with macOS chrome, Tablet, Mobile with notch)
+  - *Grid:* All 6 templates simultaneously with hover actions
+  - *Prompt:* Syntax-highlighted generation prompts with metadata cards and copy-to-clipboard
+  - *Compare:* Side-by-side with independent selectors
+  - Keyboard shortcuts: `↑↓` cycle templates, `\` toggle sidebar
+  - Live data editing: override business name, phone, city, headline with real-time preview updates
+- **Template Preview (`/preview`):** Simplified browser with JSON data viewer and grid layout
 - **AI-Controllable:** Yes — JIT OS can trigger revalidation, preview sites, check template health.
 
 **Customer Journey Example:**
