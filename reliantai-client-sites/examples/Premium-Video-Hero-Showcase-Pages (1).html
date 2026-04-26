@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forest and Ocean in Motion — Nature Collection</title>
+<style>
+  :root { --bg: #000; --text: #fff; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .hero { position: relative; height: 100dvh; width: 100%; overflow: hidden; isolation: isolate; }
+  .hero-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 800ms cubic-bezier(0.22, 1, 0.36, 1); z-index: 1; background: #000; }
+  .hero-video.is-ready { opacity: 1; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
+  .overlay.linear { background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0.45) 100%); }
+  .overlay.radial { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%); }
+  .grain { position: absolute; inset: -50%; z-index: 3; pointer-events: none; opacity: 0.055; mix-blend-mode: soft-light; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)"/></svg>'); background-repeat: repeat; animation: grainMove 1.8s steps(6) infinite; }
+  @keyframes grainMove { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-10%, 8%, 0); } }
+  .content { position: relative; z-index: 20; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 24px; max-width: 1200px; margin: 0 auto; }
+  .eyebrow { text-transform: uppercase; letter-spacing: 0.22em; font-size: 12px; font-weight: 600; opacity: 0.85; margin: 0 0 18px; }
+  .title { margin: 0; font-weight: 300; font-size: clamp(44px, 7.2vw, 86px); line-height: 1.02; letter-spacing: -0.02em; text-wrap: balance; }
+  .subtitle { margin: 22px 0 0; max-width: 720px; font-size: clamp(16px, 1.9vw, 20px); line-height: 1.6; font-weight: 400; opacity: 0.92; text-wrap: pretty; }
+  .ctas { display: flex; gap: 12px; margin-top: 34px; flex-wrap: wrap; justify-content: center; }
+  .btn { appearance: none; border: none; cursor: pointer; padding: 14px 26px; border-radius: 999px; font-size: 15px; font-weight: 500; letter-spacing: 0.01em; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; transition: transform 200ms ease, background 200ms ease, border-color 200ms ease, opacity 200ms ease; will-change: transform; }
+  .btn.primary { background: #fff; color: #000; }
+  .btn.primary:hover { transform: translateY(-1px); }
+  .btn.secondary { background: rgba(255,255,255,0.10); color: #fff; border: 1px solid rgba(255,255,255,0.35); backdrop-filter: blur(8px) saturate(140%); -webkit-backdrop-filter: blur(8px) saturate(140%); }
+  .btn.secondary:hover { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.55); transform: translateY(-1px); }
+  #progressWrap { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200; background: rgba(255,255,255,0.08); transition: opacity 400ms ease; }
+  #progressBar { height: 100%; width: 0%; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,0.5); transition: width 250ms linear; }
+  #loader { position: fixed; top: 50%; left: 50%; width: 42px; height: 42px; margin: -21px 0 0 -21px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25); border-top-color: #fff; animation: spin 0.9s linear infinite; z-index: 90; transition: opacity 300ms ease, visibility 300ms ease; }
+  #loader.hidden { opacity: 0; visibility: hidden; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .play-toggle { position: absolute; right: 24px; bottom: 24px; z-index: 30; display: none; padding: 10px 16px; border-radius: 999px; background: rgba(0,0,0,0.55); color: #fff; border: 1px solid rgba(255,255,255,0.3); font-size: 13px; font-weight: 500; letter-spacing: 0.02em; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .play-toggle:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  @media (max-width: 480px) { .ctas { gap: 10px; } .btn { width: 100%; max-width: 320px; } .play-toggle { right: 16px; bottom: 16px; } }
+  @media (prefers-reduced-motion: reduce) { .hero-video { transition: none; } .grain { animation: none; } #loader { animation-duration: 2s; } }
+</style>
+</head>
+<body>
+<div id="progressWrap"><div id="progressBar"></div></div>
+<div id="loader" role="status" aria-label="Loading video"></div>
+<main class="hero">
+  <video id="heroVideo" class="hero-video" preload="metadata" playsinline loop muted autoplay poster="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=80">
+    <source src="https://cdn.coverr.co/videos/coverr-clear-ocean-water-5446/1080p.mp4" type="video/mp4">
+  </video>
+  <div class="overlay linear"></div>
+  <div class="overlay radial"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="content">
+    <p class="eyebrow">Nature Collection</p>
+    <h1 class="title">Forest and Ocean in Motion</h1>
+    <p class="subtitle">Experience pristine waters and untouched forests captured in seamless motion</p>
+    <div class="ctas">
+      <a href="#" class="btn primary">Explore Gallery</a>
+      <a href="#" class="btn secondary">Learn More</a>
+    </div>
+  </div>
+  <button id="playToggle" class="play-toggle" aria-label="Play video">Play</button>
+</main>
+<script>
+(function() {
+  const video = document.getElementById('heroVideo');
+  const progressBar = document.getElementById('progressBar');
+  const progressWrap = document.getElementById('progressWrap');
+  const loader = document.getElementById('loader');
+  const playToggle = document.getElementById('playToggle');
+  let userPaused = false;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const setProgress = (v) => { progressBar.style.width = v + '%'; };
+  const showReady = () => { video.classList.add('is-ready'); loader.classList.add('hidden'); setTimeout(() => { progressWrap.style.opacity = '0'; }, 300); };
+  video.addEventListener('loadedmetadata', () => setProgress(30));
+  video.addEventListener('loadeddata', () => setProgress(65));
+  video.addEventListener('canplaythrough', () => { setProgress(100); showReady(); });
+  video.addEventListener('playing', () => { setProgress(100); showReady(); });
+  video.addEventListener('error', () => { loader.classList.add('hidden'); });
+  video.muted = true;
+  if (reduceMotion) {
+    video.removeAttribute('autoplay'); video.pause(); playToggle.style.display = 'inline-flex'; playToggle.textContent = 'Play'; playToggle.setAttribute('aria-pressed', 'false'); userPaused = true;
+  } else {
+    playToggle.style.display = 'none'; const p = video.play(); if (p && typeof p.catch === 'function') { p.catch(() => {}); }
+  }
+  playToggle.addEventListener('click', () => {
+    if (video.paused) { video.play().catch(() => {}); playToggle.textContent = 'Pause'; playToggle.setAttribute('aria-label', 'Pause video'); playToggle.setAttribute('aria-pressed', 'true'); userPaused = false; }
+    else { video.pause(); playToggle.textContent = 'Play'; playToggle.setAttribute('aria-label', 'Play video'); playToggle.setAttribute('aria-pressed', 'false'); userPaused = true; }
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); } else if (!reduceMotion && !userPaused) { video.play().catch(() => {}); } });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Still Life Collection — Ceramics & Glassware</title>
+<meta name="theme-color" content="#0a0a0a" />
+<style>
+  :root { --bg: #0b0b0c; --fg: #ffffff; --muted: rgba(255,255,255,0.72); }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow: hidden; }
+  .hero { position: relative; height: 100svh; min-height: 100vh; width: 100%; overflow: hidden; isolation: isolate; }
+  #bg-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 0; transition: opacity 900ms ease; z-index: 0; background: #111; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+  .overlay.gradient { background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.10) 60%, rgba(0,0,0,0.35) 100%); }
+  .overlay.vignette { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.55) 100%); z-index: 2; }
+  .grain { position: absolute; inset: -50%; width: 200%; height: 200%; z-index: 2; opacity: 0.055; mix-blend-mode: soft-light; pointer-events: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 180px 180px; animation: grainShift 60s linear infinite; will-change: transform; }
+  @keyframes grainShift { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-15%, 10%, 0); } }
+  .top-progress { position: absolute; top: 0; left: 0; right: 0; height: 2px; z-index: 10; opacity: 1; transition: opacity 400ms ease; background: rgba(255,255,255,0.08); }
+  .top-progress span { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, #fff, #d8d8d8); transition: width 400ms ease; }
+  .loader { position: absolute; inset: 0; display: grid; place-items: center; z-index: 9; background: radial-gradient(ellipse at center, rgba(0,0,0,0.25), rgba(0,0,0,0.55)); transition: opacity 500ms ease; }
+  .spinner { width: 38px; height: 38px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.22); border-top-color: #fff; animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .content { position: relative; z-index: 4; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding: clamp(20px, 6vw, 96px); max-width: 1200px; margin: 0 auto; pointer-events: none; }
+  .eyebrow { font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; opacity: 0.9; }
+  h1 { font-weight: 300; font-size: clamp(44px, 8vw, 86px); line-height: 1.04; letter-spacing: -0.01em; margin: 0 0 18px 0; text-wrap: balance; }
+  .subtitle { font-size: clamp(16px, 1.9vw, 20px); line-height: 1.6; color: rgba(255,255,255,0.88); max-width: 58ch; margin: 0 0 32px 0; font-weight: 350; }
+  .ctas { display: flex; gap: 12px; flex-wrap: wrap; pointer-events: auto; }
+  .pill { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; border-radius: 999px; text-decoration: none; font-size: 15px; font-weight: 500; letter-spacing: 0.01em; transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, opacity 180ms ease; border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(8px) saturate(120%); -webkit-backdrop-filter: blur(8px) saturate(120%); }
+  .pill.primary { background: rgba(255,255,255,0.92); color: #111; border-color: rgba(255,255,255,0.9); }
+  .pill.primary:hover { transform: translateY(-1px); background: #fff; }
+  .pill.ghost { background: rgba(0,0,0,0.28); color: #fff; }
+  .pill.ghost:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.35); background: rgba(0,0,0,0.38); }
+  .play-pause { position: absolute; bottom: 22px; right: 22px; z-index: 5; padding: 9px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); background: rgba(12,12,12,0.45); color: #fff; font-size: 13px; letter-spacing: 0.04em; cursor: pointer; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: opacity 200ms ease, transform 200ms ease, background 200ms ease; opacity: 0.9; pointer-events: auto; }
+  .play-pause:hover { transform: translateY(-1px); opacity: 1; background: rgba(12,12,12,0.65); }
+  .play-pause:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  @media (max-width: 680px) { .content { align-items: center; text-align: center; } .ctas { justify-content: center; } .subtitle { margin-left: auto; margin-right: auto; } }
+  @media (prefers-reduced-motion: reduce) { .grain { animation: none; } .spinner { animation: none; } * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; } }
+</style>
+</head>
+<body>
+<div class="hero">
+  <video id="bg-video" preload="metadata" playsinline loop muted autoplay>
+    <source src="https://assets.mixkit.co/videos/47955/47955-720.mp4" type="video/mp4" />
+  </video>
+  <div class="overlay gradient"></div>
+  <div class="overlay vignette"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="top-progress" id="progress" aria-hidden="true"><span></span></div>
+  <div class="loader" id="loader" aria-label="Loading video"><div class="spinner" role="status" aria-live="polite"></div></div>
+  <header class="content">
+    <div class="eyebrow">Still Life Collection</div>
+    <h1>Ceramics &amp; Glassware</h1>
+    <p class="subtitle">Quiet forms, tactile surfaces, and the interplay of light on humble materials — a study in balance and restraint.</p>
+    <div class="ctas">
+      <a href="#" class="pill primary">Explore Works</a>
+      <a href="#" class="pill ghost">About the Studio</a>
+    </div>
+  </header>
+  <button id="play-pause" class="play-pause" aria-label="Pause video">Pause</button>
+</div>
+<script>
+  const video = document.getElementById('bg-video');
+  const loader = document.getElementById('loader');
+  const progressBar = document.getElementById('progress').firstElementChild;
+  const btn = document.getElementById('play-pause');
+  let userPaused = false;
+  const setProgress = p => { progressBar.style.width = p + '%'; };
+  setProgress(12);
+  video.addEventListener('loadedmetadata', () => setProgress(38));
+  video.addEventListener('canplay', () => setProgress(72));
+  const onReady = () => { setProgress(100); video.style.opacity = '1'; loader.style.opacity = '0'; setTimeout(() => { loader.style.display = 'none'; }, 480); document.getElementById('progress').style.opacity = '0'; };
+  video.addEventListener('canplaythrough', onReady);
+  if (video.readyState >= 4) onReady();
+  video.addEventListener('error', () => { loader.innerHTML = '<div style="color:#fff;opacity:.75;font-size:14px;letter-spacing:.02em">Video unavailable</div>'; });
+  btn.addEventListener('click', () => {
+    if (video.paused) { video.play().catch(() => {}); btn.textContent = 'Pause'; btn.setAttribute('aria-label', 'Pause video'); userPaused = false; }
+    else { video.pause(); btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play video'); userPaused = true; }
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); } else if (!userPaused) { video.play().catch(() => {}); } });
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (reduced.matches) { video.pause(); userPaused = true; btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play video'); }
+  video.play().catch(() => { userPaused = true; btn.textContent = 'Play'; btn.setAttribute('aria-label', 'Play video'); });
+</script>
+</body>
+</html>

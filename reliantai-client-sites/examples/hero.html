@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MATERIA — Video Hero Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Instrument Serif', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: #fff; overflow-x: hidden; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 0; }
+
+        /* Grain overlay */
+        .grain-overlay {
+            position: fixed; inset: 0; z-index: 100; pointer-events: none; opacity: 0.035;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            background-repeat: repeat; background-size: 128px 128px;
+        }
+
+        /* Scroll snap container */
+        .snap-container {
+            height: 100vh; overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        .hero-section {
+            height: 100vh; width: 100%; position: relative;
+            scroll-snap-align: start;
+            display: flex; align-items: flex-end;
+            overflow: hidden;
+        }
+
+        /* Video backgrounds */
+        .video-wrapper {
+            position: absolute; inset: 0; z-index: 0;
+        }
+        .video-wrapper video {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0; transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .video-wrapper video.loaded { opacity: 1; }
+
+        /* CSS animated gradient fallbacks */
+        .css-bg {
+            position: absolute; inset: 0; z-index: -1;
+            transition: opacity 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .video-wrapper video.loaded ~ .css-bg { opacity: 0; }
+
+        /* Nature bg */
+        .bg-nature {
+            background: linear-gradient(135deg, #0a1f0e 0%, #1a3a20 30%, #0d2818 60%, #061a0c 100%);
+            animation: natureShift 12s ease-in-out infinite alternate;
+        }
+        @keyframes natureShift {
+            0% { filter: brightness(1) hue-rotate(0deg); }
+            50% { filter: brightness(1.1) hue-rotate(5deg); }
+            100% { filter: brightness(0.95) hue-rotate(-3deg); }
+        }
+
+        /* Still Life bg */
+        .bg-still {
+            background: linear-gradient(160deg, #1a1210 0%, #2a1c16 30%, #1e1510 60%, #120e0a 100%);
+            animation: stillShift 15s ease-in-out infinite alternate;
+        }
+        @keyframes stillShift {
+            0% { filter: brightness(1) saturate(1); }
+            100% { filter: brightness(1.08) saturate(1.1); }
+        }
+
+        /* Materials bg */
+        .bg-materials {
+            background: linear-gradient(145deg, #1a1408 0%, #2a1e0e 30%, #1c1608 60%, #0f0c06 100%);
+            animation: matShift 14s ease-in-out infinite alternate;
+        }
+        @keyframes matShift {
+            0% { filter: brightness(1) hue-rotate(0deg); }
+            100% { filter: brightness(1.05) hue-rotate(3deg); }
+        }
+
+        /* Metal bg */
+        .bg-metal {
+            background: linear-gradient(170deg, #0d1117 0%, #161d28 30%, #111820 60%, #080c12 100%);
+            animation: metalShift 10s ease-in-out infinite alternate;
+        }
+        @keyframes metalShift {
+            0% { filter: brightness(1) hue-rotate(0deg); }
+            50% { filter: brightness(1.06) hue-rotate(2deg); }
+            100% { filter: brightness(0.97) hue-rotate(-2deg); }
+        }
+
+        /* Moving light spots for fallback */
+        .light-spot {
+            position: absolute; border-radius: 50%;
+            filter: blur(80px); opacity: 0.15;
+            animation: floatSpot 20s ease-in-out infinite alternate;
+        }
+        @keyframes floatSpot {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.1); }
+            66% { transform: translate(-20px, 30px) scale(0.95); }
+            100% { transform: translate(10px, -10px) scale(1.05); }
+        }
+
+        /* Overlays */
+        .overlay-gradient {
+            position: absolute; inset: 0; z-index: 1;
+        }
+        .overlay-nature {
+            background: linear-gradient(to top, rgba(6,18,8,0.95) 0%, rgba(6,18,8,0.6) 40%, rgba(6,18,8,0.2) 70%, rgba(6,18,8,0.3) 100%);
+        }
+        .overlay-still {
+            background: linear-gradient(to top, rgba(18,12,8,0.95) 0%, rgba(18,12,8,0.5) 40%, rgba(18,14,10,0.2) 70%, rgba(18,14,10,0.35) 100%);
+        }
+        .overlay-materials {
+            background: radial-gradient(ellipse at 70% 80%, rgba(30,20,6,0.95) 0%, rgba(20,14,4,0.7) 40%, rgba(15,10,2,0.4) 70%, rgba(10,8,2,0.5) 100%);
+        }
+        .overlay-metal {
+            background: linear-gradient(135deg, rgba(8,12,18,0.95) 0%, rgba(13,17,23,0.6) 40%, rgba(8,12,18,0.3) 70%, rgba(13,17,23,0.5) 100%);
+        }
+
+        /* Content */
+        .hero-content {
+            position: relative; z-index: 2; width: 100%;
+            padding: 0 clamp(2rem, 6vw, 8rem) clamp(4rem, 10vh, 10rem);
+            opacity: 0; transform: translateY(40px);
+            transition: all 1s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .hero-content.visible {
+            opacity: 1; transform: translateY(0);
+        }
+
+        .section-tag {
+            font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500;
+            letter-spacing: 0.2em; text-transform: uppercase;
+            margin-bottom: 1.5rem; display: inline-flex; align-items: center; gap: 12px;
+        }
+        .section-tag::before {
+            content: ''; display: block; width: 24px; height: 1px;
+        }
+
+        .hero-title {
+            font-family: 'Instrument Serif', serif; font-weight: 400;
+            line-height: 0.9; letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            font-family: 'Inter', sans-serif; font-weight: 300;
+            line-height: 1.6; max-width: 480px; margin-bottom: 2.5rem;
+        }
+
+        /* CTA buttons */
+        .cta-btn {
+            display: inline-flex; align-items: center; gap: 12px;
+            font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            padding: 16px 32px; border: none; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative; overflow: hidden; text-decoration: none;
+        }
+        .cta-btn .btn-arrow {
+            transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            opacity: 0.6;
+        }
+        .cta-btn:hover .btn-arrow { transform: translateX(4px); opacity: 1; }
+
+        .cta-nature {
+            background: transparent; color: #8cb39a;
+            border: 1px solid rgba(140,179,154,0.3);
+        }
+        .cta-nature:hover {
+            background: rgba(140,179,154,0.1); border-color: rgba(140,179,154,0.6);
+        }
+        .cta-nature .section-tag::before { background: #8cb39a; }
+
+        .cta-still {
+            background: #c4956a; color: #1a1210;
+        }
+        .cta-still:hover { background: #d4a57a; }
+        .cta-still .section-tag::before { background: #c4956a; }
+
+        .cta-materials {
+            background: transparent; color: #d4a94a;
+            border-bottom: 1px solid rgba(212,169,74,0.4);
+            padding: 16px 0; border-radius: 0;
+        }
+        .cta-materials:hover { border-bottom-color: rgba(212,169,74,0.8); }
+        .cta-materials .section-tag::before { background: #d4a94a; }
+
+        .cta-metal {
+            background: rgba(139,164,184,0.12); color: #8ba4b8;
+            border: 1px solid rgba(139,164,184,0.2); border-radius: 50px;
+        }
+        .cta-metal:hover {
+            background: rgba(139,164,184,0.2); border-color: rgba(139,164,184,0.5);
+        }
+        .cta-metal .section-tag::before { background: #8ba4b8; }
+
+        /* Loading bar */
+        .video-loader {
+            position: absolute; bottom: 0; left: 0; z-index: 5;
+            height: 2px; background: currentColor; opacity: 0.6;
+            transition: width 0.3s ease, opacity 0.5s ease;
+        }
+        .video-loader.complete { opacity: 0; }
+
+        /* Side navigation */
+        .side-nav {
+            position: fixed; right: clamp(1.5rem, 3vw, 3rem);
+            top: 50%; transform: translateY(-50%);
+            z-index: 50; display: flex; flex-direction: column; gap: 20px;
+        }
+        .side-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            background: transparent; cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            position: relative;
+        }
+        .side-dot::after {
+            content: attr(data-label);
+            position: absolute; right: 22px; top: 50%; transform: translateY(-50%);
+            font-size: 10px; font-weight: 500; letter-spacing: 0.15em;
+            text-transform: uppercase; white-space: nowrap;
+            color: rgba(255,255,255,0.5); opacity: 0;
+            transition: all 0.3s ease; pointer-events: none;
+        }
+        .side-dot:hover::after { opacity: 1; right: 28px; }
+        .side-dot.active {
+            border-color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.8);
+            transform: scale(1.2);
+        }
+
+        /* Top nav */
+        .top-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+            padding: 1.75rem clamp(1.5rem, 4vw, 4rem);
+            display: flex; justify-content: space-between; align-items: center;
+            mix-blend-mode: difference;
+        }
+        .nav-logo {
+            font-family: 'Instrument Serif', serif; font-size: 1.25rem;
+            letter-spacing: 0.15em; color: #fff;
+        }
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-link {
+            font-size: 11px; font-weight: 500; letter-spacing: 0.15em;
+            text-transform: uppercase; color: rgba(255,255,255,0.5);
+            text-decoration: none; cursor: pointer;
+            transition: color 0.3s ease; background: none; border: none;
+            font-family: 'Inter', sans-serif;
+        }
+        .nav-link:hover, .nav-link.active { color: rgba(255,255,255,0.9); }
+        .nav-sound {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2); background: transparent;
+            color: rgba(255,255,255,0.6); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .nav-sound:hover { border-color: rgba(255,255,255,0.5); color: #fff; }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute; bottom: 2.5rem; left: 50%; transform: translateX(-50%);
+            z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .scroll-indicator span {
+            font-size: 9px; font-weight: 500; letter-spacing: 0.2em;
+            text-transform: uppercase; color: rgba(255,255,255,0.35);
+        }
+        .scroll-line {
+            width: 1px; height: 40px; position: relative; overflow: hidden;
+            background: rgba(255,255,255,0.1);
+        }
+        .scroll-line::after {
+            content: ''; position: absolute; top: -100%; left: 0;
+            width: 100%; height: 50%; background: rgba(255,255,255,0.5);
+            animation: scrollDown 2s ease-in-out infinite;
+        }
+        @keyframes scrollDown {
+            0% { top: -50%; } 100% { top: 150%; }
+        }
+
+        /* Video controls */
+        .video-controls {
+            position: absolute; bottom: 2.5rem; left: clamp(2rem, 6vw, 8rem);
+            z-index: 10; display: flex; align-items: center; gap: 12px;
+        }
+        .vc-btn {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease; backdrop-filter: blur(8px);
+        }
+        .vc-btn:hover { border-color: rgba(255,255,255,0.4); color: #fff; background: rgba(255,255,255,0.1); }
+
+        /* Section number watermark */
+        .section-number {
+            position: absolute; top: 50%; right: clamp(2rem, 6vw, 6rem);
+            transform: translateY(-50%); z-index: 2;
+            font-family: 'Instrument Serif', serif; font-size: clamp(8rem, 18vw, 16rem);
+            line-height: 1; color: rgba(255,255,255,0.025);
+            pointer-events: none; user-select: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-nav { display: none; }
+            .nav-links { display: none; }
+            .hero-content { padding: 0 1.5rem 5rem; }
+            .hero-title { font-size: clamp(3rem, 12vw, 5rem) !important; }
+            .video-controls { left: 1.5rem; }
+            .section-number { display: none; }
+        }
+
+        /* Reveal animation delay helpers */
+        .delay-1 { transition-delay: 0.15s !important; }
+        .delay-2 { transition-delay: 0.3s !important; }
+        .delay-3 { transition-delay: 0.45s !important; }
+    </style>
+</head>
+<body>
+
+    <!-- Grain overlay -->
+    <div class="grain-overlay"></div>
+
+    <!-- Top navigation -->
+    <nav class="top-nav">
+        <div class="nav-logo">MATERIA</div>
+        <div class="nav-links">
+            <button class="nav-link active" data-target="nature" onclick="scrollToSection(0)">Nature</button>
+            <button class="nav-link" data-target="still" onclick="scrollToSection(1)">Still Life</button>
+            <button class="nav-link" data-target="materials" onclick="scrollToSection(2)">Materials</button>
+            <button class="nav-link" data-target="metal" onclick="scrollToSection(3)">Metal</button>
+        </div>
+        <button class="nav-sound" id="soundToggle" onclick="toggleSound()" aria-label="Toggle sound">
+            <i data-lucide="volume-x" style="width:14px;height:14px;"></i>
+        </button>
+    </nav>
+
+    <!-- Side navigation dots -->
+    <div class="side-nav">
+        <button class="side-dot active" data-label="Nature" onclick="scrollToSection(0)"></button>
+        <button class="side-dot" data-label="Still Life" onclick="scrollToSection(1)"></button>
+        <button class="side-dot" data-label="Materials" onclick="scrollToSection(2)"></button>
+        <button class="side-dot" data-label="Metal" onclick="scrollToSection(3)"></button>
+    </div>
+
+    <!-- Main scrollable container -->
+    <main class="snap-container" id="scrollContainer">
+
+        <!-- ========================================
+             SECTION 1: NATURE (Forest / Ocean)
+             ======================================== -->
+        <section class="hero-section" id="section-nature">
+            <div class="video-wrapper">
+                <video
+                    id="video-nature"
+                    muted loop playsinline
+                    preload="auto"
+                    poster="https://picsum.photos/seed/forest-hero/1920/1080.jpg"
+                    src="https://videos.pexels.com/video-files/3571264/3571264-uhd_2560_1440_30fps.mp4"
+                ></video>
+                <div class="css-bg bg-nature">
+                    <div class="light-spot" style="width:400px;height:400px;background:#2d5a27;top:20%;left:10%;animation-delay:-3s;"></div>
+                    <div class="light-spot" style="width:300px;height:300px;background:#1a6b40;top:60%;right:20%;animation-delay:-8s;"></div>
+                    <div class="light-spot" style="width:250px;height:250px;background:#0e4a2a;bottom:10%;left:40%;animation-delay:-12s;"></div>
+                </div>
+            </div>
+            <div class="overlay-gradient overlay-nature"></div>
+            <div class="section-number">01</div>
+            <div class="hero-content" style="max-width: 700px;">
+                <div class="section-tag cta-nature" style="color: #8cb39a;">
+                    <span style="display:inline-block;width:24px;height:1px;background:#8cb39a;"></span>
+                    01 — Nature
+                </div>
+                <h1 class="hero-title" style="font-size: clamp(4rem, 10vw, 8rem); color: #fff;">
+                    Into the<br><em style="color: #8cb39a;">Wild</em>
+                </h1>
+                <p class="hero-subtitle" style="font-size: 16px; color: rgba(255,255,255,0.55);">
+                    Where light dances through ancient canopies and oceans breathe with the rhythm of tides. A meditation on the raw elegance of the natural world.
+                </p>
+                <a href="#" class="cta-btn cta-nature">
+                    Explore Collection
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+            <div class="scroll-indicator">
+                <span>Scroll</span>
+                <div class="scroll-line"></div>
+            </div>
+            <div class="video-loader" id="loader-nature" style="color: #8cb39a; width: 0%;"></div>
+        </section>
+
+        <!-- ========================================
+             SECTION 2: STILL LIFE (Ceramics / Glass)
+             ======================================== -->
+        <section class="hero-section" id="section-still">
+            <div class="video-wrapper">
+                <video
+                    id="video-still"
+                    muted loop playsinline
+                    preload="metadata"
+                    poster="https://picsum.photos/seed/ceramic-still/1920/1080.jpg"
+                    src="https://videos.pexels.com/video-files/854400/854400-hd_1920_1080_25fps.mp4"
+                ></video>
+                <div class="css-bg bg-still">
+                    <div class="light-spot" style="width:350px;height:350px;background:#8b5e3c;top:30%;right:15%;animation-delay:-5s;"></div>
+                    <div class="light-spot" style="width:280px;height:280px;background:#6b4226;bottom:20%;left:25%;animation-delay:-10s;"></div>
+                </div>
+            </div>
+            <div class="overlay-gradient overlay-still"></div>
+            <div class="section-number">02</div>
+            <div class="hero-content" style="text-align: center; max-width: 650px; margin: 0 auto; padding-bottom: clamp(5rem,12vh,10rem);">
+                <div class="section-tag cta-still" style="color: #c4956a; justify-content: center;">
+                    <span style="display:inline-block;width:24px;height:1px;background:#c4956a;"></span>
+                    02 — Still Life
+                </div>
+                <h1 class="hero-title" style="font-size: clamp(4rem, 10vw, 8rem); color: #fff; text-align: center;">
+                    Form <em style="color: #c4956a;">&</em><br>Light
+                </h1>
+                <p class="hero-subtitle" style="font-size: 16px; color: rgba(255,255,255,0.55); margin-left: auto; margin-right: auto; text-align: center;">
+                    The quiet elegance of crafted objects. Where ceramics hold memory and glass captures fleeting reflections of ambient light.
+                </p>
+                <a href="#" class="cta-btn cta-still">
+                    View Gallery
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+            <div class="video-loader" id="loader-still" style="color: #c4956a; width: 0%;"></div>
+        </section>
+
+        <!-- ========================================
+             SECTION 3: MATERIALS (Leather / Fabric)
+             ======================================== -->
+        <section class="hero-section" id="section-materials">
+            <div class="video-wrapper">
+                <video
+                    id="video-materials"
+                    muted loop playsinline
+                    preload="metadata"
+                    poster="https://picsum.photos/seed/leather-texture/1920/1080.jpg"
+                    src="https://videos.pexels.com/video-files/4620916/4620916-uhd_2560_1440_25fps.mp4"
+                ></video>
+                <div class="css-bg bg-materials">
+                    <div class="light-spot" style="width:320px;height:320px;background:#8b6914;top:25%;left:20%;animation-delay:-4s;"></div>
+                    <div class="light-spot" style="width:260px;height:260px;background:#6b4f10;bottom:30%;right:10%;animation-delay:-9s;"></div>
+                    <div class="light-spot" style="width:200px;height:200px;background:#a07830;top:55%;left:55%;animation-delay:-14s;"></div>
+                </div>
+            </div>
+            <div class="overlay-gradient overlay-materials"></div>
+            <div class="section-number">03</div>
+            <div class="hero-content" style="max-width: 600px; margin-left: auto; text-align: right;">
+                <div class="section-tag cta-materials" style="color: #d4a94a; justify-content: flex-end;">
+                    03 — Materials
+                    <span style="display:inline-block;width:24px;height:1px;background:#d4a94a;"></span>
+                </div>
+                <h1 class="hero-title" style="font-size: clamp(4rem, 10vw, 8rem); color: #fff; text-align: right;">
+                    Tactile<br><em style="color: #d4a94a;">Stories</em>
+                </h1>
+                <p class="hero-subtitle" style="font-size: 16px; color: rgba(255,255,255,0.55); margin-left: auto; text-align: right;">
+                    Every texture tells a tale of craft. The warmth of aged leather, the gentle drape of handwoven fabric — surfaces that invite touch.
+                </p>
+                <a href="#" class="cta-btn cta-materials">
+                    Feel the Difference
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+            <div class="video-loader" id="loader-materials" style="color: #d4a94a; width: 0%;"></div>
+        </section>
+
+        <!-- ========================================
+             SECTION 4: METAL PARTS (Mechanical Gears)
+             ======================================== -->
+        <section class="hero-section" id="section-metal">
+            <div class="video-wrapper">
+                <video
+                    id="video-metal"
+                    muted loop playsinline
+                    preload="metadata"
+                    poster="https://picsum.photos/seed/mechanical-gears/1920/1080.jpg"
+                    src="https://videos.pexels.com/video-files/2759750/2759750-uhd_2560_1440_30fps.mp4"
+                ></video>
+                <div class="css-bg bg-metal">
+                    <div class="light-spot" style="width:350px;height:350px;background:#4a6a8a;top:15%;right:25%;animation-delay:-2s;"></div>
+                    <div class="light-spot" style="width:280px;height:280px;background:#3a5a7a;bottom:25%;left:15%;animation-delay:-7s;"></div>
+                </div>
+            </div>
+            <div class="overlay-gradient overlay-metal"></div>
+            <div class="section-number">04</div>
+            <div class="hero-content" style="max-width: 700px; align-self: center; padding-bottom: 0;">
+                <div class="section-tag cta-metal" style="color: #8ba4b8;">
+                    <span style="display:inline-block;width:24px;height:1px;background:#8ba4b8;"></span>
+                    04 — Metal Parts
+                </div>
+                <h1 class="hero-title" style="font-size: clamp(4rem, 10vw, 8rem); color: #fff;">
+                    Precision<br>in <em style="color: #8ba4b8;">Motion</em>
+                </h1>
+                <p class="hero-subtitle" style="font-size: 16px; color: rgba(255,255,255,0.55);">
+                    Where engineering meets artistry. The cold beauty of machined surfaces, the hypnotic rhythm of interlocking gears working in perfect harmony.
+                </p>
+                <a href="#" class="cta-btn cta-metal">
+                    Discover More
+                    <span class="btn-arrow">→</span>
+                </a>
+            </div>
+            <div class="video-controls">
+                <button class="vc-btn" id="playPauseBtn" onclick="togglePlayPause()" aria-label="Play/Pause">
+                    <i data-lucide="pause" style="width:12px;height:12px;" id="playPauseIcon"></i>
+                </button>
+                <button class="vc-btn" onclick="toggleSound()" aria-label="Toggle sound">
+                    <i data-lucide="volume-x" style="width:12px;height:12px;" id="vcSoundIcon"></i>
+                </button>
+            </div>
+            <div class="video-loader" id="loader-metal" style="color: #8ba4b8; width: 0%;"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // Initialization
+        // ==========================================
+        lucide.createIcons();
+
+        const container = document.getElementById('scrollContainer');
+        const sections = document.querySelectorAll('.hero-section');
+        const sideDots = document.querySelectorAll('.side-dot');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const videos = {
+            nature: document.getElementById('video-nature'),
+            still: document.getElementById('video-still'),
+            materials: document.getElementById('video-materials'),
+            metal: document.getElementById('video-metal')
+        };
+        const loaders = {
+            nature: document.getElementById('loader-nature'),
+            still: document.getElementById('loader-still'),
+            materials: document.getElementById('loader-materials'),
+            metal: document.getElementById('loader-metal')
+        };
+
+        let currentSection = 0;
+        let isMuted = true;
+        let isPlaying = true;
+
+        // ==========================================
+        // Video Loading & Optimization
+        // ==========================================
+        function initVideo(video, loaderEl, key) {
+            // Simulate progress for visual feedback
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                if (progress < 90) progress += Math.random() * 15;
+                loaderEl.style.width = progress + '%';
+            }, 300);
+
+            video.addEventListener('canplaythrough', () => {
+                clearInterval(progressInterval);
+                loaderEl.style.width = '100%';
+                setTimeout(() => loaderEl.classList.add('complete'), 500);
+                video.classList.add('loaded');
+                video.play().catch(() => {});
+            }, { once: true });
+
+            video.addEventListener('error', () => {
+                clearInterval(progressInterval);
+                loaderEl.style.width = '100%';
+                setTimeout(() => loaderEl.classList.add('complete'), 500);
+                // CSS gradient background remains visible
+            });
+
+            video.addEventListener('waiting', () => {
+                // Video is buffering — could show a buffer indicator
+            });
+        }
+
+        // Initialize first video immediately, others on proximity
+        initVideo(videos.nature, loaders.nature, 'nature');
+
+        // ==========================================
+        // Intersection Observer — Play/Pause & Lazy Load
+        // ==========================================
+        const sectionKeys = ['nature', 'still', 'materials', 'metal'];
+        let videoInitialized = { nature: true, still: false, materials: false, metal: false };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const index = Array.from(sections).indexOf(entry.target);
+                const key = sectionKeys[index];
+                const content = entry.target.querySelector('.hero-content');
+
+                if (entry.isIntersecting) {
+                    currentSection = index;
+
+                    // Play visible video, pause others
+                    Object.entries(videos).forEach(([k, v]) => {
+                        if (k === key) {
+                            if (!videoInitialized[k]) {
+                                initVideo(v, loaders[k], k);
+                                videoInitialized[k] = true;
+                                v.preload = 'auto';
+                                v.load();
+                            }
+                            v.play().catch(() => {});
+                        } else {
+                            v.pause();
+                        }
+                    });
+
+                    // Reveal content
+                    content.classList.add('visible');
+
+                    // Update nav
+                    updateNav(index);
+                } else {
+                    content.classList.remove('visible');
+                }
+            });
+        }, { threshold: 0.5 });
+
+        sections.forEach(section => observer.observe(section));
+
+        // ==========================================
+        // Navigation Updates
+        // ==========================================
+        function updateNav(index) {
+            sideDots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            navLinks.forEach((link, i) => {
+                link.classList.toggle('active', i === index);
+            });
+        }
+
+        function scrollToSection(index) {
+            sections[index].scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // Sound Toggle
+        // ==========================================
+        function toggleSound() {
+            isMuted = !isMuted;
+            Object.values(videos).forEach(v => v.muted = isMuted);
+
+            const soundIcon = document.querySelector('#soundToggle i');
+            const vcSoundIcon = document.querySelector('#vcSoundIcon');
+
+            if (isMuted) {
+                soundIcon.setAttribute('data-lucide', 'volume-x');
+                if (vcSoundIcon) vcSoundIcon.setAttribute('data-lucide', 'volume-x');
+            } else {
+                soundIcon.setAttribute('data-lucide', 'volume-2');
+                if (vcSoundIcon) vcSoundIcon.setAttribute('data-lucide', 'volume-2');
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // Play/Pause Toggle
+        // ==========================================
+        function togglePlayPause() {
+            isPlaying = !isPlaying;
+            const key = sectionKeys[currentSection];
+            const icon = document.getElementById('playPauseIcon');
+
+            if (isPlaying) {
+                videos[key].play().catch(() => {});
+                icon.setAttribute('data-lucide', 'pause');
+            } else {
+                videos[key].pause();
+                icon.setAttribute('data-lucide', 'play');
+            }
+            lucide.createIcons();
+        }
+
+        // ==========================================
+        // Keyboard Navigation
+        // ==========================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (currentSection < sections.length - 1) scrollToSection(currentSection + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (currentSection > 0) scrollToSection(currentSection - 1);
+            } else if (e.key === ' ') {
+                e.preventDefault();
+                togglePlayPause();
+            } else if (e.key === 'm') {
+                toggleSound();
+            }
+        });
+
+        // ==========================================
+        // Initial Reveal
+        // ==========================================
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                sections[0].querySelector('.hero-content').classList.add('visible');
+            }, 300);
+        });
+    </script>
+
+</body>
+</html>

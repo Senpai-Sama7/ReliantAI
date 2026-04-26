@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Premium Video Hero Showcase</title>
+<style>
+  :root {
+    --bg: #050507;
+    --text: #ffffff;
+    --muted: rgba(255,255,255,0.68);
+    --line: rgba(255,255,255,0.14);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  .progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255,255,255,0.08);
+    z-index: 300;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width 300ms ease;
+  }
+  .nav-pills {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    padding: 6px;
+    background: rgba(12,12,14,0.5);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 250;
+  }
+  .nav-pill {
+    appearance: none;
+    border: 0;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.8);
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .nav-pill.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+  }
+  .nav-pill:focus-visible {
+    outline: 2px solid rgba(255,255,255,0.5);
+    outline-offset: 2px;
+  }
+  .scroll-container {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  .theme {
+    position: relative;
+    height: 100vh;
+    scroll-snap-align: start;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .bg-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 800ms ease;
+    z-index: 0;
+  }
+  .bg-video.is-ready {
+    opacity: 1;
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .overlay.gradient {
+    background: linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.18) 38%, rgba(0,0,0,0.55) 100%);
+  }
+  .overlay.vignette {
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0) 45%, rgba(0,0,0,0.62) 100%);
+  }
+  .grain {
+    position: absolute;
+    inset: -20%;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0.055;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+  .content {
+    position: relative;
+    z-index: 3;
+    text-align: center;
+    padding: 0 24px;
+    max-width: 900px;
+  }
+  .eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  .title {
+    font-weight: 300;
+    line-height: 1.02;
+    margin: 0 0 14px;
+    font-size: clamp(2.6rem, 8vw, 5.6rem);
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    margin: 0 auto;
+    max-width: 600px;
+    font-size: clamp(1rem, 1.8vw, 1.15rem);
+    color: var(--muted);
+  }
+  .ctas {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 22px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 0.01em;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.32);
+    background: rgba(255,255,255,0.1);
+  }
+  .btn.secondary {
+    background: rgba(255,255,255,0.03);
+  }
+  .manual-play {
+    position: absolute;
+    bottom: 86px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 4;
+    display: none;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .reduced-motion .manual-play {
+    display: inline-flex;
+  }
+  .counter {
+    position: fixed;
+    right: 24px;
+    bottom: 22px;
+    z-index: 240;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    color: rgba(255,255,255,0.78);
+    background: rgba(12,12,14,0.45);
+    border: 1px solid var(--line);
+    padding: 8px 12px;
+    border-radius: 10px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .loader {
+    position: fixed;
+    inset: 0;
+    background: #050507;
+    display: grid;
+    place-items: center;
+    z-index: 500;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  .loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.18);
+    border-top-color: #fff;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .scroll-container { scroll-behavior: auto; }
+    .spinner { animation: none; }
+    .bg-video { transition: none; }
+    .btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav class="nav-pills" aria-label="Theme selector">
+  <button class="nav-pill active" data-goto="0" aria-current="true">Nature</button>
+  <button class="nav-pill" data-goto="1">Still Life</button>
+  <button class="nav-pill" data-goto="2">Materials</button>
+  <button class="nav-pill" data-goto="3">Metal Parts</button>
+</nav>
+
+<div class="counter"><span id="current">01</span> / 04</div>
+
+<div class="loader" id="loader" aria-live="polite" aria-label="Loading videos">
+  <div class="spinner" role="status" aria-label="Loading"></div>
+</div>
+
+<main class="scroll-container" id="scroller">
+  <section class="theme" id="theme-nature" data-index="0">
+    <video class="bg-video" loop muted autoplay playsinline webkit-playsinline preload="metadata" poster="">
+      <source src="https://cdn.coverr.co/videos/coverr-clear-ocean-water-5446/1080p.mp4" type="video/mp4">
+    </video>
+    <div class="overlay gradient"></div>
+    <div class="overlay vignette"></div>
+    <div class="grain"></div>
+    <div class="content">
+      <div class="eyebrow">SERIES 01</div>
+      <h1 class="title">Nature</h1>
+      <p class="subtitle">Forest atmosphere and clear ocean water captured in slow motion</p>
+      <div class="ctas">
+        <a href="#" class="btn">Explore Collection</a>
+        <a href="#" class="btn secondary">Watch Behind Scenes</a>
+      </div>
+    <button class="manual-play" type="button">Play film</button>
+  </section>
+
+  <section class="theme" id="theme-still" data-index="1">
+    <video class="bg-video" loop muted autoplay playsinline webkit-playsinline preload="metadata" poster="">
+      <source src="https://assets.mixkit.co/videos/47955/47955-720.mp4" type="video/mp4">
+    </video>
+    <div class="overlay gradient"></div>
+    <div class="overlay vignette"></div>
+    <div class="grain"></div>
+    <div class="content">
+      <div class="eyebrow">SERIES 02</div>
+      <h1 class="title">Still Life</h1>
+      <p class="subtitle">Ceramics and glassware composed with quiet precision</p>
+      <div class="ctas">
+        <a href="#" class="btn">Explore Collection</a>
+        <a href="#" class="btn secondary">Watch Behind Scenes</a>
+      </div>
+    </div>
+    <button class="manual-play" type="button">Play film</button>
+  </section>
+
+  <section class="theme" id="theme-materials" data-index="2">
+    <video class="bg-video" loop muted autoplay playsinline webkit-playsinline preload="metadata" poster="">
+      <source src="https://assets.mixkit.co/videos/34489/34489-720.mp4" type="video/mp4">
+    </video>
+    <div class="overlay gradient"></div>
+    <div class="overlay vignette"></div>
+    <div class="grain"></div>
+    <div class="content">
+      <div class="eyebrow">SERIES 03</div>
+      <h1 class="title">Materials</h1>
+      <p class="subtitle">Leather and fabric textures revealing tactile detail</p>
+      <div class="ctas">
+        <a href="#" class="btn">Explore Collection</a>
+        <a href="#" class="btn secondary">Watch Behind Scenes</a>
+      </div>
+    <button class="manual-play" type="button">Play film</button>
+  </section>
+
+  <section class="theme" id="theme-metal" data-index="3">
+    <video class="bg-video" loop muted autoplay playsinline webkit-playsinline preload="metadata" poster="">
+      <source src="https://videos.pexels.com/video-files/854415/854415-hd_1920_1080_25fps.mp4" type="video/mp4">
+    </video>
+    <div class="overlay gradient"></div>
+    <div class="overlay vignette"></div>
+    <div class="grain"></div>
+    <div class="content">
+      <div class="eyebrow">SERIES 04</div>
+      <h1 class="title">Metal Parts</h1>
+      <p class="subtitle">Mechanical gears and precision surfaces in motion</p>
+      <div class="ctas">
+        <a href="#" class="btn">Explore Collection</a>
+        <a href="#" class="btn secondary">Watch Behind Scenes</a>
+      </div>
+    </div>
+    <button class="manual-play" type="button">Play film</button>
+  </section>
+</main>
+
+<script>
+  (function() {
+    const sections = Array.from(document.querySelectorAll('.theme'));
+    const videos = Array.from(document.querySelectorAll('.bg-video'));
+    const navButtons = Array.from(document.querySelectorAll('.nav-pill'));
+    const progressFill = document.getElementById('progressFill');
+    const currentEl = document.getElementById('current');
+    const loader = document.getElementById('loader');
+    const scroller = document.getElementById('scroller');
+    let currentIndex = 0;
+    let loadedCount = 0;
+    const totalVideos = videos.length;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reducedMotion) {
+      document.body.classList.add('reduced-motion');
+      videos.forEach(v => {
+        v.removeAttribute('autoplay');
+        v.autoplay = false;
+        v.pause();
+      });
+    } else {
+      videos.forEach(v => {
+        v.muted = true;
+        const p = v.play();
+        if (p && typeof p.catch === 'function') p.catch(() => {});
+      });
+    }
+
+    function updateProgress() {
+      loadedCount++;
+      const pct = (loadedCount / totalVideos) * 100;
+      progressFill.style.width = pct + '%';
+      if (loadedCount >= totalVideos) {
+        setTimeout(() => loader.classList.add('hidden'), 350);
+      }
+    }
+
+    videos.forEach(video => {
+      video.addEventListener('canplay', () => {
+        video.classList.add('is-ready');
+      }, { once: true });
+
+      video.addEventListener('canplaythrough', updateProgress, { once: true });
+      video.addEventListener('error', updateProgress, { once: true });
+    });
+
+    setTimeout(() => {
+      if (!loader.classList.contains('hidden')) loader.classList.add('hidden');
+    }, 8000);
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const section = entry.target;
+        const video = section.querySelector('video');
+        const idx = Number(section.dataset.index);
+        if (entry.isIntersecting) {
+          currentIndex = idx;
+          currentEl.textContent = String(idx + 1).padStart(2, '0');
+          navButtons.forEach((btn, i) => {
+            const isActive = i === idx;
+            btn.classList.toggle('active', isActive);
+            if (isActive) btn.setAttribute('aria-current', 'true');
+            else btn.removeAttribute('aria-current');
+          });
+          if (video && !reducedMotion) {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.catch === 'function') playPromise.catch(() => {});
+          }
+        } else {
+          if (video) video.pause();
+        }
+      });
+    }, { threshold: 0.6 });
+
+    sections.forEach(s => observer.observe(s));
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = Number(btn.dataset.goto);
+        sections[idx].scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
+      });
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const next = Math.min(currentIndex + 1, sections.length - 1);
+        sections[next].scrollIntoView({ behavior: 'smooth' });
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const prev = Math.max(currentIndex - 1, 0);
+        sections[prev].scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        videos.forEach(v => v.pause());
+      } else if (!reducedMotion) {
+        const activeVideo = sections[currentIndex].querySelector('video');
+        if (activeVideo) {
+          const p = activeVideo.play();
+          if (p && typeof p.catch === 'function') p.catch(() => {});
+        }
+      }
+    });
+
+    document.querySelectorAll('.manual-play').forEach((btn, i) => {
+      btn.addEventListener('click', () => {
+        const v = sections[i].querySelector('video');
+        if (v) {
+          v.play().catch(() => {});
+          btn.style.display = 'none';
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>

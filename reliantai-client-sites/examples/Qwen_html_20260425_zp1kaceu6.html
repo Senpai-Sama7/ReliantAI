@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Hero Showcase</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  html {
+    font-size: 16px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    cursor: none;
+  }
+
+  /* Custom Cursor */
+  .cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+    z-index: 10000;
+    transition: transform 0.15s var(--ease-out-expo),
+                width 0.3s var(--ease-out-expo),
+                height 0.3s var(--ease-out-expo),
+                background 0.3s ease;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+
+  .cursor.hovering {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border-color: transparent;
+  }
+
+  .cursor-dot {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #fff;
+    pointer-events: none;
+    z-index: 10001;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+  }
+
+  /* Global Loader */
+  .global-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+    transition: opacity 0.8s var(--ease-out-expo),
+                visibility 0.8s;
+  }
+
+  .global-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .loader-brand {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .loader-bar-container {
+    width: 200px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .loader-bar {
+    height: 100%;
+    width: 0%;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 1px;
+    transition: width 0.1s linear;
+  }
+
+  .loader-percent {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.25);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 28px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    mix-blend-mode: difference;
+  }
+
+  .nav-logo {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+  }
+
+  .nav-link {
+    position: relative;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 16px;
+    border-radius: 100px;
+    transition: color 0.4s ease, background 0.4s ease;
+    cursor: none;
+    text-decoration: none;
+  }
+
+  .nav-link:hover {
+    color: #fff;
+  }
+
+  .nav-link.active {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 16px;
+    height: 1px;
+    background: #fff;
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+
+  .nav-link.active::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+
+  /* Page Container */
+  .pages-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+  }
+
+  .page {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 1s var(--ease-out-expo),
+                visibility 1s;
+  }
+
+  .page.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* Video Background */
+  .video-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    scale: 1.05;
+    transition: scale 8s var(--ease-out-expo);
+  }
+
+  .page.active .video-bg {
+    scale: 1;
+  }
+
+  .video-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+
+  /* Theme-specific overlays */
+  .page[data-theme="nature"] .video-overlay {
+    background:
+      linear-gradient(180deg,
+        rgba(0,0,0,0.15) 0%,
+        rgba(0,0,0,0) 30%,
+        rgba(0,0,0,0) 50%,
+        rgba(0,0,0,0.4) 100%),
+      linear-gradient(90deg,
+        rgba(0,0,0,0.3) 0%,
+        transparent 40%);
+  }
+
+  .page[data-theme="stilllife"] .video-overlay {
+    background:
+      linear-gradient(180deg,
+        rgba(0,0,0,0.2) 0%,
+        rgba(0,0,0,0) 25%,
+        rgba(0,0,0,0) 60%,
+        rgba(0,0,0,0.5) 100%),
+      linear-gradient(90deg,
+        transparent 50%,
+        rgba(0,0,0,0.4) 100%);
+  }
+
+  .page[data-theme="materials"] .video-overlay {
+    background:
+      linear-gradient(180deg,
+        rgba(0,0,0,0.25) 0%,
+        rgba(0,0,0,0) 30%,
+        rgba(0,0,0,0) 55%,
+        rgba(0,0,0,0.45) 100%),
+      linear-gradient(0deg,
+        rgba(20,15,10,0.3) 0%,
+        transparent 50%);
+  }
+
+  .page[data-theme="metal"] .video-overlay {
+    background:
+      linear-gradient(180deg,
+        rgba(0,0,0,0.3) 0%,
+        rgba(0,0,0,0) 25%,
+        rgba(0,0,0,0) 50%,
+        rgba(0,0,0,0.5) 100%),
+      radial-gradient(ellipse at 30% 50%,
+        transparent 40%,
+        rgba(0,0,0,0.3) 100%);
+  }
+
+  /* Film Grain Overlay */
+  .grain {
+    position: absolute;
+    inset: -50%;
+    width: 200%;
+    height: 200%;
+    z-index: 3;
+    opacity: 0.035;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    animation: grain 0.5s steps(1) infinite;
+  }
+
+  @keyframes grain {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5%, -10%); }
+    20% { transform: translate(-15%, 5%); }
+    30% { transform: translate(7%, -25%); }
+    40% { transform: translate(-5%, 25%); }
+    50% { transform: translate(-15%, 10%); }
+    60% { transform: translate(15%, 0%); }
+    70% { transform: translate(0%, 15%); }
+    80% { transform: translate(3%, 35%); }
+    90% { transform: translate(-10%, 10%); }
+  }
+
+  /* Content */
+  .page-content {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 80px;
+    pointer-events: none;
+  }
+
+  .content-inner {
+    max-width: 640px;
+    pointer-events: auto;
+  }
+
+  .page-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 24px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s var(--ease-out-expo) 0.3s,
+                transform 0.8s var(--ease-out-expo) 0.3s;
+  }
+
+  .page.active .page-tag {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .page-tag::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .page-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(42px, 6vw, 72px);
+    line-height: 1.08;
+    letter-spacing: -1px;
+    color: #fff;
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.9s var(--ease-out-expo) 0.45s,
+                transform 0.9s var(--ease-out-expo) 0.45s;
+  }
+
+  .page.active .page-title {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .page-title em {
+    font-style: italic;
+    font-weight: 400;
+  }
+
+  .page-desc {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.55);
+    max-width: 420px;
+    margin-bottom: 36px;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.8s var(--ease-out-expo) 0.6s,
+                transform 0.8s var(--ease-out-expo) 0.6s;
+  }
+
+  .page.active .page-desc {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cta-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    opacity: 0;
+    transform: translateY(25px);
+    transition: opacity 0.8s var(--ease-out-expo) 0.75s,
+                transform 0.8s var(--ease-out-expo) 0.75s;
+  }
+
+  .page.active .cta-group {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cta-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 16px 32px;
+    border-radius: 2px;
+    text-decoration: none;
+    overflow: hidden;
+    transition: background 0.5s ease,
+                border-color 0.5s ease,
+                color 0.5s ease;
+    cursor: none;
+  }
+
+  .cta-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    transform: translateY(101%);
+    transition: transform 0.5s var(--ease-out-expo);
+  }
+
+  .cta-btn:hover::before {
+    transform: translateY(0);
+  }
+
+  .cta-btn:hover {
+    color: #0a0a0a;
+    border-color: #fff;
+  }
+
+  .cta-btn span {
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-btn .arrow {
+    position: relative;
+    z-index: 1;
+    width: 16px;
+    height: 16px;
+    transition: transform 0.4s var(--ease-out-expo);
+  }
+
+  .cta-btn:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  .cta-secondary {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 12px;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.35);
+    text-decoration: none;
+    padding: 16px 0;
+    transition: color 0.4s ease;
+    cursor: none;
+  }
+
+  .cta-secondary:hover {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Side Info */
+  .side-info {
+    position: absolute;
+    right: 48px;
+    bottom: 80px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 24px;
+    pointer-events: none;
+  }
+
+  .side-stat {
+    text-align: right;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: opacity 0.8s var(--ease-out-expo) 0.9s,
+                transform 0.8s var(--ease-out-expo) 0.9s;
+  }
+
+  .page.active .side-stat {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .side-stat-value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 400;
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .side-stat-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    margin-top: 4px;
+  }
+
+  .side-divider {
+    width: 1px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* Bottom Bar */
+  .bottom-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 48px 28px;
+    pointer-events: none;
+  }
+
+  .page-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out-expo) 1s;
+  }
+
+  .page.active ~ .bottom-bar .page-indicator,
+  .page.active .bottom-bar .page-indicator {
+    opacity: 1;
+  }
+
+  .indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: background 0.4s ease, transform 0.4s var(--ease-out-expo);
+  }
+
+  .indicator-dot.active {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.3);
+  }
+
+  .scroll-hint {
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.8s var(--ease-out-expo) 1.1s;
+  }
+
+  .page.active .scroll-hint {
+    opacity: 1;
+  }
+
+  .scroll-line {
+    width: 24px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scroll-line::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.6);
+    animation: scrollLine 2s ease-in-out infinite;
+  }
+
+  @keyframes scrollLine {
+    0% { left: -100%; }
+    50% { left: 100%; }
+    100% { left: 100%; }
+  }
+
+  /* Video Loading Skeleton */
+  .video-skeleton {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: #0a0a0a;
+    transition: opacity 0.6s ease;
+  }
+
+  .video-skeleton.loaded {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .skeleton-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255,255,255,0.02) 50%,
+      transparent 100%);
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* Page Transition Overlay */
+  .transition-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900;
+    pointer-events: none;
+    display: flex;
+  }
+
+  .transition-col {
+    flex: 1;
+    background: #0a0a0a;
+    transform: scaleY(0);
+    transform-origin: bottom;
+  }
+
+  /* Ambient light effect */
+  .ambient-light {
+    position: absolute;
+    z-index: 4;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.08;
+    pointer-events: none;
+    transition: opacity 1s ease;
+  }
+
+  .page[data-theme="nature"] .ambient-light {
+    background: radial-gradient(circle, #1a4a3a, transparent);
+    bottom: -200px;
+    right: -100px;
+  }
+
+  .page[data-theme="stilllife"] .ambient-light {
+    background: radial-gradient(circle, #3a2a1a, transparent);
+    top: -200px;
+    left: -100px;
+  }
+
+  .page[data-theme="materials"] .ambient-light {
+    background: radial-gradient(circle, #2a1a0a, transparent);
+    bottom: -150px;
+    left: 30%;
+  }
+
+  .page[data-theme="metal"] .ambient-light {
+    background: radial-gradient(circle, #1a2a3a, transparent);
+    top: -100px;
+    right: -100px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .nav {
+      padding: 20px 24px;
+    }
+
+    .nav-links {
+      gap: 4px;
+    }
+
+    .nav-link {
+      padding: 6px 10px;
+      font-size: 9px;
+      letter-spacing: 1.5px;
+    }
+
+    .page-content {
+      padding: 0 24px 100px;
+    }
+
+    .side-info {
+      display: none;
+    }
+
+    .bottom-bar {
+      padding: 0 24px 20px;
+    }
+
+    .cursor, .cursor-dot {
+      display: none;
+    }
+
+    body {
+      cursor: auto;
+    }
+
+    .cta-btn, .cta-secondary, .nav-link {
+      cursor: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nav-logo {
+      font-size: 11px;
+      letter-spacing: 2px;
+    }
+
+    .nav-link {
+      padding: 6px 8px;
+      font-size: 8px;
+    }
+
+    .page-title {
+      font-size: 36px;
+    }
+
+    .page-desc {
+      font-size: 13px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Custom Cursor -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-dot" id="cursorDot"></div>
+
+<!-- Global Loader -->
+<div class="global-loader" id="globalLoader">
+  <div class="loader-brand">Showcase</div>
+  <div class="loader-bar-container">
+    <div class="loader-bar" id="loaderBar"></div>
+  </div>
+  <div class="loader-percent" id="loaderPercent">0%</div>
+</div>
+
+<!-- Transition Overlay -->
+<div class="transition-overlay" id="transitionOverlay">
+  <div class="transition-col"></div>
+  <div class="transition-col"></div>
+  <div class="transition-col"></div>
+  <div class="transition-col"></div>
+  <div class="transition-col"></div>
+</div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="nav-logo">Atelier</div>
+  <ul class="nav-links">
+    <li><a href="#" class="nav-link active" data-page="0">Nature</a></li>
+    <li><a href="#" class="nav-link" data-page="1">Still Life</a></li>
+    <li><a href="#" class="nav-link" data-page="2">Materials</a></li>
+    <li><a href="#" class="nav-link" data-page="3">Metal</a></li>
+  </ul>
+</nav>
+
+<!-- Pages Container -->
+<div class="pages-container" id="pagesContainer">
+
+  <!-- Page 1: Nature -->
+  <div class="page active" data-theme="nature" data-index="0">
+    <div class="video-skeleton" id="skeleton-0">
+      <div class="skeleton-shimmer"></div>
+    </div>
+    <video
+      class="video-bg"
+      id="video-0"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      poster="https://images.pexels.com/videos/1448735/free-video-1448735.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop"
+    >
+      <source src="https://videos.pexels.com/video-files/1448735/1448735-uhd_2560_1440_24fps.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="grain"></div>
+    <div class="ambient-light"></div>
+    <div class="page-content">
+      <div class="content-inner">
+        <div class="page-tag">01 — Nature</div>
+        <h1 class="page-title">Where the <em>forest</em><br>meets the tide</h1>
+        <p class="page-desc">
+          Immersive landscapes captured in their purest form. 
+          From ancient canopies to endless horizons — nature's 
+          textures tell stories no words can match.
+        </p>
+        <div class="cta-group">
+          <a href="#" class="cta-btn" data-hover>
+            <span>Explore Collection</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#" class="cta-secondary" data-hover>Watch Film</a>
+        </div>
+      </div>
+    </div>
+    <div class="side-info">
+      <div class="side-stat">
+        <div class="side-stat-value">4K</div>
+        <div class="side-stat-label">Resolution</div>
+      </div>
+      <div class="side-divider"></div>
+      <div class="side-stat">
+        <div class="side-stat-value">24fps</div>
+        <div class="side-stat-label">Cinematic</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="page-indicator">
+        <div class="indicator-dot active"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 2: Still Life -->
+  <div class="page" data-theme="stilllife" data-index="1">
+    <div class="video-skeleton" id="skeleton-1">
+      <div class="skeleton-shimmer"></div>
+    </div>
+    <video
+      class="video-bg"
+      id="video-1"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster="https://images.pexels.com/videos/4115351/free-video-4115351.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop"
+    >
+      <source src="https://videos.pexels.com/video-files/4115351/4115351-uhd_2560_1440_25fps.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="grain"></div>
+    <div class="ambient-light"></div>
+    <div class="page-content">
+      <div class="content-inner">
+        <div class="page-tag">02 — Still Life</div>
+        <h1 class="page-title">The art of<br><em>quiet</em> objects</h1>
+        <p class="page-desc">
+          Ceramics and glassware caught in perfect stillness. 
+          Every curve, every refraction — a meditation on 
+          craftsmanship and the beauty of restraint.
+        </p>
+        <div class="cta-group">
+          <a href="#" class="cta-btn" data-hover>
+            <span>View Gallery</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#" class="cta-secondary" data-hover>Our Process</a>
+        </div>
+      </div>
+    </div>
+    <div class="side-info">
+      <div class="side-stat">
+        <div class="side-stat-value">12</div>
+        <div class="side-stat-label">Pieces</div>
+      </div>
+      <div class="side-divider"></div>
+      <div class="side-stat">
+        <div class="side-stat-value">Hand</div>
+        <div class="side-stat-label">Crafted</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="page-indicator">
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot active"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 3: Materials -->
+  <div class="page" data-theme="materials" data-index="2">
+    <div class="video-skeleton" id="skeleton-2">
+      <div class="skeleton-shimmer"></div>
+    </div>
+    <video
+      class="video-bg"
+      id="video-2"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster="https://images.pexels.com/videos/5896378/free-video-5896378.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop"
+    >
+      <source src="https://videos.pexels.com/video-files/5896378/5896378-uhd_2560_1440_24fps.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="grain"></div>
+    <div class="ambient-light"></div>
+    <div class="page-content">
+      <div class="content-inner">
+        <div class="page-tag">03 — Materials</div>
+        <h1 class="page-title">Textures that<br><em>breathe</em> life</h1>
+        <p class="page-desc">
+          Full-grain leather, woven textiles, raw fabric — 
+          materials that age with grace. Feel the grain, 
+          trace the weave, understand the origin.
+        </p>
+        <div class="cta-group">
+          <a href="#" class="cta-btn" data-hover>
+            <span>Discover Materials</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#" class="cta-secondary" data-hover>Source Story</a>
+        </div>
+      </div>
+    </div>
+    <div class="side-info">
+      <div class="side-stat">
+        <div class="side-stat-value">100%</div>
+        <div class="side-stat-label">Natural</div>
+      </div>
+      <div class="side-divider"></div>
+      <div class="side-stat">
+        <div class="side-stat-value">6</div>
+        <div class="side-stat-label">Origins</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="page-indicator">
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot active"></div>
+        <div class="indicator-dot"></div>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page 4: Metal Parts -->
+  <div class="page" data-theme="metal" data-index="3">
+    <div class="video-skeleton" id="skeleton-3">
+      <div class="skeleton-shimmer"></div>
+    </div>
+    <video
+      class="video-bg"
+      id="video-3"
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster="https://images.pexels.com/videos/3845266/free-video-3845266.jpg?auto=compress&cs=tinysrgb&w=1280&h=720&fit=crop"
+    >
+      <source src="https://videos.pexels.com/video-files/3845266/3845266-uhd_2560_1440_30fps.mp4" type="video/mp4">
+    </video>
+    <div class="video-overlay"></div>
+    <div class="grain"></div>
+    <div class="ambient-light"></div>
+    <div class="page-content">
+      <div class="content-inner">
+        <div class="page-tag">04 — Metal</div>
+        <h1 class="page-title">Precision in<br>every <em>gear</em></h1>
+        <p class="page-desc">
+          Mechanical components engineered to perfection. 
+          Cold steel, warm brass — where industrial artistry 
+          meets uncompromising tolerance.
+        </p>
+        <div class="cta-group">
+          <a href="#" class="cta-btn" data-hover>
+            <span>View Engineering</span>
+            <svg class="arrow" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#" class="cta-secondary" data-hover>Specifications</a>
+        </div>
+      </div>
+    </div>
+    <div class="side-info">
+      <div class="side-stat">
+        <div class="side-stat-value">±0.01</div>
+        <div class="side-stat-label">Tolerance mm</div>
+      </div>
+      <div class="side-divider"></div>
+      <div class="side-stat">
+        <div class="side-stat-value">CNC</div>
+        <div class="side-stat-label">Machined</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="page-indicator">
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot"></div>
+        <div class="indicator-dot active"></div>
+      </div>
+      <div class="scroll-hint">
+        <span>Scroll to explore</span>
+        <div class="scroll-line"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  // ── State ──
+  let currentPage = 0;
+  let isTransitioning = false;
+  const totalPages = 4;
+  const videos = [];
+  const pages = document.querySelectorAll('.page');
+  const navLinks = document.querySelectorAll('.nav-link');
+  const transitionCols = document.querySelectorAll('.transition-col');
+
+  // ── Custom Cursor ──
+  const cursor = document.getElementById('cursor');
+  const cursorDot = document.getElementById('cursorDot');
+  let mouseX = 0, mouseY = 0;
+  let cursorX = 0, cursorY = 0;
+  let dotX = 0, dotY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+
+  function animateCursor() {
+    cursorX += (mouseX - cursorX) * 0.12;
+    cursorY += (mouseY - cursorY) * 0.12;
+    dotX += (mouseX - dotX) * 0.6;
+    dotY += (mouseY - dotY) * 0.6;
+
+    cursor.style.left = cursorX + 'px';
+    cursor.style.top = cursorY + 'px';
+    cursorDot.style.left = dotX + 'px';
+    cursorDot.style.top = dotY + 'px';
+
+    requestAnimationFrame(animateCursor);
+  }
+  animateCursor();
+
+  // Hover effects
+  document.querySelectorAll('[data-hover], .cta-btn, .cta-secondary, .nav-link').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+    el.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+  });
+
+  // ── Loader ──
+  const loaderBar = document.getElementById('loaderBar');
+  const loaderPercent = document.getElementById('loaderPercent');
+  const globalLoader = document.getElementById('globalLoader');
+
+  function simulateLoading() {
+    let progress = 0;
+    const target = 100;
+    const duration = 2200;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+      const elapsed = currentTime - startTime;
+      progress = Math.min((elapsed / duration) * target, target);
+
+      // Ease out
+      const eased = 1 - Math.pow(1 - progress / 100, 3);
+      const displayProgress = Math.round(eased * 100);
+
+      loaderBar.style.width = displayProgress + '%';
+      loaderPercent.textContent = displayProgress + '%';
+
+      if (progress < target) {
+        requestAnimationFrame(update);
+      } else {
+        setTimeout(() => {
+          globalLoader.classList.add('hidden');
+          initFirstVideo();
+        }, 300);
+      }
+    }
+
+    requestAnimationFrame(update);
+  }
+
+  // ── Video Management ──
+  function initFirstVideo() {
+    const firstVideo = document.getElementById('video-0');
+    if (firstVideo) {
+      firstVideo.play().then(() => {
+        const skeleton = document.getElementById('skeleton-0');
+        if (skeleton) skeleton.classList.add('loaded');
+      }).catch(() => {
+        // Autoplay might be blocked
+        const skeleton = document.getElementById('skeleton-0');
+        if (skeleton) skeleton.classList.add('loaded');
+      });
+
+      firstVideo.addEventListener('canplaythrough', () => {
+        const skeleton = document.getElementById('skeleton-0');
+        if (skeleton) skeleton.classList.add('loaded');
+      }, { once: true });
+    }
+  }
+
+  function loadVideo(index) {
+    const video = document.getElementById('video-' + index);
+    if (!video) return;
+
+    if (video.readyState >= 3) {
+      video.play().catch(() => {});
+      const skeleton = document.getElementById('skeleton-' + index);
+      if (skeleton) skeleton.classList.add('loaded');
+      return;
+    }
+
+    video.load();
+    video.addEventListener('canplaythrough', () => {
+      video.play().catch(() => {});
+      const skeleton = document.getElementById('skeleton-' + index);
+      if (skeleton) skeleton.classList.add('loaded');
+    }, { once: true });
+  }
+
+  function pauseVideo(index) {
+    const video = document.getElementById('video-' + index);
+    if (video) {
+      video.pause();
+    }
+  }
+
+  // ── Page Transitions ──
+  function goToPage(index) {
+    if (index === currentPage || isTransitioning) return;
+    isTransitioning = true;
+
+    // Animate transition columns
+    const cols = Array.from(transitionCols);
+    cols.forEach((col, i) => {
+      col.style.transformOrigin = 'bottom';
+      col.style.transition = `transform 0.5s var(--ease-out-expo) ${i * 0.04}s`;
+      col.style.transform = 'scaleY(1)';
+    });
+
+    setTimeout(() => {
+      // Switch pages
+      pages[currentPage].classList.remove('active');
+      pauseVideo(currentPage);
+
+      pages[index].classList.add('active');
+      loadVideo(index);
+
+      // Update nav
+      navLinks.forEach(link => link.classList.remove('active'));
+      navLinks[index].classList.add('active');
+
+      currentPage = index;
+
+      // Animate columns away
+      cols.forEach((col, i) => {
+        col.style.transformOrigin = 'top';
+        col.style.transition = `transform 0.5s var(--ease-out-expo) ${i * 0.04}s`;
+        col.style.transform = 'scaleY(0)';
+      });
+
+      setTimeout(() => {
+        isTransitioning = false;
+      }, 500 + (cols.length * 40));
+    }, 500 + (cols.length * 40));
+  }
+
+  // ── Nav Click Handlers ──
+  navLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const pageIndex = parseInt(link.dataset.page);
+      goToPage(pageIndex);
+    });
+  });
+
+  // ── Keyboard Navigation ──
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const next = (currentPage + 1) % totalPages;
+      goToPage(next);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      const prev = (currentPage - 1 + totalPages) % totalPages;
+      goToPage(prev);
+    }
+  });
+
+  // ── Scroll Navigation ──
+  let scrollTimeout = null;
+  document.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (scrollTimeout || isTransitioning) return;
+
+    scrollTimeout = setTimeout(() => {
+      scrollTimeout = null;
+    }, 1200);
+
+    if (e.deltaY > 0) {
+      const next = (currentPage + 1) % totalPages;
+      goToPage(next);
+    } else {
+      const prev = (currentPage - 1 + totalPages) % totalPages;
+      goToPage(prev);
+    }
+  }, { passive: false });
+
+  // ── Touch Support ──
+  let touchStartY = 0;
+  let touchStartX = 0;
+
+  document.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    const deltaY = touchStartY - e.changedTouches[0].clientY;
+    const deltaX = touchStartX - e.changedTouches[0].clientX;
+
+    if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 50) {
+      if (deltaY > 0) {
+        goToPage((currentPage + 1) % totalPages);
+      } else {
+        goToPage((currentPage - 1 + totalPages) % totalPages);
+      }
+    }
+  }, { passive: true });
+
+  // ── Preload next video on idle ──
+  function preloadNextVideo() {
+    const nextIndex = (currentPage + 1) % totalPages;
+    const video = document.getElementById('video-' + nextIndex);
+    if (video && video.readyState < 2) {
+      video.preload = 'auto';
+      video.load();
+    }
+  }
+
+  // Preload next video after page settles
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.target.classList.contains('active')) {
+        setTimeout(preloadNextVideo, 2000);
+      }
+    });
+  });
+
+  pages.forEach(page => {
+    observer.observe(page, { attributes: true, attributeFilter: ['class'] });
+  });
+
+  // ── Initialize ──
+  window.addEventListener('load', () => {
+    simulateLoading();
+  });
+
+  // ── Video error handling ──
+  document.querySelectorAll('.video-bg').forEach((video, index) => {
+    video.addEventListener('error', () => {
+      console.warn('Video ' + index + ' failed to load');
+      const skeleton = document.getElementById('skeleton-' + index);
+      if (skeleton) {
+        skeleton.style.background = '#1a1a1a';
+      }
+    });
+
+    // Hide skeleton when video has enough data
+    video.addEventListener('loadeddata', () => {
+      if (video.readyState >= 2) {
+        const skeleton = document.getElementById('skeleton-' + index);
+        if (skeleton) setTimeout(() => skeleton.classList.add('loaded'), 200);
+      }
+    });
+  });
+
+})();
+</script>
+</body>
+</html>

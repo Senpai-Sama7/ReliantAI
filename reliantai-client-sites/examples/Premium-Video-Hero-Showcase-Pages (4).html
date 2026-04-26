@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mechanical Gears - Metal Parts Engineering</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; background: #000; color: #fff; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  .hero { position: relative; width: 100%; height: 100svh; overflow: hidden; display: grid; place-items: center; isolation: isolate; }
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 100; background: transparent; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #ffffff, #d0d0d0); transition: width 0.4s ease, opacity 0.3s ease; }
+  .video-wrap { position: absolute; inset: 0; z-index: 0; }
+  .video-wrap video { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0; transition: opacity 800ms ease; }
+  .video-wrap.ready video { opacity: 1; }
+  .overlay { position: absolute; inset: 0; pointer-events: none; }
+  .overlay.linear { background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 100%); z-index: 1; }
+  .overlay.vignette { background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%); z-index: 2; }
+  .overlay.grain { z-index: 3; opacity: 0.055; mix-blend-mode: soft-light; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); background-size: 220px 220px; }
+  .loader { position: absolute; inset: 0; display: grid; place-items: center; z-index: 10; background: rgba(0,0,0,0.15); transition: opacity 0.4s ease; }
+  .loader.hidden { opacity: 0; pointer-events: none; }
+  .spinner { width: 44px; height: 44px; border: 3px solid rgba(255,255,255,0.25); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .play-button { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 11; padding: 14px 28px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(0,0,0,0.55); backdrop-filter: blur(8px); color: #fff; font-size: 16px; font-weight: 500; cursor: pointer; transition: transform 0.2s ease, background 0.2s ease; }
+  .play-button:hover { transform: translate(-50%, -50%) scale(1.04); background: rgba(0,0,0,0.7); }
+  .content { position: relative; z-index: 5; width: 100%; max-width: 1160px; padding: 24px; text-align: center; }
+  .eyebrow { display: inline-block; font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: rgba(255,255,255,0.75); border: 1px solid rgba(255,255,255,0.18); padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(6px); background: rgba(255,255,255,0.04); }
+  .title { margin: 22px auto 16px; font-weight: 300; font-size: clamp(44px, 7vw, 86px); line-height: 1.05; letter-spacing: -0.02em; }
+  .subtitle { margin: 0 auto 32px; max-width: 720px; font-size: clamp(16px, 2vw, 20px); line-height: 1.6; color: rgba(255,255,255,0.82); }
+  .ctas { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .cta { display: inline-flex; align-items: center; justify-content: center; padding: 14px 26px; border-radius: 999px; text-decoration: none; font-weight: 500; font-size: 16px; transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease; will-change: transform; }
+  .cta.primary { background: #fff; color: #0a0a0a; }
+  .cta.primary:hover { transform: translateY(-1px); }
+  .cta.secondary { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.28); backdrop-filter: blur(10px); }
+  .cta.secondary:hover { background: rgba(255,255,255,0.14); transform: translateY(-1px); }
+  @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } .cta, .play-button, .video-wrap video { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="progress" id="progress"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="video-wrap" id="videoWrap">
+    <video id="heroVideo" preload="metadata" playsinline loop muted autoplay>
+      <source src="https://videos.pexels.com/video-files/854415/854415-hd_1920_1080_25fps.mp4" type="video/mp4">
+    </video>
+    <div class="overlay linear"></div>
+    <div class="overlay vignette"></div>
+    <div class="overlay grain"></div>
+  </div>
+  <div class="loader" id="loader" aria-hidden="true"><div class="spinner"></div></div>
+  <button class="play-button" id="playButton" hidden>Play Video</button>
+  <header class="content">
+    <div class="eyebrow">Metal Parts Engineering</div>
+    <h1 class="title">Mechanical Gears Built to Last</h1>
+    <p class="subtitle">Precision forged components engineered for aerospace, automotive and heavy industry performance.</p>
+    <div class="ctas">
+      <a href="#" class="cta primary">View Catalog</a>
+      <a href="#" class="cta secondary">Our Process</a>
+    </div>
+  </header>
+</div>
+<script>
+  const video = document.getElementById('heroVideo');
+  const videoWrap = document.getElementById('videoWrap');
+  const loader = document.getElementById('loader');
+  const playButton = document.getElementById('playButton');
+  const progressFill = document.getElementById('progressFill');
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function setProgress(p) { progressFill.style.width = p + '%'; }
+  document.addEventListener('DOMContentLoaded', () => setProgress(20));
+  window.addEventListener('load', () => setProgress(40));
+  video.addEventListener('loadeddata', () => setProgress(70));
+  video.addEventListener('canplaythrough', () => {
+    setProgress(100);
+    videoWrap.classList.add('ready');
+    loader.classList.add('hidden');
+    setTimeout(() => { document.getElementById('progress').style.opacity = '0'; }, 400);
+    if (!prefersReduced) { const p = video.play(); if (p && p.catch) p.catch(() => {}); }
+  });
+  if (prefersReduced) {
+    video.pause(); video.removeAttribute('autoplay'); playButton.hidden = false; loader.classList.add('hidden'); videoWrap.classList.add('ready'); setProgress(100);
+  } else {
+    const p = video.play(); if (p && p.catch) p.catch(() => {});
+  }
+  playButton.addEventListener('click', () => {
+    video.play().then(() => { playButton.hidden = true; videoWrap.classList.add('ready'); loader.classList.add('hidden'); }).catch(() => {});
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) { video.pause(); } else if (!prefersReduced) { video.play().catch(() => {}); } });
+</script>
+</body>
+</html>
