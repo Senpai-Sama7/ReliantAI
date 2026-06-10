@@ -77,3 +77,65 @@ Config: `.pre-commit-config.yaml` (black, isort, flake8, yamllint, gitleaks)
 cp .env.staging.example .env  # fill in API keys
 ```
 Required: `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `API_SECRET_KEY`
+
+## Cursor Cloud specific instructions
+
+### Sprint stack (Phase 5 — recommended for client-sites + API work)
+
+The sprint product loop is `reliantai/` (API) + `reliantai-client-sites/` (Next.js ISR). Start infrastructure, then run services locally.
+
+**Infrastructure (Postgres + Redis)** — `reliantai/docker-compose.yml` does not publish DB ports and `docker compose build` currently fails on a `crewai`/`sqlalchemy==1.4.52` pip conflict. Use standalone containers with published ports:
+
+```bash
+sudo docker run -d --name reliantai-postgres \
+  -e POSTGRES_DB=reliantai -e POSTGRES_USER=reliantai -e POSTGRES_PASSWORD=reliantai_dev \
+  -p 5432:5432 postgres:16-alpine
+
+sudo docker run -d --name reliantai-redis \
+  -p 6379:6379 redis:7-alpine \
+  redis-server --requirepass reliantai_dev --maxmemory 256mb --maxmemory-policy allkeys-lru
+```
+
+Do **not** mount `reliantai/db/migrations/001_platform.sql` into Postgres init — it references `clients` before that table exists. Use Alembic instead:
+
+```bash
+export PYTHONPATH=/workspace
+export DATABASE_URL=postgresql://reliantai:reliantai_dev@localhost:5432/reliantai
+export REDIS_URL=redis://:reliantai_dev@localhost:6379/0
+export API_SECRET_KEY=dev_secret_key_change_in_production
+cd reliantai && alembic upgrade head
+```
+
+**API (local, without crewai)** — full `pip install -r requirements.txt` fails due to embedchain/SQLAlchemy 2.x vs pinned 1.4.52. Install core API deps (see update script) and run:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+export PYTHONPATH=/workspace
+cd reliantai
+python3 -m uvicorn reliantai.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**Next.js client sites** — create `reliantai-client-sites/.env.local`:
+
+```
+API_BASE_URL=http://localhost:8000
+REVALIDATE_SECRET=dev_revalidate_secret
+NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
+```
+
+Then `npm run dev` (port 3000). `/showcase` works with mock data alone; `/[slug]` needs API + a seeded `generated_sites` row.
+
+**Verification quick checks**
+
+```bash
+curl http://localhost:8000/health
+curl http://localhost:8000/api/v2/generated-sites/<slug>
+curl http://localhost:3000/showcase
+curl http://localhost:3000/api/health
+```
+
+**Tests** — `reliantai` model tests use SQLite in-memory (no Postgres): `PYTHONPATH=/workspace pytest reliantai/tests/ -x -v`. Client-sites: `npx tsc --noEmit` passes; `npm run lint` has pre-existing warnings.
+
+**Celery workers** — require full `requirements.txt` (crewai) which does not pip-resolve today; skip unless Docker image build is fixed upstream.
+
+**Full monorepo stack** — root `./scripts/deploy.sh local` starts 15+ microservices on different ports; it does **not** start `reliantai/` or `reliantai-client-sites/`.
