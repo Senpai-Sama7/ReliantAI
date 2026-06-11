@@ -168,7 +168,8 @@ Fetches complete site content for rendering.
   "slug": "acme-hvac-atlanta-1234",
   "status": "preview_live",
   "business": {
-    "name": "ACME HVAC",
+    "business_name": "ACME HVAC",
+    "trade": "hvac",
     "city": "Atlanta",
     "state": "GA",
     "phone": "+1-555-1234",
@@ -886,14 +887,15 @@ On-demand ISR cache purge.
 }
 ```
 
-**Response:**
+**Response (200):**
 ```json
 {
   "revalidated": true,
-  "slug": "acme-hvac-atlanta-1234",
-  "timestamp": "2026-04-25T12:00:00Z"
+  "slug": "acme-hvac-atlanta-1234"
 }
 ```
+
+**Errors:** `503` if `REVALIDATE_SECRET` unset · `401` invalid Bearer · `400` missing/invalid slug
 
 ---
 

@@ -3,7 +3,7 @@
 ## Repos
 - reliantai/                → FastAPI + Celery + SQLAlchemy (Python 3.12)
 - reliantai-website/        → Vite + React 19 (marketing, reliantai.org)
-- reliantai-client-sites/   → Next.js 15 App Router (ISR sites, preview.reliantai.org)
+- reliantai-client-sites/   → Next.js 16 App Router (ISR sites, preview.reliantai.org)
 
 ## Hard constraints — never deviate
 - NO per-site builds. Sites render via Next.js ISR from DB content.
@@ -20,6 +20,10 @@ workers:  celery -A reliantai.celery_app worker -Q agents --concurrency 2
 beat:     celery -A reliantai.celery_app beat
 tests:    pytest tests/ -x -v
 migrate:  alembic upgrade head
+
+## Client sites commands
+dev: npm run dev | build: npm run build | typecheck: npm run typecheck | test: npm run test
+Manual: docs/CLIENT_SITES_MANUAL.md
 
 ## Current sprint
 Phase: 5 — Deployment Verification

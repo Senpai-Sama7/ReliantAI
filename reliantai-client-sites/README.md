@@ -1,27 +1,18 @@
 # ReliantAI Client Sites
 
-ISR-powered landing page generator for home service businesses. Serves branded, trade-specific pages from a single Next.js app — no per-site builds.
+ISR-powered landing page generator for home service businesses. Serves branded, trade-specific pages from a single Next.js 16 app — **no per-site builds**.
 
-## 🎯 Current Status
+**Full instruction manual:** [`docs/CLIENT_SITES_MANUAL.md`](../docs/CLIENT_SITES_MANUAL.md) (deployment, API contract, revalidation, troubleshooting)
 
-**Phase 5: Deployment Verification** — Interactive template showcase complete, preparing for production deployment
+## Current Status — Phase 5: Deployment Verification
 
-✅ **Completed:**
-- Interactive `/showcase` with 4 view modes (Preview, Grid, Prompt, Compare)
-- Premium DeviceFrame components with realistic OS chrome
-- Live data editing with real-time preview updates
-- CodeBlock component with syntax highlighting and copy-to-clipboard
-- Rich template metadata system with generation prompts
-- Complete mock data for all 6 trades
-- Simplified `/preview` page with JSON viewer
-- Build success with clean TypeScript checks
-- Vercel configuration with environment variables
-
-🔲 **Remaining:**
-- Configure `API_BASE_URL` environment variable for Vercel deployment
-- Verify ISR slugs render correctly in preview.reliantai.org
-- Monitor Celery beat tasks for content regeneration
-- Final deployment verification
+| Area | Status |
+|------|--------|
+| ISR hardening (slug validation, JSON-LD safety, API parsing) | ✅ Merged |
+| Playwright E2E (13 tests + mock API server) | ✅ Passing |
+| `build` / `typecheck` / `lint` gates | ✅ Passing |
+| Vercel production deploy + `API_BASE_URL` | 🔲 Configure in Vercel |
+| Live slug verification at `preview.reliantai.org` | 🔲 Post-deploy |
 
 ## Architecture
 
@@ -84,8 +75,8 @@ Content flows: **Prospect created** → Celery task generates content → stored
 ```bash
 cd reliantai-client-sites
 npm install
-cp .env.example .env  # fill in API_BASE_URL
-npm run dev
+cp .env.example .env.local   # API_BASE_URL, REVALIDATE_SECRET
+npm run dev                  # http://localhost:3000
 ```
 
 Open [http://localhost:3000/showcase](http://localhost:3000/showcase) to browse templates.
@@ -123,10 +114,11 @@ Simpler template selector with:
 ## Development
 
 ```bash
-npm run dev        # dev server (Turbopack)
+npm run dev        # dev server (Turbopack, port 3000)
 npm run build      # production build
-npx tsc --noEmit  # typecheck
-npm run test:e2e   # Playwright E2E tests
+npm run typecheck  # next typegen && tsc --noEmit
+npm run lint       # ESLint
+npm run test       # Playwright E2E (13 tests; starts mock API on :8765)
 ```
 
 > **Turbopack note:** If `next dev` crashes with file watch errors, increase inotify limit:
@@ -184,7 +176,9 @@ Each template has a complete, production-ready generation prompt viewable in the
 
 ## API Integration
 
-Templates receive a `SiteContent` object from `GET {API_BASE_URL}/v2/generated-sites/{slug}` — no hardcoded business data.
+Templates receive a flat `SiteContent` object from `GET {API_BASE_URL}/api/v2/generated-sites/{slug}` — no wrapper, no auth.
+
+Pipeline: `lib/api.ts` → `lib/validate-site-content.ts` → `lib/templates.ts` (dynamic import). Invalid slugs are rejected by `lib/slug.ts` before any fetch.
 
 ### Mock Data (`lib/mock-data.ts`)
 
@@ -199,13 +193,14 @@ Each trade has a complete mock dataset with:
 ## API Contract Examples
 
 ### Get Site Content
-**Endpoint:** `GET {API_BASE_URL}/v2/generated-sites/{slug}`  
+**Endpoint:** `GET {API_BASE_URL}/api/v2/generated-sites/{slug}`  
 **Auth:** None (public endpoint)  
-**Response:**
+**Response:** Flat `SiteContent` object (no `{ success, data }` wrapper). **404:** `{ "detail": "Site not found" }`
+
 ```json
 {
-  "success": true,
-  "data": {
+    "slug": "comfort-pro-hvac-austin-ab12",
+    "status": "preview_live",
     "business": {
       "business_name": "Reliable Cooling & Heating",
       "trade": "hvac",
@@ -260,9 +255,13 @@ Each trade has a complete mock dataset with:
     "aeo_signals": {
       "local_business_type": "HVACContractor",
       "primary_category": "HVAC Repair",
+      "secondary_categories": ["AC Installation"],
       "area_served": ["Austin", "Round Rock", "Cedar Park"]
-    }
-  }
+    },
+    "schema_org": { "@context": "https://schema.org", "@type": "HVACBusiness" },
+    "meta_title": "Comfort Pro HVAC — Austin",
+    "meta_description": "Same-day HVAC repair in Austin.",
+    "lighthouse_score": 95
 }
 ```
 
@@ -273,22 +272,25 @@ Each trade has a complete mock dataset with:
 ```json
 { "slug": "reliable-cooling-heating-austin" }
 ```
-**Response:**
+**Response (200):**
 ```json
-{ "success": true, "message": "Revalidation triggered for reliable-cooling-heating-austin" }
+{ "revalidated": true, "slug": "reliable-cooling-heating-austin" }
 ```
 **Errors:**
-- `401`: Invalid or missing authorization token
-- `400`: Missing slug parameter
-- `404`: Slug not found in database
+- `503`: `REVALIDATE_SECRET` not configured
+- `401`: Invalid or missing Bearer token
+- `400`: Missing or invalid slug (must match `^[a-z0-9]+(?:-[a-z0-9]+)*$`, max 100 chars)
 
 ## Environment Variables
 
-```
-API_BASE_URL=https://api.reliantai.com      # ReliantAI API base
-REVALIDATE_SECRET=<secret>                   # Bearer token for /api/revalidate
-NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
-```
+See `.env.example` for the full list:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `API_BASE_URL` | Yes (prod) | Platform API base URL |
+| `REVALIDATE_SECRET` | Yes (prod) | Bearer token for `/api/revalidate` (server-only) |
+| `NEXT_PUBLIC_CHECKOUT_BASE_URL` | No | Preview banner checkout links (default: `https://reliantai.org`) |
+| `API_TIMEOUT_MS` | No | Server fetch timeout (default: 10000) |
 
 ## Deployment Instructions
 
@@ -300,14 +302,14 @@ NEXT_PUBLIC_PREVIEW_DOMAIN=preview.reliantai.org
 
 ### Docker
 ```dockerfile
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder /app/.next ./.next
@@ -362,6 +364,10 @@ templates/
 
 lib/
 ├── api.ts                  # SiteContent fetcher + template loader
+├── slug.ts                 # Slug validation (path traversal block)
+├── templates.ts            # Template registry (single source of truth)
+├── validate-site-content.ts # API response shape validation
+├── serialize-json-ld.ts    # Safe JSON-LD (< escaped as \u003c)
 ├── mock-data.ts            # Complete mock SiteContent per trade
 ├── template-meta.ts        # Rich metadata + generation prompts
 └── trade-copy.ts           # Trade-specific copy for all sections
@@ -370,7 +376,11 @@ types/
 └── SiteContent.ts           # TypeScript interfaces
 
 tests/
-└── e2e/                    # Playwright E2E tests
+├── mocks/api-server.mjs    # Mock platform API for E2E
+├── fixtures/site-content.mjs
+└── e2e/
+    ├── isr-routes.spec.ts
+    └── site-rendering.spec.ts
 ```
 
 ## Health Checks
@@ -400,7 +410,7 @@ tests/
 When adding a new trade template:
 1. Create a new directory under `templates/` with kebab-case name
 2. Implement all required sections (Hero, Services, About, Reviews, FAQ, Footer, ContactBar)
-3. Add the template to the import map in `lib/api.ts` and `lib/mock-data.ts`
+3. Register in `lib/templates.ts` and add mock data in `lib/mock-data.ts`
 4. Add metadata and generation prompt to `lib/template-meta.ts`
 5. Add a TemplateCard entry in `app/showcase/page.tsx`
 6. Use the correct accent color variant for StatsBar, CTASection, and SectionDivider
@@ -409,10 +419,12 @@ When adding a new trade template:
 
 ## Security Considerations
 
-- The `/api/revalidate` endpoint requires a Bearer token using `crypto.timingSafeEqual`
-- All content served via ISR is server-generated
-- External links use `rel="noopener noreferrer"`
-- Run behind a reverse proxy (nginx, Vercel) in production
+- Slug validation blocks path traversal (`lib/slug.ts` + `encodeURIComponent` in fetch URL)
+- JSON-LD serialized with `<` escaped (`lib/serialize-json-ld.ts`)
+- `/api/revalidate` uses timing-safe Bearer compare; returns 503 if secret unset
+- API responses validated before render (`lib/validate-site-content.ts`)
+- Security headers in `next.config.ts` (`nosniff`, `SAMEORIGIN`, `Referrer-Policy`)
+- `REVALIDATE_SECRET` is server-only — never exposed via `next.config` `env`
 
 ## Performance Benchmarks
 

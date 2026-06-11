@@ -159,29 +159,38 @@ watch -n 5 'redis-cli LLEN celery'
 
 #### SEV-3: ISR Cache Stale (Client Sites)
 
-```bash
-# 1. CHECK CACHE HIT RATE
-# (Check Next.js analytics or Cloudflare)
+See also: [`docs/CLIENT_SITES_MANUAL.md`](./CLIENT_SITES_MANUAL.md) §6–§10
 
-# 2. MANUAL REVALIDATION
-# Revalidate specific slug
-curl -X POST https://preview.reliantai.org/api/revalidate \
+```bash
+# 1. VERIFY API CONTENT IS FRESH
+curl -s "https://api.reliantai.org/api/v2/generated-sites/acme-hvac-atlanta-1234" | jq '.hero.headline'
+
+# 2. CHECK REVALIDATE SECRET IS SET (503 = missing on Vercel)
+curl -s -o /dev/null -w "%{http_code}\n" -X POST https://preview.reliantai.org/api/revalidate \
   -H "Authorization: Bearer $REVALIDATE_SECRET" \
+  -H "Content-Type: application/json" \
   -d '{"slug": "acme-hvac-atlanta-1234"}'
 
-# 3. BULK REVALIDATION
-# Revalidate all sites
-docker exec -it reliantai-postgres psql -U postgres -d reliantai -t -c \
-  "SELECT slug FROM generated_sites WHERE status='preview_live';" | \
-  while read slug; do
-    curl -X POST https://preview.reliantai.org/api/revalidate \
+# 3. MANUAL REVALIDATION (single slug)
+curl -X POST https://preview.reliantai.org/api/revalidate \
+  -H "Authorization: Bearer $REVALIDATE_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"slug": "acme-hvac-atlanta-1234"}'
+# Expected: {"revalidated":true,"slug":"acme-hvac-atlanta-1234"}
+
+# 4. BULK REVALIDATION (all preview_live slugs)
+psql "$DATABASE_URL" -t -c "SELECT slug FROM generated_sites WHERE status='preview_live';" | \
+  while read -r slug; do
+    [ -n "$slug" ] && curl -s -X POST https://preview.reliantai.org/api/revalidate \
       -H "Authorization: Bearer $REVALIDATE_SECRET" \
+      -H "Content-Type: application/json" \
       -d "{\"slug\": \"$slug\"}"
   done
 
-# 4. RESTART CLIENT SITES
-docker compose restart reliant-os-frontend
-docker compose restart nginx
+# 5. VERIFY PLATFORM TRIGGER (site_registration_service logs)
+# Look for revalidate_ok / revalidate_failed after register_from_crew_outputs
+
+# 6. LAST RESORT — wait for ISR TTL (3600s) or redeploy Vercel project
 ```
 
 #### SEV-3: Event Bus Message Loss
