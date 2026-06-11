@@ -18,11 +18,8 @@ export async function generateMetadata({
   const content = await getSiteContent(slug);
   if (!content) return {};
   return {
-    title: content.seo.title,
-    description: content.seo.description,
-    other: {
-      "script:ld+json": JSON.stringify(content.schema_org),
-    },
+    title: content.seo?.title || content.meta_title,
+    description: content.seo?.description || content.meta_description,
   };
 }
 
@@ -40,6 +37,12 @@ export default async function ClientSitePage({
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(content.schema_org),
+        }}
+      />
       <Template content={content} />
       {isPreview && (
         <PreviewBanner

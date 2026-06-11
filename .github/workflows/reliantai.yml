@@ -1,0 +1,56 @@
+name: ReliantAI Platform
+
+on:
+  push:
+    paths:
+      - "reliantai/**"
+      - "reliantai-client-sites/**"
+      - "tests/test_pipeline_integration.py"
+      - ".github/workflows/reliantai.yml"
+  pull_request:
+    paths:
+      - "reliantai/**"
+      - "reliantai-client-sites/**"
+      - "tests/test_pipeline_integration.py"
+      - ".github/workflows/reliantai.yml"
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fastapi uvicorn sqlalchemy alembic celery redis psycopg2-binary \
+            "pydantic[email]" httpx structlog python-dotenv pytest
+
+      - name: Run ReliantAI tests
+        run: PYTHONPATH=. pytest reliantai/tests/ tests/test_pipeline_integration.py -v --tb=short
+
+  client-sites:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reliantai-client-sites
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: reliantai-client-sites/package-lock.json
+
+      - name: Install and verify
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npm run build

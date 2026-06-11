@@ -1,6 +1,9 @@
 import type { SiteContent } from "@/types/SiteContent";
 
-const API_URL = process.env.PLATFORM_API_URL || "http://localhost:8000";
+const API_URL =
+  process.env.API_BASE_URL ||
+  process.env.PLATFORM_API_URL ||
+  "http://localhost:8000";
 
 export async function getSiteContent(
   slug: string

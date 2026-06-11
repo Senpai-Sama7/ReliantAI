@@ -58,6 +58,7 @@ services:
     environment:
       DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
       REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
     depends_on:
       postgres:
         condition: service_healthy
@@ -73,6 +74,7 @@ services:
     environment:
       DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
       REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
     depends_on:
       postgres:
         condition: service_healthy

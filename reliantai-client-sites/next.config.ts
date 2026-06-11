@@ -14,8 +14,10 @@ const nextConfig: NextConfig = {
     ],
   },
   env: {
-    PLATFORM_API_URL: process.env.PLATFORM_API_URL,
+    API_BASE_URL: process.env.API_BASE_URL || process.env.PLATFORM_API_URL,
+    PLATFORM_API_URL: process.env.PLATFORM_API_URL || process.env.API_BASE_URL,
     PLATFORM_API_KEY: process.env.PLATFORM_API_KEY,
+    REVALIDATE_SECRET: process.env.REVALIDATE_SECRET,
   },
 };
 
