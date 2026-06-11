@@ -8,7 +8,23 @@ const API_URL =
   process.env.PLATFORM_API_URL ||
   "http://localhost:8000";
 
-const API_TIMEOUT_MS = Number(process.env.API_TIMEOUT_MS ?? 10_000);
+const DEFAULT_API_TIMEOUT_MS = 10_000;
+
+function resolveTimeoutMs(raw: string | undefined): number {
+  if (raw === undefined || raw === "") return DEFAULT_API_TIMEOUT_MS;
+  const parsed = Number(raw);
+  // Blank/non-numeric values become 0/NaN: AbortSignal.timeout(0) aborts
+  // instantly and timeout(NaN) throws, turning every slug into a 404.
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    console.warn(
+      `[API] Ignoring invalid API_TIMEOUT_MS=${JSON.stringify(raw)}; using ${DEFAULT_API_TIMEOUT_MS}ms`
+    );
+    return DEFAULT_API_TIMEOUT_MS;
+  }
+  return parsed;
+}
+
+const API_TIMEOUT_MS = resolveTimeoutMs(process.env.API_TIMEOUT_MS);
 
 export async function getSiteContent(
   slug: string
