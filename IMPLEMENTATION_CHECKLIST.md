@@ -431,10 +431,16 @@ These are the 7 critical flaws from `synthesized-architecture (1).md` that must 
 - [ ] Redis caching with `SITE_CACHE_TTL` (3600s default)
 
 ### Phase 3 Exit Criteria
-- [ ] `npm run build` succeeds in `reliantai-client-sites/`
-- [ ] `npm run test:e2e` passes (Playwright)
+- [x] `npm run build` succeeds in `reliantai-client-sites/`
+- [x] `npm run typecheck` + `npm run lint` + `npm run test` pass (13 Playwright tests)
 - [ ] Run pipeline → DB write → visit `preview.reliantai.org/{slug}` → renders
 - [ ] 3 real sites live with 90+ Lighthouse score
+
+### Phase 5 Exit Criteria (Deployment Verification)
+- [ ] Vercel env: `API_BASE_URL`, `REVALIDATE_SECRET`, `NEXT_PUBLIC_CHECKOUT_BASE_URL`
+- [ ] Live slug returns 200 at `preview.reliantai.org/{slug}`
+- [ ] Platform `site_registration_service` triggers revalidation successfully
+- [ ] See [`docs/CLIENT_SITES_MANUAL.md`](docs/CLIENT_SITES_MANUAL.md) for full checklist
 
 ---
 
@@ -563,6 +569,6 @@ These are the 7 critical flaws from `synthesized-architecture (1).md` that must 
 
 ---
 
-**Checklist Version:** 1.0  
-**Last Updated:** 2026-04-25  
-**Next Review:** After Phase 3 completion
+**Checklist Version:** 1.1  
+**Last Updated:** 2026-06-11  
+**Next Review:** After Phase 5 deployment verification

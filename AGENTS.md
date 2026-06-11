@@ -3,7 +3,7 @@
 ## Repos
 - `reliantai/` — FastAPI + Celery + SQLAlchemy (Python 3.12) ← main platform
 - `reliantai-website/` — Vite + React 19 (marketing, reliantai.org)
-- `reliantai-client-sites/` — Next.js 15 App Router (ISR sites, preview.reliantai.org)
+- `reliantai-client-sites/` — Next.js 16 App Router (ISR sites, preview.reliantai.org)
 
 ## Commands (reliantai/)
 ```bash
@@ -34,11 +34,14 @@ In scope: Deploy to Vercel, configure `API_BASE_URL`, verify ISR slugs render, m
 
 ## Commands (reliantai-client-sites/)
 ```bash
-dev:      npm run dev
-build:    npm run build
-typecheck: npx tsc --noEmit
-test:e2e:  npm run test:e2e
+dev:       npm run dev
+build:     npm run build
+typecheck: npm run typecheck   # next typegen && tsc --noEmit
+lint:      npm run lint
+test:      npm run test        # Playwright (13 tests + mock API)
 ```
+
+**Instruction manual:** `docs/CLIENT_SITES_MANUAL.md`
 
 ## Service Ports (docker-compose.yml)
 | Service | Port | Purpose |
@@ -59,10 +62,17 @@ test:e2e:  npm run test:e2e
 - `docker-compose.yml` — Full platform orchestration
 - `reliantai-client-sites/app/[slug]/page.tsx` — ISR dynamic route
 - `reliantai-client-sites/app/api/revalidate/route.ts` — Revalidation endpoint
-- `reliantai-client-sites/templates/hvac-reliable-blue/` — HVAC template (Phase 3)
-- `reliantai-client-sites/tests/e2e/` — Playwright E2E tests
-- `reliantai-client-sites/playwright.config.ts` — Playwright config
+- `reliantai-client-sites/lib/api.ts` — Site content fetch + template load
+- `reliantai-client-sites/lib/slug.ts` — Slug validation
+- `reliantai-client-sites/lib/templates.ts` — Template registry
+- `reliantai-client-sites/lib/validate-site-content.ts` — API response validation
+- `reliantai-client-sites/lib/serialize-json-ld.ts` — Safe JSON-LD output
+- `reliantai-client-sites/templates/hvac-reliable-blue/` — HVAC template
+- `reliantai-client-sites/tests/e2e/site-rendering.spec.ts` — Render + security E2E
+- `reliantai-client-sites/tests/mocks/api-server.mjs` — Mock platform API
+- `reliantai-client-sites/playwright.config.ts` — Playwright + webServer config
 - `reliantai-client-sites/types/SiteContent.ts` — TypeScript interfaces
+- `docs/CLIENT_SITES_MANUAL.md` — Deployment & operations manual
 
 ## Pre-commit
 ```bash
@@ -134,7 +144,7 @@ curl http://localhost:3000/showcase
 curl http://localhost:3000/api/health
 ```
 
-**Tests** — `reliantai` model tests use SQLite in-memory (no Postgres): `PYTHONPATH=/workspace pytest reliantai/tests/ -x -v`. Client-sites: `npx tsc --noEmit` passes; `npm run lint` has pre-existing warnings.
+**Tests** — `reliantai` model tests use SQLite in-memory (no Postgres): `PYTHONPATH=/workspace pytest reliantai/tests/ -x -v`. Client-sites gate: `npm run build && npm run typecheck && npm run lint && npm run test`.
 
 **Celery workers** — require full `requirements.txt` (crewai) which does not pip-resolve today; skip unless Docker image build is fixed upstream.
 

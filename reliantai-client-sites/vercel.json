@@ -6,10 +6,6 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "devCommand": "npm run dev",
-  "env": {
-    "API_BASE_URL": "@api_base_url",
-    "REVALIDATE_SECRET": "@revalidate_secret"
-  },
   "headers": [
     {
       "source": "/(.*)",

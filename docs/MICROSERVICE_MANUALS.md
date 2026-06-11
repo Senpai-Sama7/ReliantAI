@@ -10,6 +10,8 @@
 7. [Shared Components](#6-shared-components)
 8. [Development & Deployment](#7-development--deployment)
 
+**Dedicated ISR manual:** [`CLIENT_SITES_MANUAL.md`](./CLIENT_SITES_MANUAL.md) — deployment, env vars, revalidation, troubleshooting.
+
 ---
 
 ## Architecture Overview
@@ -211,11 +213,12 @@ alembic revision --autogenerate -m "description"
 Next.js App Router with ISR. Dynamically generates branded landing pages for home service businesses at `/{slug}`. Includes interactive `/showcase` (4-view template studio) and `/preview` (template browser).
 
 ### Architecture
-- **Framework**: Next.js 15 App Router + React 19
+- **Framework**: Next.js 16 App Router + React 19
 - **Rendering**: ISR (Incremental Static Regeneration) with `revalidate=3600`
-- **Styling**: TailwindCSS
+- **Styling**: TailwindCSS 4
 - **Icons**: Lucide React
-- **Testing**: Playwright E2E
+- **Testing**: Playwright E2E (13 tests + mock API server)
+- **Manual**: [`docs/CLIENT_SITES_MANUAL.md`](./CLIENT_SITES_MANUAL.md)
 
 ### Key Files
 ```
@@ -240,13 +243,20 @@ reliantai-client-sites/
 │   ├── painting-clean-minimal/
 │   └── landscaping-earthy-green/
 ├── lib/
-│   ├── api.ts                 # API client for site content
+│   ├── api.ts                 # Site content fetch + template loader
+│   ├── slug.ts                # Slug validation
+│   ├── templates.ts           # Template registry (single source of truth)
+│   ├── validate-site-content.ts
+│   ├── serialize-json-ld.ts   # Safe JSON-LD output
 │   ├── template-meta.ts       # Template metadata + generation prompts
 │   └── mock-data.ts           # SiteContent mock data per trade
 ├── types/
 │   └── SiteContent.ts         # TypeScript interfaces
-├── tests/e2e/
-│   └── site-generation.spec.ts
+├── tests/
+│   ├── mocks/api-server.mjs   # Mock platform API for E2E
+│   └── e2e/
+│       ├── isr-routes.spec.ts
+│       └── site-rendering.spec.ts
 └── playwright.config.ts
 ```
 
@@ -282,44 +292,30 @@ const TEMPLATES = [
 ```
 
 ### SiteContent Interface
+
+See `reliantai-client-sites/types/SiteContent.ts`. Key fields:
+
 ```typescript
 interface SiteContent {
   slug: string;
-  status: "preview_live" | "published" | "archived";
-  business: {
-    name: string;
-    city: string;
-    state: string;
-    phone: string;
-    address: string;
-    lat?: number;
-    lng?: number;
-    rating?: number;
-    review_count?: number;
-  };
-  hero: {
-    headline: string;
-    subheadline: string;
-    cta_text: string;
-  };
-  seo: {
-    title: string;
-    description: string;
-  };
-  schema_org: object;  // LocalBusiness JSON-LD
-  site_config: {
-    template_id: string;
-    trade: string;
-    theme: {
-      primary: string;
-      accent: string;
-      font_display: string;
-      font_body: string;
-    };
-  };
-  lighthouse_score?: number;
+  status: string;  // "preview_live" shows PreviewBanner
+  business: { business_name: string; trade: string; city: string; /* ... */ };
+  hero: { headline: string; subheadline: string; cta_primary: string; /* ... */ };
+  services: ServiceItem[];
+  about: AboutSection;
+  reviews: ReviewsSection;
+  faq: FAQItem[];
+  seo: SEOMeta;
+  aeo_signals: AEOSignals;
+  schema_org: Record<string, unknown>;
+  site_config: { template_id: string; trade: string; theme: ThemeConfig };
+  meta_title: string;
+  meta_description: string;
+  lighthouse_score: number;
 }
 ```
+
+API returns this object **directly** (no wrapper). Invalid slugs are rejected client-side before fetch.
 
 ### Hard Constraints
 - **No per-site builds** — all sites render from shared ISR cache
@@ -330,15 +326,11 @@ interface SiteContent {
 
 ### Commands
 ```bash
-# Development (Turbopack)
-npm run dev
-
-# Build & Type Check
-npm run build
-npx tsc --noEmit
-
-# E2E Tests
-npm run test:e2e
+npm run dev        # Turbopack dev server
+npm run build      # Production build
+npm run typecheck  # next typegen && tsc --noEmit
+npm run lint       # ESLint
+npm run test       # Playwright E2E (13 tests)
 ```
 
 ---
@@ -839,7 +831,7 @@ PYTHONPATH=. pytest tests/ -x -v
 
 # E2E (Client Sites)
 cd reliantai-client-sites
-npm run test:e2e
+npm run build && npm run typecheck && npm run lint && npm run test
 
 # Pre-commit
 pre-commit run --all-files

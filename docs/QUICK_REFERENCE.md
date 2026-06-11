@@ -75,23 +75,20 @@ alembic revision --autogenerate -m "description"
 PYTHONPATH=. pytest tests/ -x -v
 ```
 
-### Client Sites (Next.js)
+### Client Sites (Next.js 16)
 
 ```bash
-cd /home/donovan/Projects/platforms/ReliantAI/reliantai-client-sites
+cd reliantai-client-sites
+cp .env.example .env.local   # API_BASE_URL, REVALIDATE_SECRET
 
-# Development server (Turbopack)
-npm run dev
-
-# Type check
-npx tsc --noEmit
-
-# Build
+npm run dev        # port 3000
 npm run build
-
-# E2E tests
-npm run test:e2e
+npm run typecheck  # next typegen && tsc --noEmit
+npm run lint
+npm run test       # Playwright (13 tests + mock API on :8765)
 ```
+
+**Manual:** `docs/CLIENT_SITES_MANUAL.md`
 
 ### Money Service
 
@@ -435,14 +432,12 @@ pytest tests/test_prospects.py::test_create_prospect -v
 ```bash
 cd reliantai-client-sites
 
-# Install Playwright browsers
-npx playwright install
+# Full gate (pretest installs Chromium automatically)
+npm run test
 
-# Run tests
-npm run test:e2e
-
-# Run specific test
-npx playwright test site-generation.spec.ts
+# Run specific suite
+npx playwright test tests/e2e/site-rendering.spec.ts
+npx playwright test tests/e2e/isr-routes.spec.ts
 
 # Debug mode
 npx playwright test --debug

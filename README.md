@@ -40,7 +40,7 @@ Frictionless purchasing experience with instant site delivery, automated domain 
 
 ---
 
-## �️ Platform Architecture
+## 🏗️ Platform Architecture
 
 <div align="center">
 
@@ -167,7 +167,7 @@ curl -X POST http://localhost:8000/api/v2/prospects \
 
 ---
 
-## � Repository Structure
+## 📁 Repository Structure
 
 ```
 ReliantAI/
@@ -228,7 +228,7 @@ ReliantAI/
 
 ---
 
-## � Performance Metrics
+## 📈 Performance Metrics
 
 <div align="center">
 
@@ -246,7 +246,7 @@ ReliantAI/
 
 ---
 
-## � Security & Compliance
+## 🔒 Security & Compliance
 
 <div align="center">
 
@@ -265,10 +265,22 @@ ReliantAI/
 
 ## 🛠️ Development
 
+### Current Sprint (Phase 5)
+
+Deploy and verify the ISR product loop: `reliantai/` API + `reliantai-client-sites/` on Vercel at `preview.reliantai.org`. See [`docs/CLIENT_SITES_MANUAL.md`](docs/CLIENT_SITES_MANUAL.md).
+
 ### Testing
+
+**Platform (Python):**
 ```bash
-pytest tests/ -x -v           # Python tests
-npm run test:e2e               # Frontend tests
+cd reliantai
+PYTHONPATH=. pytest tests/ -x -v
+```
+
+**Client sites (Next.js 16):**
+```bash
+cd reliantai-client-sites
+npm run build && npm run typecheck && npm run lint && npm run test
 ```
 
 ### Extending the Platform
@@ -290,15 +302,19 @@ npm run test:e2e               # Frontend tests
 
 ---
 
-## 📚 Resources
+## 📚 Documentation
 
 | Document | Contents |
 |:---|:---|
+| [`AGENTS.md`](AGENTS.md) | Agent/developer quick reference (commands, constraints, key files) |
+| [`CLAUDE.md`](CLAUDE.md) | Platform constraints and sprint context |
+| [`docs/CLIENT_SITES_MANUAL.md`](docs/CLIENT_SITES_MANUAL.md) | **ISR client sites** — deployment, API, revalidation, troubleshooting |
+| [`reliantai-client-sites/README.md`](reliantai-client-sites/README.md) | Template system, routes, local dev |
+| [`docs/MICROSERVICE_MANUALS.md`](docs/MICROSERVICE_MANUALS.md) | Per-service operational manuals |
+| [`docs/API_REFERENCE.md`](docs/API_REFERENCE.md) | REST API contracts |
+| [`docs/QUICK_REFERENCE.md`](docs/QUICK_REFERENCE.md) | Commands, ports, cURL examples |
+| [`docs/OPERATIONAL_RUNBOOK.md`](docs/OPERATIONAL_RUNBOOK.md) | Incident response & runbooks |
 | [`IMPLEMENTATION_CHECKLIST.md`](IMPLEMENTATION_CHECKLIST.md) | Build phases & verification steps |
-| [`AGENTS.md`](AGENTS.md) | Developer quick reference |
-| [`CLAUDE.md.bak`](CLAUDE.md.bak) | Architecture deep-dive |
-| [`synthesized-architecture (1).md`](synthesized-architecture%20(1).md) | Design decisions & ADRs |
-| [`docs/runbooks/`](docs/runbooks/) | Operations procedures |
 
 ---
 
