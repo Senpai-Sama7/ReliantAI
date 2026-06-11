@@ -8,9 +8,15 @@ from typing import Any
 
 try:
     import redis
+
+    RedisError = redis.RedisError
 except ImportError:
     redis = None  # type: ignore[assignment]
     _redis_client = None
+
+    class RedisError(Exception):
+        pass
+
 else:
     try:
         _redis_client = redis.Redis.from_url(
@@ -19,7 +25,7 @@ else:
             socket_timeout=2,
             decode_responses=True,
         )
-    except redis.ConnectionError:
+    except RedisError:
         _redis_client = None
 
 SITE_CACHE_TTL = int(os.environ.get("SITE_CACHE_TTL", "3600"))
@@ -36,7 +42,7 @@ def get_cached_site(slug: str) -> dict[str, Any] | None:
         cached = _redis_client.get(site_cache_key(slug))
         if cached:
             return json.loads(cached)
-    except (redis.RedisError, json.JSONDecodeError):
+    except (RedisError, json.JSONDecodeError):
         pass
     return None
 
@@ -46,7 +52,7 @@ def set_cached_site(slug: str, content: dict[str, Any]) -> None:
         return
     try:
         _redis_client.setex(site_cache_key(slug), SITE_CACHE_TTL, json.dumps(content))
-    except redis.RedisError:
+    except RedisError:
         pass
 
 
@@ -55,5 +61,5 @@ def invalidate_site_cache(slug: str) -> None:
         return
     try:
         _redis_client.delete(site_cache_key(slug))
-    except redis.RedisError:
+    except RedisError:
         pass

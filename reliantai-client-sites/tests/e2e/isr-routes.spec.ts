@@ -1,14 +1,17 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("ISR Dynamic Route /[slug]", () => {
-  test("home page renders", async ({ page }) => {
-    await page.goto("/");
+  test("home page redirects to showcase", async ({ page }) => {
+    const res = await page.goto("/");
+    expect(res?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/showcase$/);
     await expect(page.locator("body")).toBeVisible();
   });
 
-  test("/_not-found handles missing slug gracefully", async ({ page }) => {
-    const res = await page.goto("/");
+  test("showcase page renders", async ({ page }) => {
+    const res = await page.goto("/showcase");
     expect(res?.status()).toBe(200);
+    await expect(page.locator("body")).toBeVisible();
   });
 });
 
@@ -37,8 +40,6 @@ test.describe("Revalidation endpoint /api/revalidate", () => {
 test.describe("Template rendering", () => {
   test("page returns 404 for nonexistent slug", async ({ page }) => {
     const res = await page.goto("/nonexistent-slug-12345");
-    // The page component will try to fetch and either show an error
-    // or notFound. We just ensure the server responds.
-    expect(res).toBeTruthy();
+    expect(res?.status()).toBe(404);
   });
 });

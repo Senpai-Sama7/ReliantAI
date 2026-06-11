@@ -1,19 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import MOCK_DATA from "@/lib/mock-data";
-
-const TEMPLATE_IDS = [
-  "hvac-reliable-blue",
-  "plumbing-trustworthy-navy",
-  "electrical-sharp-gold",
-  "roofing-bold-copper",
-  "painting-clean-minimal",
-  "landscaping-earthy-green",
-] as const;
-
-type TemplateId = (typeof TEMPLATE_IDS)[number];
+import { TEMPLATE_IDS, templateImports, type TemplateId } from "@/lib/templates";
 
 const TEMPLATE_META: Record<string, { label: string; accent: string; accentBg: string }> = {
   "hvac-reliable-blue": { label: "HVAC — Reliable Blue", accent: "blue-400", accentBg: "bg-blue-500" },
@@ -24,18 +14,9 @@ const TEMPLATE_META: Record<string, { label: string; accent: string; accentBg: s
   "landscaping-earthy-green": { label: "Landscaping — Earthy Green", accent: "emerald-400", accentBg: "bg-emerald-500" },
 };
 
-const templateLoader: Record<string, () => Promise<{ default: React.ComponentType<{ content: import("@/types/SiteContent").SiteContent }> }>> = {
-  "hvac-reliable-blue": () => import("@/templates/hvac-reliable-blue"),
-  "plumbing-trustworthy-navy": () => import("@/templates/plumbing-trustworthy-navy"),
-  "electrical-sharp-gold": () => import("@/templates/electrical-sharp-gold"),
-  "roofing-bold-copper": () => import("@/templates/roofing-bold-copper"),
-  "painting-clean-minimal": () => import("@/templates/painting-clean-minimal"),
-  "landscaping-earthy-green": () => import("@/templates/landscaping-earthy-green"),
-};
-
 const DynamicTemplates: Record<string, React.ComponentType<{ content: import("@/types/SiteContent").SiteContent }>> = {};
 for (const id of TEMPLATE_IDS) {
-  DynamicTemplates[id] = dynamic(templateLoader[id], {
+  DynamicTemplates[id] = dynamic(templateImports[id], {
     loading: () => (
       <div className="flex items-center justify-center min-h-[60vh] text-zinc-500">
         <div className="text-center">
@@ -51,11 +32,6 @@ export default function PreviewPage() {
   const [active, setActive] = useState<TemplateId>("hvac-reliable-blue");
   const [showJson, setShowJson] = useState(false);
   const [layout, setLayout] = useState<"full" | "grid">("full");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted) return null;
 
   const content = MOCK_DATA[active];
 

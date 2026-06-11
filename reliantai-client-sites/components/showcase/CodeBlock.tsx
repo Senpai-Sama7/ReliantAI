@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect, Fragment } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface CodeBlockProps {
   code: string;
@@ -151,12 +151,10 @@ export default function CodeBlock({
   code,
   language = "markdown",
   maxHeight = "60vh",
-  showLineNumbers = true,
   className = "",
 }: CodeBlockProps) {
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = useCallback(() => {
@@ -171,8 +169,6 @@ export default function CodeBlock({
   return (
     <div
       className={`group relative rounded-xl overflow-hidden border border-zinc-800/80 bg-[#0d0d0d] ${className}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#111111] border-b border-zinc-800/60">

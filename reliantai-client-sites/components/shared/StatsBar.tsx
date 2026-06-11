@@ -63,32 +63,34 @@ interface StatsBarProps {
   light?: boolean;
 }
 
+function parseNumericValue(value: string): number | null {
+  const numeric = parseFloat(value.replace(/[^0-9.]/g, ""));
+  return Number.isNaN(numeric) ? null : numeric;
+}
+
 function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: string; inView: boolean }) {
-  const [display, setDisplay] = useState("0");
+  const numericValue = parseNumericValue(value);
+  const isText = numericValue === null;
+  const [display, setDisplay] = useState(isText ? value : "0");
 
   useEffect(() => {
-    if (!inView) return;
-    const numeric = parseFloat(value.replace(/[^0-9.]/g, ""));
-    if (isNaN(numeric)) {
-      setDisplay(value);
-      return;
-    }
+    if (!inView || isText || numericValue === null) return;
+
     const steps = 30;
-    const increment = numeric / steps;
+    const increment = numericValue / steps;
     let current = 0;
     const timer = setInterval(() => {
       current += increment;
-      if (current >= numeric) {
-        setDisplay(Number.isInteger(numeric) ? numeric.toString() : numeric.toFixed(1));
+      if (current >= numericValue) {
+        setDisplay(Number.isInteger(numericValue) ? numericValue.toString() : numericValue.toFixed(1));
         clearInterval(timer);
       } else {
-        setDisplay(Number.isInteger(numeric) ? Math.floor(current).toString() : current.toFixed(1));
+        setDisplay(Number.isInteger(numericValue) ? Math.floor(current).toString() : current.toFixed(1));
       }
     }, 30);
     return () => clearInterval(timer);
-  }, [inView, value]);
+  }, [inView, isText, numericValue, value]);
 
-  const isText = isNaN(parseFloat(value.replace(/[^0-9.]/g, "")));
   return (
     <span className="tabular-nums">
       {isText ? value : display}
@@ -140,7 +142,7 @@ export default function StatsBar({ content, accent = "blue-400", light = false }
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {tradeStats.map((stat, i) => (
-            <div key={i} className="text-center">
+            <div key={stat.label} className="text-center">
               <div className={`text-4xl sm:text-5xl font-bold tracking-tight ${ACCENT_CLASSES[accent] || ACCENT_CLASSES["blue-400"]}`}>
                 {values[i] ? (
                   <AnimatedNumber value={values[i]} suffix={stat.suffix} inView={inView} />

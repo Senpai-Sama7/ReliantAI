@@ -48,7 +48,7 @@ export default function Reviews({ content, copy }: ReviewsProps) {
               className="break-inside-avoid bg-white border border-stone-200 rounded-xl p-6 hover:shadow-lg hover:border-stone-300 transition-all duration-300"
             >
               <span className="block text-5xl leading-none text-violet-200 font-serif select-none" aria-hidden="true">
-                "
+                &ldquo;
               </span>
               <p className="text-slate-600 text-sm leading-relaxed -mt-3 line-clamp-5">
                 {review.text}

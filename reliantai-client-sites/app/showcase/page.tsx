@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo, type ComponentType } from "react";
+import { useState, useEffect, useMemo, type ComponentType } from "react";
 import dynamic from "next/dynamic";
 import MOCK_DATA from "@/lib/mock-data";
 import { TEMPLATES, type TemplateMeta } from "@/lib/template-meta";
+import { isTemplateId, templateImports } from "@/lib/templates";
 import type { SiteContent } from "@/types/SiteContent";
 import DeviceFrame from "@/components/showcase/DeviceFrame";
 import CodeBlock from "@/components/showcase/CodeBlock";
@@ -14,8 +15,6 @@ type View = "preview" | "grid" | "prompt" | "compare";
 type Device = "desktop" | "tablet" | "mobile";
 
 // ─── Dynamic template loader ─────────────────────────────────────────
-const LOADER_CONTENT = Object.freeze({} as unknown as SiteContent);
-
 const Loader = () => (
   <div className="flex items-center justify-center h-[60vh] bg-zinc-950">
     <div className="flex flex-col items-center gap-3">
@@ -27,7 +26,8 @@ const Loader = () => (
 
 const DynamicTemplates: Record<string, ComponentType<{ content: SiteContent }>> = {};
 for (const t of TEMPLATES) {
-  DynamicTemplates[t.id] = dynamic(() => import(`@/templates/${t.id}`), { loading: Loader });
+  if (!isTemplateId(t.id)) continue;
+  DynamicTemplates[t.id] = dynamic(templateImports[t.id], { loading: Loader });
 }
 
 // ─── SVG Icons ────────────────────────────────────────────────────────
@@ -39,15 +39,6 @@ function IconTablet({ className = "w-4 h-4" }: { className?: string }) {
 }
 function IconPhone({ className = "w-4 h-4" }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>;
-}
-function IconChevronLeft({ className = "w-4 h-4" }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>;
-}
-function IconChevronRight({ className = "w-4 h-4" }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>;
-}
-function IconX({ className = "w-4 h-4" }: { className?: string }) {
-  return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>;
 }
 function IconSparkles({ className = "w-4 h-4" }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>;
@@ -61,6 +52,12 @@ function IconGrid({ className = "w-4 h-4" }: { className?: string }) {
 function IconColumns({ className = "w-4 h-4" }: { className?: string }) {
   return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0h9m-9 0a9 9 0 1 0 9 9m-9 9v4.5m0-4.5h9m-9 4.5a9 9 0 0 1 9-9m0 9v4.5m0-4.5h-9m9 0a9 9 0 0 1-9 9" /></svg>;
 }
+
+const DEVICE_OPTIONS = [
+  { id: "desktop" as const, Icon: IconDesktop },
+  { id: "tablet" as const, Icon: IconTablet },
+  { id: "mobile" as const, Icon: IconPhone },
+];
 
 // ─── Template Card ────────────────────────────────────────────────────
 function TemplateCard({ meta, isActive, onClick }: { meta: TemplateMeta; isActive: boolean; onClick: () => void }) {
@@ -140,8 +137,15 @@ export default function ShowcasePage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [screenKey, setScreenKey] = useState(0);
   const [compareIds, setCompareIds] = useState<[TemplateId, TemplateId]>(["hvac-reliable-blue", "plumbing-trustworthy-navy"]);
-  const [mounted, setMounted] = useState(false);
   const [overrides, setOverrides] = useState<Partial<{ business_name: string; phone: string; city: string; state: string; headline: string }>>({});
+
+  const selectTemplate = (id: TemplateId, options?: { bumpScreen?: boolean }) => {
+    setActive(id);
+    setOverrides({});
+    if (options?.bumpScreen) {
+      setScreenKey((k) => k + 1);
+    }
+  };
 
   const meta = TEMPLATES.find((t) => t.id === active)!;
   const baseContent = MOCK_DATA[active];
@@ -151,10 +155,6 @@ export default function ShowcasePage() {
     hero: { ...baseContent.hero, ...(overrides.headline && { headline: overrides.headline }) },
   }), [baseContent, overrides]);
 
-  useEffect(() => setOverrides({}), [active]);
-
-  useEffect(() => setMounted(true), []);
-
   // Keyboard navigation
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -162,13 +162,11 @@ export default function ShowcasePage() {
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
         const next = TEMPLATES[(idx + 1) % TEMPLATES.length];
-        setActive(next.id);
-        setScreenKey((k) => k + 1);
+        selectTemplate(next.id, { bumpScreen: true });
       } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
         e.preventDefault();
         const prev = TEMPLATES[(idx - 1 + TEMPLATES.length) % TEMPLATES.length];
-        setActive(prev.id);
-        setScreenKey((k) => k + 1);
+        selectTemplate(prev.id, { bumpScreen: true });
       } else if (e.key === "\\" && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         setSidebarOpen((s) => !s);
@@ -177,14 +175,6 @@ export default function ShowcasePage() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [active]);
-
-  if (!mounted) {
-    return (
-      <div className="h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-zinc-700 border-t-white rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   const Template = DynamicTemplates[active];
 
@@ -222,17 +212,17 @@ export default function ShowcasePage() {
           <div className="flex items-center gap-2">
             {view === "preview" && (
               <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06]">
-                {([["desktop", <IconDesktop className="w-3.5 h-3.5" />], ["tablet", <IconTablet className="w-3.5 h-3.5" />], ["mobile", <IconPhone className="w-3.5 h-3.5" />]] as const).map(([d, icon]) => (
+                {DEVICE_OPTIONS.map(({ id, Icon }) => (
                   <button
-                    key={d}
-                    onClick={() => { setDevice(d as Device); setScreenKey((k) => k + 1); }}
-                    aria-label={`Switch to ${d} view`}
+                    key={id}
+                    onClick={() => { setDevice(id); setScreenKey((k) => k + 1); }}
+                    aria-label={`Switch to ${id} view`}
                     className={`relative p-1.5 rounded-md transition-all ${
-                      device === d ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                      device === id ? "text-white" : "text-zinc-500 hover:text-zinc-300"
                     }`}
                   >
-                    {device === d && <div className="absolute inset-0 bg-zinc-700/80 rounded-md ring-1 ring-white/5" />}
-                    <span className="relative z-10">{icon}</span>
+                    {device === id && <div className="absolute inset-0 bg-zinc-700/80 rounded-md ring-1 ring-white/5" />}
+                    <span className="relative z-10"><Icon className="w-3.5 h-3.5" /></span>
                   </button>
                 ))}
               </div>
@@ -266,7 +256,7 @@ export default function ShowcasePage() {
                     key={t.id}
                     meta={t}
                     isActive={active === t.id}
-                    onClick={() => { setActive(t.id); setScreenKey((k) => k + 1); }}
+                    onClick={() => selectTemplate(t.id, { bumpScreen: true })}
                   />
                 ))}
               </div>
@@ -283,7 +273,7 @@ export default function ShowcasePage() {
 
                 {/* Metadata grid */}
                 <div className="grid grid-cols-2 gap-1.5">
-                  <DetailCell label="Personality" value={meta.personality} accent />
+                  <DetailCell label="Personality" value={meta.personality} />
                   <DetailCell label="Theme" value={meta.theme === "light" ? "Light" : "Dark"} />
                   <DetailCell label="Hero" value={meta.heroLayout === "single" ? "Single" : "Dual"} />
                   <DetailCell label="Accent" value={meta.colorName}>
@@ -371,13 +361,13 @@ export default function ShowcasePage() {
                       {/* Overlay on hover */}
                       <div className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3">
                         <button
-                          onClick={() => { setActive(t.id); setView("preview"); setScreenKey((k) => k + 1); }}
+                          onClick={() => { selectTemplate(t.id, { bumpScreen: true }); setView("preview"); }}
                           className="px-5 py-2.5 text-sm font-medium bg-white text-zinc-950 rounded-xl hover:bg-zinc-100 transition-colors shadow-lg"
                         >
                           Full Preview
                         </button>
                         <button
-                          onClick={() => { setActive(t.id); setView("prompt"); }}
+                          onClick={() => { selectTemplate(t.id); setView("prompt"); }}
                           className="px-4 py-1.5 text-xs font-medium bg-zinc-800/90 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors ring-1 ring-white/10"
                         >
                           <span className="flex items-center gap-1.5"><IconCode className="w-3 h-3" /> View Prompt</span>
@@ -463,7 +453,7 @@ export default function ShowcasePage() {
               </div>
 
               <div className="flex-1 flex min-h-0">
-                {compareIds.map((id, i) => {
+                {compareIds.map((id) => {
                   const T = DynamicTemplates[id];
                   const m = TEMPLATES.find((t) => t.id === id)!;
                   return (
@@ -495,7 +485,7 @@ export default function ShowcasePage() {
 
 // ─── Sub-components ────────────────────────────────────────────────────
 
-function DetailCell({ label, value, accent, children }: { label: string; value: string; accent?: boolean; children?: React.ReactNode }) {
+function DetailCell({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
   return (
     <div className="p-2 rounded-lg bg-zinc-900/50 ring-1 ring-white/[0.03]">
       <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-semibold">{label}</div>
