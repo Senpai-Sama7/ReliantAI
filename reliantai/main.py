@@ -1,10 +1,12 @@
 import hmac
 import os
 from contextlib import asynccontextmanager
+
 import structlog
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import text
 
 from .db import get_db_session
 
@@ -28,7 +30,7 @@ async def lifespan(app: FastAPI):
     # Verify DB on startup
     try:
         with get_db_session() as db:
-            db.execute("SELECT 1")
+            db.execute(text("SELECT 1"))
         log.info("db_connection_ok")
     except Exception as e:
         log.error("db_connection_failed", error=str(e))
@@ -64,7 +66,7 @@ async def health():
 
     try:
         with get_db_session() as db:
-            db.execute("SELECT 1")
+            db.execute(text("SELECT 1"))
         db_ok = True
     except Exception:
         pass

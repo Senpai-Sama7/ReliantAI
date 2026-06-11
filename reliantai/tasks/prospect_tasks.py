@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 from ..db import get_db_session
 from ..db.models import Prospect, ResearchJob, OutreachSequence, OutreachMessage, LeadEvent
 from ..agents.home_services_crew import create_prospect_crew
+from ..services.site_registration_service import SiteRegistrationService
 
 log = structlog.get_logger()
 
@@ -36,6 +37,17 @@ def run_prospect_pipeline(self, prospect_id: str):
         crew = create_prospect_crew(prospect_data)
         result = crew.kickoff()
         log.info("crew_result", prospect_id=prospect_id, result_summary=str(result)[:200])
+
+        registration = SiteRegistrationService.register_from_crew_outputs(prospect_id, crew)
+        if registration.get("error"):
+            log.warning("site_registration_skipped", prospect_id=prospect_id, error=registration["error"])
+        else:
+            log.info(
+                "site_registered_from_pipeline",
+                prospect_id=prospect_id,
+                slug=registration.get("slug"),
+                preview_url=registration.get("preview_url"),
+            )
 
         with get_db_session() as db:
             job = db.query(ResearchJob).filter_by(id=job_id).first()
