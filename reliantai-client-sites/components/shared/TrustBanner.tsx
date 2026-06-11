@@ -5,11 +5,6 @@ interface TrustBannerProps {
   light?: boolean;
 }
 
-interface TrustItem {
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
 const ICONS = {
   shield: ShieldCheck,
   award: Award,

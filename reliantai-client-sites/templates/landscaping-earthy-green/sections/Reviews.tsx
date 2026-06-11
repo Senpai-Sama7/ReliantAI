@@ -60,7 +60,7 @@ export default function Reviews({ content, copy }: ReviewsProps) {
               className="break-inside-avoid bg-slate-800/50 border border-slate-700/80 rounded-xl p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all duration-300"
             >
               <span className="block text-5xl leading-none text-emerald-500/30 font-serif select-none" aria-hidden="true">
-                "
+                &ldquo;
               </span>
               <p className="text-slate-300 text-sm leading-relaxed -mt-3 line-clamp-5">
                 {review.text}

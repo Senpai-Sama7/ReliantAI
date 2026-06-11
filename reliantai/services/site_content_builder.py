@@ -38,6 +38,33 @@ TRADE_AEO_DEFAULTS: dict[str, dict[str, Any]] = {
 }
 
 
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    if value is None:
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_int(value: Any, default: int = 0) -> int:
+    if value is None:
+        return default
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return default
+
+
+def _normalize_lighthouse_score(value: Any) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
 def _phone_href(phone: str) -> str:
     digits = "".join(ch for ch in phone if ch.isdigit())
     if len(digits) == 10:
@@ -128,13 +155,9 @@ def build_site_content(
     meta_title = seo.get("title", f"{business_name} - {city}")
     meta_description = seo.get("description", "")
 
-    pagespeed_score = research_data.get("pagespeed_score")
-    score = lighthouse_score
-    if score is None and pagespeed_score is not None:
-        try:
-            score = int(pagespeed_score)
-        except (TypeError, ValueError):
-            score = None
+    score = _normalize_lighthouse_score(lighthouse_score)
+    if score is None:
+        score = _normalize_lighthouse_score(research_data.get("pagespeed_score"))
 
     business_reviews = _normalize_reviews(
         copy_package.get("reviews"),
@@ -150,15 +173,13 @@ def build_site_content(
             "phone": phone,
             "email": research_data.get("email") or getattr(prospect, "email", None),
             "address": research_data.get("address") or getattr(prospect, "address", ""),
-            "google_rating": float(
+            "google_rating": _safe_float(
                 research_data.get("rating")
                 or getattr(prospect, "google_rating", None)
-                or 0
             ),
-            "review_count": int(
+            "review_count": _safe_int(
                 research_data.get("review_count")
                 or getattr(prospect, "review_count", None)
-                or 0
             ),
             "website_url": (
                 research_data.get("website")

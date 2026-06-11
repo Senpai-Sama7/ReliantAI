@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 
 type Device = "desktop" | "tablet" | "mobile";
 
@@ -108,19 +108,6 @@ function MobileHomeIndicator() {
 
 export default function DeviceFrame({ device, children, url, className = "" }: DeviceFrameProps) {
   const config = DEVICE_CONFIG[device];
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [prevDevice, setPrevDevice] = useState(device);
-
-  useEffect(() => {
-    if (device !== prevDevice) {
-      setIsTransitioning(true);
-      const timer = setTimeout(() => {
-        setIsTransitioning(false);
-        setPrevDevice(device);
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [device, prevDevice]);
 
   if (device === "desktop") {
     return (
@@ -136,6 +123,7 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
   return (
     <div className={`flex items-center justify-center h-full p-8 ${className}`}>
       <div
+        key={device}
         className="relative transition-all duration-500 ease-out"
         style={{
           width: device === "mobile" ? 375 : 768,
@@ -143,7 +131,6 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
           maxHeight: "90vh",
         }}
       >
-        {/* Device frame */}
         <div
           className="absolute inset-0 rounded-[44px] transition-all duration-500"
           style={{
@@ -151,7 +138,6 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
             boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05)",
           }}
         >
-          {/* Screen */}
           <div
             className="absolute overflow-hidden transition-all duration-500"
             style={{
@@ -162,12 +148,10 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
               borderRadius: device === "mobile" ? "32px" : "8px",
             }}
           >
-            {/* Notch (mobile only) */}
             {device === "mobile" && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-36 h-7 bg-black rounded-b-2xl z-20" />
             )}
 
-            {/* Content */}
             <div className="h-full flex flex-col bg-white">
               {device === "mobile" ? <MobileStatusBar /> : <TabletChrome url={url} />}
               <div className="flex-1 overflow-hidden">
@@ -178,12 +162,11 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
           </div>
         </div>
 
-        {/* Reflection effect */}
         <div
           className="absolute inset-0 rounded-[44px] pointer-events-none transition-opacity duration-500"
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%)",
-            opacity: isTransitioning ? 0 : 1,
+            opacity: 1,
           }}
         />
       </div>

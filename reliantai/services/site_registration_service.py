@@ -74,6 +74,28 @@ def _get_theme(template_id: str) -> dict[str, str]:
     return themes.get(template_id, themes["hvac-reliable-blue"])
 
 
+COPY_PACKAGE_KEYS = frozenset({"hero", "services", "about", "seo", "faq", "reviews"})
+REGISTRATION_RESULT_KEYS = frozenset({"slug", "preview_url", "schema_valid"})
+
+
+def _looks_like_copy_package(data: dict) -> bool:
+    return bool(COPY_PACKAGE_KEYS & data.keys())
+
+
+def _looks_like_registration_result(data: dict) -> bool:
+    return REGISTRATION_RESULT_KEYS <= data.keys() and not _looks_like_copy_package(data)
+
+
+def _resolve_unique_slug(db, prospect, existing: GeneratedSite | None) -> str:
+    if existing:
+        return existing.slug
+    for _ in range(10):
+        slug = generate_slug(prospect.business_name, prospect.city)
+        if not db.query(GeneratedSite).filter_by(slug=slug).first():
+            return slug
+    return f"{generate_slug(prospect.business_name, prospect.city)}-{uuid.uuid4().hex[:8]}"
+
+
 def _parse_task_output(output: object) -> dict | list | None:
     """Best-effort parse of CrewAI task output into structured data."""
     if output is None:
@@ -82,6 +104,12 @@ def _parse_task_output(output: object) -> dict | list | None:
         return output
     if isinstance(output, list):
         return output
+    model_dump = getattr(output, "model_dump", None)
+    if callable(model_dump):
+        return model_dump()
+    to_dict = getattr(output, "dict", None)
+    if callable(to_dict):
+        return to_dict()
     if hasattr(output, "raw"):
         output = output.raw
     if not isinstance(output, str):
@@ -125,9 +153,7 @@ class SiteRegistrationService:
 
             existing = db.query(GeneratedSite).filter_by(prospect_id=prospect_id).first()
             previous_slug = existing.slug if existing else None
-            slug = existing.slug if existing else generate_slug(
-                prospect.business_name, prospect.city
-            )
+            slug = _resolve_unique_slug(db, prospect, existing)
             template_id = TEMPLATE_MAP.get(prospect.trade, "hvac-reliable-blue")
             theme = _get_theme(template_id)
 
@@ -160,7 +186,6 @@ class SiteRegistrationService:
                 theme=theme,
                 schema_org=schema,
                 status="preview_live",
-                lighthouse_score=research_data.get("pagespeed_score"),
             )
 
             preview_url = f"https://preview.reliantai.org/{slug}"
@@ -217,17 +242,27 @@ class SiteRegistrationService:
             if parsed is None:
                 continue
             description = (getattr(task, "description", "") or "").lower()
-            if "copy_package" in description or "website copy" in description:
-                if isinstance(parsed, dict):
-                    copy_package = parsed
-            elif "competitor" in description:
+
+            if isinstance(parsed, dict) and _looks_like_registration_result(parsed):
+                continue
+
+            if isinstance(parsed, dict) and _looks_like_copy_package(parsed):
+                copy_package = parsed
+                continue
+
+            if "competitor" in description:
                 if isinstance(parsed, list):
                     competitor_data = parsed
                 elif isinstance(parsed, dict):
                     competitor_data = [parsed]
-            elif "research" in description:
-                if isinstance(parsed, dict):
-                    research_data = parsed
+                continue
+
+            if isinstance(parsed, dict) and (
+                "research" in description
+                or "pagespeed_score" in parsed
+                or "profile_completeness" in parsed
+            ):
+                research_data = parsed
 
         if not copy_package and not research_data:
             log.warning("crew_outputs_unparseable", prospect_id=prospect_id)

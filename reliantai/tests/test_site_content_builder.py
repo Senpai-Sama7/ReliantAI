@@ -74,3 +74,61 @@ def test_build_site_content_normalizes_copy_package():
     assert content["site_config"]["template_id"] == "hvac-reliable-blue"
     assert content["lighthouse_score"] == 92
     assert content["seo"]["title"] == "Apex HVAC Houston"
+
+
+def test_build_site_content_coerces_string_lighthouse_score():
+    prospect = SimpleNamespace(
+        trade="hvac",
+        business_name="Apex HVAC",
+        city="Houston",
+        state="TX",
+        phone="+18325551234",
+        email=None,
+        address="123 Main St",
+        google_rating=None,
+        review_count=None,
+        website_url=None,
+    )
+    content = build_site_content(
+        copy_package={"seo": {"title": "Apex", "description": "Best"}},
+        research_data={"city": "Houston", "state": "TX"},
+        prospect=prospect,
+        slug="apex-hvac-houston-ab12",
+        template_id="hvac-reliable-blue",
+        theme={"primary": "#1d4ed8", "accent": "#93c5fd", "font_display": "Outfit", "font_body": "Inter"},
+        schema_org={"@context": "https://schema.org", "@type": "HVACBusiness"},
+        lighthouse_score="87.0",
+    )
+    assert content["lighthouse_score"] == 87
+    assert isinstance(content["lighthouse_score"], int)
+
+
+def test_build_site_content_safe_numeric_coercion():
+    prospect = SimpleNamespace(
+        trade="hvac",
+        business_name="Apex HVAC",
+        city="Houston",
+        state="TX",
+        phone="+18325551234",
+        email=None,
+        address="123 Main St",
+        google_rating=None,
+        review_count=None,
+        website_url=None,
+    )
+    content = build_site_content(
+        copy_package={"seo": {"title": "Apex", "description": "Best"}},
+        research_data={
+            "city": "Houston",
+            "state": "TX",
+            "rating": "4.8",
+            "review_count": "127.0",
+        },
+        prospect=prospect,
+        slug="apex-hvac-houston-ab12",
+        template_id="hvac-reliable-blue",
+        theme={"primary": "#1d4ed8", "accent": "#93c5fd", "font_display": "Outfit", "font_body": "Inter"},
+        schema_org={"@context": "https://schema.org", "@type": "HVACBusiness"},
+    )
+    assert content["business"]["google_rating"] == 4.8
+    assert content["business"]["review_count"] == 127

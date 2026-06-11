@@ -128,7 +128,8 @@ def test_site_registration_service_register(mock_get_db, _mock_revalidate):
     mock_prospect.trade = "hvac"
     mock_db.query.return_value.filter_by.return_value.first.side_effect = [
         mock_prospect,
-        None,
+        None,  # no existing GeneratedSite for prospect
+        *([None] * 10),  # slug uniqueness checks
     ]
     mock_get_db.return_value.__enter__ = MagicMock(return_value=mock_db)
     mock_get_db.return_value.__exit__ = MagicMock(return_value=False)

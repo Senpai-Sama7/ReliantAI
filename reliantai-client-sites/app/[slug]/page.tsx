@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSiteContent, getTemplate } from "@/lib/api";
+import { serializeJsonLd } from "@/lib/serialize-json-ld";
 import PreviewBanner from "@/components/PreviewBanner";
 
 export const revalidate = 3600;
@@ -34,13 +35,14 @@ export default async function ClientSitePage({
 
   const isPreview = content.status === "preview_live";
   const Template = await getTemplate(content.site_config.template_id);
+  if (!Template) return notFound();
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(content.schema_org),
+          __html: serializeJsonLd(content.schema_org),
         }}
       />
       <Template content={content} />

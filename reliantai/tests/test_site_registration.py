@@ -78,3 +78,25 @@ def test_register_from_crew_outputs_parses_tasks():
     assert kwargs["prospect_id"] == "prospect-1"
     assert kwargs["copy_package"]["hero"]["headline"] == "Apex HVAC"
     assert kwargs["research_data"]["name"] == "Apex HVAC"
+
+
+def test_register_from_crew_outputs_ignores_site_build_registration_echo():
+    task_copy = SimpleNamespace(
+        description="Write website copy and produce a copy_package dict",
+        output='{"hero": {"headline": "Apex HVAC"}, "seo": {"title": "Apex", "description": "Best"}, "reviews": {"reviews": []}}',
+    )
+    task_site_build = SimpleNamespace(
+        description=(
+            "Register the preview site using copy_package from the copy agent's output. "
+            "Return slug, preview_url, schema_valid."
+        ),
+        output='{"slug": "apex-hvac-houston-ab12", "preview_url": "https://preview.reliantai.org/apex-hvac-houston-ab12", "schema_valid": true}',
+    )
+    crew = SimpleNamespace(tasks=[task_copy, task_site_build])
+
+    with patch.object(SiteRegistrationService, "register", return_value={"slug": "apex-hvac-houston-ab12"}) as mock_register:
+        SiteRegistrationService.register_from_crew_outputs("prospect-1", crew)
+
+    kwargs = mock_register.call_args.kwargs
+    assert kwargs["copy_package"]["hero"]["headline"] == "Apex HVAC"
+    assert "slug" not in kwargs["copy_package"]
