@@ -76,10 +76,56 @@ def _get_theme(template_id: str) -> dict[str, str]:
 
 COPY_PACKAGE_KEYS = frozenset({"hero", "services", "about", "seo", "faq", "reviews"})
 REGISTRATION_RESULT_KEYS = frozenset({"slug", "preview_url", "schema_valid"})
+RESEARCH_ONLY_KEYS = frozenset(
+    {
+        "pagespeed_score",
+        "profile_completeness",
+        "review_response_rate",
+        "lcp",
+        "fid",
+        "cls",
+        "has_ssl",
+        "hours",
+        "photos",
+        "lat",
+        "lng",
+    }
+)
+
+
+def _looks_like_research_data(data: dict) -> bool:
+    """Research agent output — includes reviews as a list, not copy_package shape."""
+    if RESEARCH_ONLY_KEYS & data.keys():
+        return True
+    reviews = data.get("reviews")
+    if isinstance(reviews, list):
+        return True
+    if (
+        "rating" in data
+        and "review_count" in data
+        and "hero" not in data
+        and "seo" not in data
+    ):
+        return True
+    return False
 
 
 def _looks_like_copy_package(data: dict) -> bool:
-    return bool(COPY_PACKAGE_KEYS & data.keys())
+    if _looks_like_research_data(data):
+        return False
+    if "hero" in data:
+        return True
+    if isinstance(data.get("seo"), dict):
+        return True
+    if isinstance(data.get("reviews"), dict):
+        return True
+    if isinstance(data.get("services"), list):
+        return True
+    if isinstance(data.get("about"), dict):
+        return True
+    if isinstance(data.get("faq"), list):
+        return True
+    return bool(COPY_PACKAGE_KEYS & data.keys()) and not _looks_like_research_data(data)
 
 
 def _looks_like_registration_result(data: dict) -> bool:
@@ -246,10 +292,6 @@ class SiteRegistrationService:
             if isinstance(parsed, dict) and _looks_like_registration_result(parsed):
                 continue
 
-            if isinstance(parsed, dict) and _looks_like_copy_package(parsed):
-                copy_package = parsed
-                continue
-
             if "competitor" in description:
                 if isinstance(parsed, list):
                     competitor_data = parsed
@@ -257,11 +299,15 @@ class SiteRegistrationService:
                     competitor_data = [parsed]
                 continue
 
-            if isinstance(parsed, dict) and (
-                "research" in description
-                or "pagespeed_score" in parsed
-                or "profile_completeness" in parsed
-            ):
+            if isinstance(parsed, dict) and _looks_like_research_data(parsed):
+                research_data = parsed
+                continue
+
+            if isinstance(parsed, dict) and _looks_like_copy_package(parsed):
+                copy_package = parsed
+                continue
+
+            if isinstance(parsed, dict) and "research" in description:
                 research_data = parsed
 
         if not copy_package and not research_data:
