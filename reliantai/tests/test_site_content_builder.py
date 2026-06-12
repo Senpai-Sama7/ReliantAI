@@ -132,3 +132,28 @@ def test_build_site_content_safe_numeric_coercion():
     )
     assert content["business"]["google_rating"] == 4.8
     assert content["business"]["review_count"] == 127
+
+
+def test_build_site_content_strips_unsafe_website_url():
+    prospect = SimpleNamespace(
+        trade="plumbing",
+        business_name="Apex Plumbing",
+        city="Houston",
+        state="TX",
+        phone="+18325551234",
+        email=None,
+        address="123 Main St",
+        google_rating=None,
+        review_count=None,
+        website_url="javascript:alert(1)",
+    )
+    content = build_site_content(
+        copy_package={"seo": {"title": "Apex", "description": "Best"}},
+        research_data={"city": "Houston", "state": "TX"},
+        prospect=prospect,
+        slug="apex-plumbing-houston-ab12",
+        template_id="plumbing-trustworthy-navy",
+        theme={"primary": "#1e3a5f", "accent": "#60a5fa", "font_display": "Sora", "font_body": "Inter"},
+        schema_org={"@context": "https://schema.org", "@type": "Plumber"},
+    )
+    assert content["business"]["website_url"] is None

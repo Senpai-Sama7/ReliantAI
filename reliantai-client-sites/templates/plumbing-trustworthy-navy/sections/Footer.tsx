@@ -1,4 +1,5 @@
 import { Phone, MapPin, Globe } from "lucide-react";
+import { sanitizeHttpUrl } from "@/lib/safe-url";
 import type { SiteContent } from "@/types/SiteContent";
 
 interface FooterProps {
@@ -8,7 +9,7 @@ interface FooterProps {
 export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
-  const websiteUrl = business.website_url || "#";
+  const websiteUrl = sanitizeHttpUrl(business.website_url);
   const areasServed = content.aeo_signals?.area_served ?? [];
 
   return (
@@ -34,7 +35,7 @@ export default function Footer({ content }: FooterProps) {
                     <span>{business.address}</span>
                   </div>
                 )}
-                {websiteUrl !== "#" && (
+                {websiteUrl && (
                   <a
                     href={websiteUrl}
                     target="_blank"
@@ -97,7 +98,7 @@ export default function Footer({ content }: FooterProps) {
               <p className="text-slate-400 text-sm leading-relaxed">
                 Professional plumbing services in {business.city}, {business.state}. Available 24/7 for emergency repairs.
               </p>
-              {websiteUrl !== "#" && (
+              {websiteUrl && (
                 <a
                   href={websiteUrl}
                   target="_blank"

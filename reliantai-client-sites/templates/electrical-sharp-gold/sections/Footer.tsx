@@ -1,4 +1,5 @@
 import { Phone, MapPin, Globe } from "lucide-react";
+import { sanitizeHttpUrl } from "@/lib/safe-url";
 import type { SiteContent } from "@/types/SiteContent";
 
 interface FooterProps {
@@ -8,6 +9,7 @@ interface FooterProps {
 export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
+  const websiteUrl = sanitizeHttpUrl(business.website_url);
 
   const navLinks = [
     { label: "Services", href: "#services" },
@@ -76,9 +78,9 @@ export default function Footer({ content }: FooterProps) {
           </div>
 
           <div className="mt-8 flex items-center gap-4">
-            {business.website_url && (
+            {websiteUrl && (
               <a
-                href={business.website_url}
+                href={websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="transition-colors hover:text-amber-300 text-slate-400"

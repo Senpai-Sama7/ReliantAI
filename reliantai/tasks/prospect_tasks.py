@@ -2,14 +2,14 @@ import os
 import structlog
 from celery import shared_task
 from datetime import datetime, timedelta, timezone
+from sqlalchemy.orm import joinedload
 from ..db import get_db_session
 from ..db.models import Prospect, ResearchJob, OutreachSequence, OutreachMessage, LeadEvent
 from ..agents.home_services_crew import create_prospect_crew
 from ..services.site_registration_service import SiteRegistrationService
+from ..services.sms_compliance import is_stop_request
 
 log = structlog.get_logger()
-
-STOP_WORDS = {"stop", "unsubscribe", "quit", "cancel", "end", "no more", "opt out", "remove me"}
 
 
 @shared_task(bind=True, name="prospect_tasks.run_prospect_pipeline", queue="agents")
@@ -62,7 +62,7 @@ def run_prospect_pipeline(self, prospect_id: str):
         log.info("pipeline_completed", prospect_id=prospect_id, job_id=job_id)
         return {"status": "completed", "prospect_id": prospect_id}
 
-    except (RuntimeError, ValueError, KeyError) as exc:
+    except Exception as exc:
         log.error("pipeline_failed", prospect_id=prospect_id, error=str(exc))
         if job_id:
             with get_db_session() as db:
@@ -76,8 +76,7 @@ def run_prospect_pipeline(self, prospect_id: str):
 
 @shared_task(bind=True, name="prospect_tasks.process_inbound_response", queue="outreach")
 def process_inbound_response(self, prospect_id: str, phone: str, body: str):
-    body_lower = body.strip().lower()
-    is_stop = any(word in body_lower for word in STOP_WORDS)
+    is_stop = is_stop_request(body)
 
     try:
         with get_db_session() as db:
@@ -117,10 +116,16 @@ def process_scheduled_followups():
     try:
         with get_db_session() as db:
             now = datetime.now(timezone.utc)
-            due = db.query(OutreachSequence).filter(
-                OutreachSequence.next_send_at <= now,
-                OutreachSequence.status == "active",
-            ).with_for_update(skip_locked=True).all()
+            due = (
+                db.query(OutreachSequence)
+                .options(joinedload(OutreachSequence.prospect))
+                .filter(
+                    OutreachSequence.next_send_at <= now,
+                    OutreachSequence.status == "active",
+                )
+                .with_for_update(skip_locked=True)
+                .all()
+            )
 
             processed = 0
             for seq in due:
