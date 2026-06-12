@@ -129,3 +129,22 @@ def test_register_from_crew_outputs_ignores_site_build_registration_echo():
     kwargs = mock_register.call_args.kwargs
     assert kwargs["copy_package"]["hero"]["headline"] == "Apex HVAC"
     assert "slug" not in kwargs["copy_package"]
+
+
+def test_preview_revalidate_url_defaults_to_preview_domain(monkeypatch):
+    monkeypatch.delenv("PREVIEW_SITES_BASE_URL", raising=False)
+    assert (
+        SiteRegistrationService._preview_revalidate_url()
+        == "https://preview.reliantai.org/api/revalidate"
+    )
+
+
+def test_preview_revalidate_url_honors_env_override(monkeypatch):
+    monkeypatch.setenv(
+        "PREVIEW_SITES_BASE_URL",
+        "https://reliantai-client-sites.vercel.app",
+    )
+    assert (
+        SiteRegistrationService._preview_revalidate_url()
+        == "https://reliantai-client-sites.vercel.app/api/revalidate"
+    )

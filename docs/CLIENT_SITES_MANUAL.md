@@ -141,7 +141,12 @@ sudo sysctl -p
 | `API_TIMEOUT_MS` | No | `10000` | Server-side fetch timeout. Invalid values fall back to 10s |
 | `PLATFORM_API_URL` | No | — | Legacy alias for `API_BASE_URL` |
 
-**Platform side:** `REVALIDATE_SECRET` in `reliantai` must match the client-sites value exactly.
+**Platform side (reliantai):**
+
+| Variable | Description |
+|----------|-------------|
+| `REVALIDATE_SECRET` | Must match client-sites value exactly |
+| `PREVIEW_SITES_BASE_URL` | Default `https://preview.reliantai.org`. Until DNS propagates, set to `https://reliantai-client-sites.vercel.app` |
 
 ---
 
@@ -275,7 +280,8 @@ PYTHONPATH=. pytest reliantai/tests/test_generated_sites_api.py -v
 - [ ] Set `API_BASE_URL=https://api.reliantai.org` (or your API host)
 - [ ] Set `REVALIDATE_SECRET` (match platform `reliantai` env)
 - [ ] Set `NEXT_PUBLIC_CHECKOUT_BASE_URL=https://reliantai.org`
-- [ ] Point `preview.reliantai.org` DNS to Vercel
+- [ ] Point `preview.reliantai.org` DNS to Vercel: `A preview.reliantai.org → 76.76.21.21` (Cloudflare)
+- [ ] Until DNS works: set platform `PREVIEW_SITES_BASE_URL=https://reliantai-client-sites.vercel.app`
 - [ ] Seed at least one `generated_sites` row and verify `GET /{slug}` returns 200
 - [ ] Trigger revalidation from platform after site registration
 

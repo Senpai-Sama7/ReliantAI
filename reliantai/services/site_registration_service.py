@@ -322,6 +322,14 @@ class SiteRegistrationService:
         )
 
     @staticmethod
+    def _preview_revalidate_url() -> str:
+        base = os.environ.get(
+            "PREVIEW_SITES_BASE_URL",
+            "https://preview.reliantai.org",
+        ).rstrip("/")
+        return f"{base}/api/revalidate"
+
+    @staticmethod
     def _revalidate_preview_cache(slug: str) -> None:
         secret = os.environ.get("REVALIDATE_SECRET", "")
         if not secret:
@@ -330,7 +338,7 @@ class SiteRegistrationService:
         try:
             with httpx.Client(timeout=10.0) as client:
                 response = client.post(
-                    "https://preview.reliantai.org/api/revalidate",
+                    SiteRegistrationService._preview_revalidate_url(),
                     json={"slug": slug},
                     headers={"Authorization": f"Bearer {secret}"},
                 )
