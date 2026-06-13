@@ -1,5 +1,6 @@
 -- ReliantAI Platform Schema
--- Initial migration: all core tables
+-- REFERENCE ONLY: initialize schema via Alembic (`alembic upgrade head`).
+-- Do not mount this file into Postgres docker-entrypoint-initdb.d.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

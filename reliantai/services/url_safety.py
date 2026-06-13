@@ -12,6 +12,9 @@ def sanitize_http_url(url: str | None) -> str | None:
     trimmed = url.strip()
     if not trimmed:
         return None
+    if not trimmed.startswith(("http://", "https://")):
+        if "." in trimmed and not trimmed.startswith("."):
+            trimmed = f"https://{trimmed}"
     parsed = urlparse(trimmed)
     if parsed.scheme in ("http", "https") and parsed.netloc:
         return trimmed

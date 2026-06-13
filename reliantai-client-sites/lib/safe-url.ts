@@ -7,8 +7,14 @@ export function sanitizeHttpUrl(
   if (!url || typeof url !== "string") return null;
   const trimmed = url.trim();
   if (!trimmed) return null;
+  let target = trimmed;
+  if (!/^https?:\/\//i.test(target)) {
+    if (target.includes(".") && !target.startsWith(".")) {
+      target = `https://${target}`;
+    }
+  }
   try {
-    const parsed = new URL(trimmed);
+    const parsed = new URL(target);
     if (parsed.protocol === "http:" || parsed.protocol === "https:") {
       return parsed.href;
     }

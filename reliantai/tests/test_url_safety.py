@@ -21,3 +21,8 @@ def test_sanitize_http_url_rejects_empty_and_none():
     assert sanitize_http_url("") is None
     assert sanitize_http_url("   ") is None
     assert sanitize_http_url(None) is None
+
+
+def test_sanitize_http_url_prepends_https_for_bare_domains():
+    assert sanitize_http_url("www.example.com") == "https://www.example.com"
+    assert sanitize_http_url("example.com/path") == "https://example.com/path"

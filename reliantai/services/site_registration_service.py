@@ -143,6 +143,34 @@ def _resolve_unique_slug(db, prospect, existing: GeneratedSite | None) -> str:
     return f"{generate_slug(prospect.business_name, prospect.city)}-{uuid.uuid4().hex[:8]}"
 
 
+def _build_schema_for_slug(
+    slug: str,
+    research_data: dict,
+    prospect: Prospect,
+    copy_package: dict,
+    competitor_data: list,
+) -> tuple[dict, bool]:
+    schema = build_local_business_schema(
+        business_data={
+            **research_data,
+            "slug": slug,
+            "trade": prospect.trade,
+            "name": research_data.get("name", prospect.business_name),
+            "phone": research_data.get("phone", prospect.phone),
+            "address": research_data.get("address", prospect.address),
+        },
+        review_data=copy_package.get("reviews", {}),
+        competitor_keywords=(
+            competitor_data[0].get("top_keywords", []) if competitor_data else []
+        ),
+    )
+    validation = validate_local_business_schema(schema)
+    schema_valid = bool(validation.get("valid"))
+    if not schema_valid:
+        log.warning("schema_validation_failed", slug=slug, validation=validation)
+    return schema, schema_valid
+
+
 def _parse_task_output(output: object) -> dict | list | None:
     """Best-effort parse of CrewAI task output into structured data."""
     if output is None:
@@ -204,25 +232,9 @@ class SiteRegistrationService:
             template_id = TEMPLATE_MAP.get(prospect.trade, "hvac-reliable-blue")
             theme = _get_theme(template_id)
 
-            schema = build_local_business_schema(
-                business_data={
-                    **research_data,
-                    "slug": slug,
-                    "trade": prospect.trade,
-                    "name": research_data.get("name", prospect.business_name),
-                    "phone": research_data.get("phone", prospect.phone),
-                    "address": research_data.get("address", prospect.address),
-                },
-                review_data=copy_package.get("reviews", {}),
-                competitor_keywords=(
-                    competitor_data[0].get("top_keywords", []) if competitor_data else []
-                ),
+            schema, schema_valid = _build_schema_for_slug(
+                slug, research_data, prospect, copy_package, competitor_data
             )
-
-            validation = validate_local_business_schema(schema)
-            schema_valid = bool(validation.get("valid"))
-            if not schema_valid:
-                log.warning("schema_validation_failed", slug=slug, validation=validation)
 
             site_content = build_site_content(
                 copy_package=copy_package,
@@ -294,6 +306,9 @@ class SiteRegistrationService:
                         return {"error": "slug_collision"}
                     slug = _resolve_unique_slug(db, prospect, None)
                     preview_url = f"https://preview.reliantai.org/{slug}"
+                    schema, schema_valid = _build_schema_for_slug(
+                        slug, research_data, prospect, copy_package, competitor_data
+                    )
                     site_content = build_site_content(
                         copy_package=copy_package,
                         research_data=research_data,

@@ -157,3 +157,28 @@ def test_build_site_content_strips_unsafe_website_url():
         schema_org={"@context": "https://schema.org", "@type": "Plumber"},
     )
     assert content["business"]["website_url"] is None
+
+
+def test_build_site_content_normalizes_bare_domain_website_url():
+    prospect = SimpleNamespace(
+        trade="plumbing",
+        business_name="Apex Plumbing",
+        city="Houston",
+        state="TX",
+        phone="+18325551234",
+        email=None,
+        address="123 Main St",
+        google_rating=None,
+        review_count=None,
+        website_url="www.apexplumbing.com",
+    )
+    content = build_site_content(
+        copy_package={"seo": {"title": "Apex", "description": "Best"}},
+        research_data={"city": "Houston", "state": "TX"},
+        prospect=prospect,
+        slug="apex-plumbing-houston-ab12",
+        template_id="plumbing-trustworthy-navy",
+        theme={"primary": "#1e3a5f", "accent": "#60a5fa", "font_display": "Sora", "font_body": "Inter"},
+        schema_org={"@context": "https://schema.org", "@type": "Plumber"},
+    )
+    assert content["business"]["website_url"] == "https://www.apexplumbing.com"

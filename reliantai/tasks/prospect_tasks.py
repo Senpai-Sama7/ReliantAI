@@ -2,7 +2,7 @@ import os
 import structlog
 from celery import shared_task
 from datetime import datetime, timedelta, timezone
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import selectinload
 from ..db import get_db_session
 from ..db.models import Prospect, ResearchJob, OutreachSequence, OutreachMessage, LeadEvent
 from ..agents.home_services_crew import create_prospect_crew
@@ -118,7 +118,7 @@ def process_scheduled_followups():
             now = datetime.now(timezone.utc)
             due = (
                 db.query(OutreachSequence)
-                .options(joinedload(OutreachSequence.prospect))
+                .options(selectinload(OutreachSequence.prospect))
                 .filter(
                     OutreachSequence.next_send_at <= now,
                     OutreachSequence.status == "active",
