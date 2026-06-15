@@ -5,6 +5,7 @@ import uuid
 
 import httpx
 import structlog
+from sqlalchemy.exc import IntegrityError
 
 from ..agents.tools.schema_builder import build_local_business_schema
 from ..db import get_db_session
@@ -142,6 +143,34 @@ def _resolve_unique_slug(db, prospect, existing: GeneratedSite | None) -> str:
     return f"{generate_slug(prospect.business_name, prospect.city)}-{uuid.uuid4().hex[:8]}"
 
 
+def _build_schema_for_slug(
+    slug: str,
+    research_data: dict,
+    prospect: Prospect,
+    copy_package: dict,
+    competitor_data: list,
+) -> tuple[dict, bool]:
+    schema = build_local_business_schema(
+        business_data={
+            **research_data,
+            "slug": slug,
+            "trade": prospect.trade,
+            "name": research_data.get("name", prospect.business_name),
+            "phone": research_data.get("phone", prospect.phone),
+            "address": research_data.get("address", prospect.address),
+        },
+        review_data=copy_package.get("reviews", {}),
+        competitor_keywords=(
+            competitor_data[0].get("top_keywords", []) if competitor_data else []
+        ),
+    )
+    validation = validate_local_business_schema(schema)
+    schema_valid = bool(validation.get("valid"))
+    if not schema_valid:
+        log.warning("schema_validation_failed", slug=slug, validation=validation)
+    return schema, schema_valid
+
+
 def _parse_task_output(output: object) -> dict | list | None:
     """Best-effort parse of CrewAI task output into structured data."""
     if output is None:
@@ -203,25 +232,9 @@ class SiteRegistrationService:
             template_id = TEMPLATE_MAP.get(prospect.trade, "hvac-reliable-blue")
             theme = _get_theme(template_id)
 
-            schema = build_local_business_schema(
-                business_data={
-                    **research_data,
-                    "slug": slug,
-                    "trade": prospect.trade,
-                    "name": research_data.get("name", prospect.business_name),
-                    "phone": research_data.get("phone", prospect.phone),
-                    "address": research_data.get("address", prospect.address),
-                },
-                review_data=copy_package.get("reviews", {}),
-                competitor_keywords=(
-                    competitor_data[0].get("top_keywords", []) if competitor_data else []
-                ),
+            schema, schema_valid = _build_schema_for_slug(
+                slug, research_data, prospect, copy_package, competitor_data
             )
-
-            validation = validate_local_business_schema(schema)
-            schema_valid = bool(validation.get("valid"))
-            if not schema_valid:
-                log.warning("schema_validation_failed", slug=slug, validation=validation)
 
             site_content = build_site_content(
                 copy_package=copy_package,
@@ -238,35 +251,79 @@ class SiteRegistrationService:
             meta_title = site_content["meta_title"]
             meta_description = site_content["meta_description"]
 
-            if existing:
-                existing.slug = slug
-                existing.template_id = template_id
-                existing.preview_url = preview_url
-                existing.site_content = site_content
-                existing.site_config = site_content["site_config"]
-                existing.schema_org_json = schema
-                existing.meta_title = meta_title
-                existing.meta_description = meta_description
-                existing.status = "preview_live"
-                if site_content.get("lighthouse_score"):
-                    existing.lighthouse_score = site_content["lighthouse_score"]
-            else:
-                site = GeneratedSite(
-                    prospect_id=prospect_id,
-                    slug=slug,
-                    template_id=template_id,
-                    preview_url=preview_url,
-                    site_content=site_content,
-                    site_config=site_content["site_config"],
-                    schema_org_json=schema,
-                    meta_title=meta_title,
-                    meta_description=meta_description,
-                    lighthouse_score=site_content.get("lighthouse_score") or None,
-                    status="preview_live",
-                )
-                db.add(site)
+            def _apply_site_record(target_slug: str, content: dict) -> None:
+                nonlocal schema, meta_title, meta_description
+                if existing:
+                    existing.slug = target_slug
+                    existing.template_id = template_id
+                    existing.preview_url = f"https://preview.reliantai.org/{target_slug}"
+                    existing.site_content = content
+                    existing.site_config = content["site_config"]
+                    existing.schema_org_json = schema
+                    existing.meta_title = meta_title
+                    existing.meta_description = meta_description
+                    existing.status = "preview_live"
+                    if content.get("lighthouse_score"):
+                        existing.lighthouse_score = content["lighthouse_score"]
+                else:
+                    db.add(
+                        GeneratedSite(
+                            prospect_id=prospect_id,
+                            slug=target_slug,
+                            template_id=template_id,
+                            preview_url=f"https://preview.reliantai.org/{target_slug}",
+                            site_content=content,
+                            site_config=content["site_config"],
+                            schema_org_json=schema,
+                            meta_title=meta_title,
+                            meta_description=meta_description,
+                            lighthouse_score=content.get("lighthouse_score") or None,
+                            status="preview_live",
+                        )
+                    )
 
-            db.commit()
+            _apply_site_record(slug, site_content)
+
+            for attempt in range(5):
+                try:
+                    db.commit()
+                    break
+                except IntegrityError:
+                    db.rollback()
+                    if existing:
+                        raise
+                    concurrent = (
+                        db.query(GeneratedSite).filter_by(prospect_id=prospect_id).first()
+                    )
+                    if concurrent:
+                        slug = concurrent.slug
+                        preview_url = concurrent.preview_url or (
+                            f"https://preview.reliantai.org/{slug}"
+                        )
+                        break
+                    if attempt == 4:
+                        log.error("slug_collision_exhausted", prospect_id=prospect_id)
+                        return {"error": "slug_collision"}
+                    slug = _resolve_unique_slug(db, prospect, None)
+                    preview_url = f"https://preview.reliantai.org/{slug}"
+                    schema, schema_valid = _build_schema_for_slug(
+                        slug, research_data, prospect, copy_package, competitor_data
+                    )
+                    site_content = build_site_content(
+                        copy_package=copy_package,
+                        research_data=research_data,
+                        prospect=prospect,
+                        slug=slug,
+                        template_id=template_id,
+                        theme=theme,
+                        schema_org=schema,
+                        status="preview_live",
+                    )
+                    meta_title = site_content["meta_title"]
+                    meta_description = site_content["meta_description"]
+                    _apply_site_record(slug, site_content)
+            else:
+                return {"error": "slug_collision"}
 
         if previous_slug and previous_slug != slug:
             invalidate_site_cache(previous_slug)

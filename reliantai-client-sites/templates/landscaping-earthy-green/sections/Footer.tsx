@@ -1,4 +1,5 @@
 import { Globe, Phone, MapPin } from "lucide-react";
+import { sanitizeHttpUrl } from "@/lib/safe-url";
 import type { SiteContent } from "@/types/SiteContent";
 
 interface FooterProps {
@@ -8,6 +9,7 @@ interface FooterProps {
 export default function Footer({ content }: FooterProps) {
   const { business } = content;
   const currentYear = new Date().getFullYear();
+  const websiteUrl = sanitizeHttpUrl(business.website_url);
   const areas = content.aeo_signals?.area_served || [business.city];
 
   return (
@@ -66,9 +68,9 @@ export default function Footer({ content }: FooterProps) {
               <h4 className="text-white font-semibold text-sm mb-3">
                 Visit Us
               </h4>
-              {business.website_url && (
+              {websiteUrl && (
                 <a
-                  href={business.website_url}
+                  href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-slate-400 hover:text-emerald-300 transition-colors"

@@ -49,6 +49,14 @@ test.describe("Live site rendering from API content", () => {
     expect(res?.status()).toBe(404);
   });
 
+  test("does not render javascript: website links from API content", async ({
+    page,
+  }) => {
+    const res = await page.goto("/unsafe-url-plumbing");
+    expect(res?.status()).toBe(200);
+    await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0);
+  });
+
   test("returns 404 when the API has no content for the slug (real API 404)", async ({
     page,
   }) => {

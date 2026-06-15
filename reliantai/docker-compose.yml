@@ -9,7 +9,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASS:-reliantai_dev}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/migrations:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U reliantai -d reliantai"]
       interval: 10s
@@ -31,6 +30,18 @@ services:
       retries: 5
     restart: unless-stopped
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: alembic upgrade head
+    environment:
+      DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
   api:
     build:
       context: .
@@ -44,6 +55,8 @@ services:
       API_SECRET_KEY: ${API_SECRET_KEY:-dev_secret_key_change_in_production}
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -60,6 +73,8 @@ services:
       REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -76,6 +91,8 @@ services:
       REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
       REVALIDATE_SECRET: ${REVALIDATE_SECRET:-dev_revalidate_secret}
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
@@ -91,6 +108,8 @@ services:
       DATABASE_URL: postgresql://reliantai:${DB_PASS:-reliantai_dev}@postgres:5432/reliantai
       REDIS_URL: redis://:${REDIS_PASS:-reliantai_dev}@redis:6379/0
     depends_on:
+      migrate:
+        condition: service_completed_successfully
       postgres:
         condition: service_healthy
       redis:
