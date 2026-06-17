@@ -1,28 +1,14 @@
-import hmac
 import os
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import text
 
 from .db import get_db_session
 
 log = structlog.get_logger()
-security = HTTPBearer()
-
-
-def verify_api_key(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    api_key = os.environ.get("API_SECRET_KEY", "")
-    if not api_key:
-        raise HTTPException(status_code=503, detail="API key not configured")
-    provided = credentials.credentials.encode("utf-8")
-    expected = api_key.encode("utf-8")
-    if not hmac.compare_digest(provided, expected):
-        raise HTTPException(status_code=401, detail="Invalid API key")
-    return True
 
 
 @asynccontextmanager
@@ -83,7 +69,7 @@ async def health():
     return {"status": "ok", "db": db_ok, "redis": redis_ok}
 
 
-# ─── ROUTERS (placeholder imports — populated as phases complete) ─────
+# ─── ROUTERS ─────────────────────────────────────────────────────────
 
 from .api.v2 import prospects as prospects_router
 from .api.v2 import generated_sites as generated_sites_router

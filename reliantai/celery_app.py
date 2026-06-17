@@ -1,6 +1,5 @@
 import os
 from celery import Celery
-from celery.schedules import crontab
 
 app = Celery("reliantai")
 
@@ -18,11 +17,16 @@ app.config_from_object({
         "prospect_tasks.run_prospect_pipeline": {"queue": "agents"},
         "prospect_tasks.process_scheduled_followups": {"queue": "outreach"},
         "prospect_tasks.process_inbound_response": {"queue": "outreach"},
+        "prospect_tasks.dispatch_queued_outreach": {"queue": "outreach"},
     },
     "beat_schedule": {
         "process-scheduled-followups": {
             "task": "prospect_tasks.process_scheduled_followups",
             "schedule": 300.0,
+        },
+        "dispatch-queued-outreach": {
+            "task": "prospect_tasks.dispatch_queued_outreach",
+            "schedule": 60.0,
         },
     },
 })

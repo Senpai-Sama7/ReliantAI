@@ -9,7 +9,8 @@
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint",
     "pretest": "playwright install chromium",
-    "test": "playwright test",
+    "test": "npm run test:unit && playwright test",
+    "test:unit": "vitest run",
     "test:e2e": "playwright test"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.9"
   }
 }
