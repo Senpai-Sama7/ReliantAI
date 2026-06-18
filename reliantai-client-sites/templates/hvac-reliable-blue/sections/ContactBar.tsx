@@ -9,7 +9,7 @@ export default function ContactBar({ content }: ContactBarProps) {
   const { phone } = content.business;
 
   return (
-    <div className="fixed top-0 inset-x-0 z-40 bg-slate-950/90 backdrop-blur-sm border-b border-slate-800/50">
+    <div className="fixed top-0 inset-x-0 z-40 bg-slate-950 border-b border-slate-800/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-10 flex items-center justify-center sm:justify-between">
         <a
           href={`tel:${phone}`}
