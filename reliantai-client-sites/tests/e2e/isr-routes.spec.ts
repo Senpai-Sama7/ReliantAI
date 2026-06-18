@@ -29,6 +29,24 @@ test.describe("Revalidation endpoint /api/revalidate", () => {
     expect(res.status()).toBe(401);
   });
 
+  test("returns 200 with valid secret and slug", async ({ request }) => {
+    const res = await request.post("/api/revalidate", {
+      data: { slug: "apex-hvac-houston-ab12" },
+      headers: { Authorization: "Bearer dev_revalidate_secret" },
+    });
+    expect(res.status()).toBe(200);
+    const body = await res.json();
+    expect(body).toEqual({ revalidated: true, slug: "apex-hvac-houston-ab12" });
+  });
+
+  test("returns 400 for invalid slug", async ({ request }) => {
+    const res = await request.post("/api/revalidate", {
+      data: { slug: "../admin" },
+      headers: { Authorization: "Bearer dev_revalidate_secret" },
+    });
+    expect(res.status()).toBe(400);
+  });
+
   test("requires authorization header", async ({ request }) => {
     const res = await request.post("/api/revalidate", {
       data: { slug: "test-slug" },

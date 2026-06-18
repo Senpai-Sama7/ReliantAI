@@ -1,7 +1,8 @@
 import os
-import re
 import structlog
 from crewai.tools import BaseTool
+
+from ...services.phone import normalize_us_e164
 
 log = structlog.get_logger()
 
@@ -17,7 +18,8 @@ class TwilioSMSTool(BaseTool):
         if not to or not body:
             return str({"error": "to and body required"})
 
-        if not re.match(r"^\+1\d{10}$", to):
+        normalized_to = normalize_us_e164(to)
+        if not normalized_to:
             log.warning("sms_invalid_number", to_last4=to[-4:] if len(to) >= 4 else "???")
             return str({"error": "invalid_number"})
 
@@ -35,7 +37,7 @@ class TwilioSMSTool(BaseTool):
                     f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json",
                     auth=(account_sid, auth_token),
                     data={
-                        "To": to,
+                        "To": normalized_to,
                         "From": from_number,
                         "Body": body,
                     },

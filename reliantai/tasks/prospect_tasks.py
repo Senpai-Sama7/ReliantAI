@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from ..db import get_db_session
 from ..db.models import Prospect, ResearchJob, OutreachSequence, OutreachMessage, LeadEvent
 from ..agents.home_services_crew import create_prospect_crew
+from ..services.outreach_dispatch import send_email, send_sms
 from ..services.site_registration_service import SiteRegistrationService
 from ..services.sms_compliance import is_stop_request
 
@@ -25,12 +26,22 @@ def run_prospect_pipeline(self, prospect_id: str):
             # Capture data before commit expires the instance
             prospect_data = prospect.to_dict()
 
-            job = ResearchJob(
-                prospect_id=prospect_id,
-                status="running",
-                step="starting",
+            job = (
+                db.query(ResearchJob)
+                .filter_by(prospect_id=prospect_id, status="pending")
+                .order_by(ResearchJob.created_at.desc())
+                .first()
             )
-            db.add(job)
+            if job:
+                job.status = "running"
+                job.step = "starting"
+            else:
+                job = ResearchJob(
+                    prospect_id=prospect_id,
+                    status="running",
+                    step="starting",
+                )
+                db.add(job)
             db.commit()
             job_id = job.id
 
@@ -56,11 +67,23 @@ def run_prospect_pipeline(self, prospect_id: str):
             job.completed_at = datetime.now(timezone.utc)
 
             prospect = db.query(Prospect).filter_by(id=prospect_id).first()
-            prospect.status = "outreach_sent"
+            if registration.get("error"):
+                prospect.status = "research_completed"
+            else:
+                prospect.status = "site_generated"
             db.commit()
 
-        log.info("pipeline_completed", prospect_id=prospect_id, job_id=job_id)
-        return {"status": "completed", "prospect_id": prospect_id}
+        log.info(
+            "pipeline_completed",
+            prospect_id=prospect_id,
+            job_id=job_id,
+            prospect_status=prospect.status if prospect else None,
+        )
+        return {
+            "status": "completed",
+            "prospect_id": prospect_id,
+            "site_registered": not registration.get("error"),
+        }
 
     except Exception as exc:
         log.error("pipeline_failed", prospect_id=prospect_id, error=str(exc))
@@ -172,4 +195,71 @@ def process_scheduled_followups():
             return {"processed": processed}
     except (RuntimeError, ValueError) as exc:
         log.error("followups_failed", error=str(exc))
+        return {"error": str(exc)[:200]}
+
+
+@shared_task(name="prospect_tasks.dispatch_queued_outreach", queue="outreach")
+def dispatch_queued_outreach():
+    """Send queued outreach messages via Twilio or Resend."""
+    try:
+        dispatched = 0
+        for _ in range(20):
+            with get_db_session() as db:
+                msg = (
+                    db.query(OutreachMessage)
+                    .filter(OutreachMessage.status == "queued")
+                    .with_for_update(skip_locked=True)
+                    .first()
+                )
+                if not msg:
+                    break
+
+                payload = {
+                    "id": msg.id,
+                    "prospect_id": msg.prospect_id,
+                    "channel": msg.channel,
+                    "to_address": msg.to_address,
+                    "body": msg.body,
+                    "subject": msg.subject,
+                }
+                msg.status = "sending"
+
+            if payload["channel"] == "sms":
+                result = send_sms(payload["to_address"], payload["body"])
+            else:
+                subject = payload["subject"] or "Message from ReliantAI"
+                result = send_email(payload["to_address"], subject, payload["body"])
+
+            with get_db_session() as db:
+                msg = db.query(OutreachMessage).filter_by(id=payload["id"]).first()
+                if not msg:
+                    continue
+
+                if result.get("error"):
+                    msg.status = "failed"
+                    msg.error_message = result["error"][:500]
+                    log.warning(
+                        "outreach_dispatch_failed",
+                        message_id=msg.id,
+                        channel=msg.channel,
+                        error=result["error"],
+                    )
+                else:
+                    msg.status = "sent"
+                    msg.sent_at = datetime.now(timezone.utc)
+                    msg.provider_message_id = result.get("sid") or result.get("id")
+                    dispatched += 1
+
+                    prospect = db.query(Prospect).filter_by(id=msg.prospect_id).first()
+                    if prospect and prospect.status in (
+                        "identified",
+                        "site_generated",
+                        "research_completed",
+                    ):
+                        prospect.status = "outreach_sent"
+
+        log.info("outreach_dispatched", count=dispatched)
+        return {"dispatched": dispatched}
+    except (RuntimeError, ValueError) as exc:
+        log.error("outreach_dispatch_failed", error=str(exc))
         return {"error": str(exc)[:200]}
