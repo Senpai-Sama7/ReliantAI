@@ -202,22 +202,38 @@ def process_scheduled_followups():
 def dispatch_queued_outreach():
     """Send queued outreach messages via Twilio or Resend."""
     try:
-        with get_db_session() as db:
-            messages = (
-                db.query(OutreachMessage)
-                .filter(OutreachMessage.status == "queued")
-                .with_for_update(skip_locked=True)
-                .limit(20)
-                .all()
-            )
+        dispatched = 0
+        for _ in range(20):
+            with get_db_session() as db:
+                msg = (
+                    db.query(OutreachMessage)
+                    .filter(OutreachMessage.status == "queued")
+                    .with_for_update(skip_locked=True)
+                    .first()
+                )
+                if not msg:
+                    break
 
-            dispatched = 0
-            for msg in messages:
-                if msg.channel == "sms":
-                    result = send_sms(msg.to_address, msg.body)
-                else:
-                    subject = msg.subject or "Message from ReliantAI"
-                    result = send_email(msg.to_address, subject, msg.body)
+                payload = {
+                    "id": msg.id,
+                    "prospect_id": msg.prospect_id,
+                    "channel": msg.channel,
+                    "to_address": msg.to_address,
+                    "body": msg.body,
+                    "subject": msg.subject,
+                }
+                msg.status = "sending"
+
+            if payload["channel"] == "sms":
+                result = send_sms(payload["to_address"], payload["body"])
+            else:
+                subject = payload["subject"] or "Message from ReliantAI"
+                result = send_email(payload["to_address"], subject, payload["body"])
+
+            with get_db_session() as db:
+                msg = db.query(OutreachMessage).filter_by(id=payload["id"]).first()
+                if not msg:
+                    continue
 
                 if result.get("error"):
                     msg.status = "failed"
@@ -228,23 +244,22 @@ def dispatch_queued_outreach():
                         channel=msg.channel,
                         error=result["error"],
                     )
-                    continue
+                else:
+                    msg.status = "sent"
+                    msg.sent_at = datetime.now(timezone.utc)
+                    msg.provider_message_id = result.get("sid") or result.get("id")
+                    dispatched += 1
 
-                msg.status = "sent"
-                msg.sent_at = datetime.now(timezone.utc)
-                msg.provider_message_id = result.get("sid") or result.get("id")
-                dispatched += 1
+                    prospect = db.query(Prospect).filter_by(id=msg.prospect_id).first()
+                    if prospect and prospect.status in (
+                        "identified",
+                        "site_generated",
+                        "research_completed",
+                    ):
+                        prospect.status = "outreach_sent"
 
-                prospect = db.query(Prospect).filter_by(id=msg.prospect_id).first()
-                if prospect and prospect.status in (
-                    "identified",
-                    "site_generated",
-                    "research_completed",
-                ):
-                    prospect.status = "outreach_sent"
-
-            log.info("outreach_dispatched", count=dispatched)
-            return {"dispatched": dispatched}
+        log.info("outreach_dispatched", count=dispatched)
+        return {"dispatched": dispatched}
     except (RuntimeError, ValueError) as exc:
         log.error("outreach_dispatch_failed", error=str(exc))
         return {"error": str(exc)[:200]}

@@ -60,9 +60,10 @@ def list_prospects(
             .limit(limit)
             .all()
         )
+        items = [_prospect_response(prospect) for prospect in prospects]
 
     return ProspectListResponse(
-        items=[_prospect_response(prospect) for prospect in prospects],
+        items=items,
         total=total,
         limit=limit,
         offset=offset,
