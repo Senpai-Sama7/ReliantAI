@@ -120,14 +120,17 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
     );
   }
 
+  const frameWidth = device === "mobile" ? 375 : 768;
+  const frameHeight = device === "mobile" ? 812 : 1024;
+
   return (
-    <div className={`flex items-center justify-center h-full p-8 ${className}`}>
+    <div className={`flex items-center justify-center h-full p-2 sm:p-4 md:p-8 ${className}`}>
       <div
         key={device}
         className="relative transition-all duration-500 ease-out"
         style={{
-          width: device === "mobile" ? 375 : 768,
-          height: device === "mobile" ? 812 : 1024,
+          width: `min(${frameWidth}px, 100%)`,
+          height: `min(${frameHeight}px, calc(100% - 1rem))`,
           maxHeight: "90vh",
         }}
       >
