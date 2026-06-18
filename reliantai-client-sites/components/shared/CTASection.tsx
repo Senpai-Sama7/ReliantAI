@@ -79,7 +79,7 @@ export default function CTASection({ content, color = "blue", variant = "urgency
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className={`hidden sm:flex items-center justify-center w-10 h-10 rounded-md ${light ? "bg-white border border-stone-200" : "bg-slate-900 border border-slate-800"}`}>
-            <Clock className={`h-5 w-5 ${light ? accentClass : accentClass}`} />
+            <Clock className={`h-5 w-5 ${accentClass}`} />
           </div>
           <p className={light ? "text-stone-700 text-lg" : "text-slate-300 text-lg"}>
             <span className={`font-semibold ${light ? "text-stone-900" : "text-white"}`}>{message}</span>

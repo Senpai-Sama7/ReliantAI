@@ -118,7 +118,7 @@ export default function Hero({ content }: HeroProps) {
                 Design, install, and maintenance for residential and commercial properties across {business.city}.
               </p>
               <p className="mt-6 pt-6 border-t border-slate-800 text-emerald-300/80 text-sm">
-                {business.years_in_business}+ years · locally owned
+                {business.years_in_business || 10}+ years · locally owned
               </p>
             </div>
           </motion.aside>

@@ -119,7 +119,7 @@ export default function Hero({ content }: HeroProps) {
               <p className="text-slate-400 text-sm mt-2">{business.review_count} verified reviews</p>
               <div className="mt-8 pt-6 border-t border-slate-800">
                 <p className="text-3xl font-display font-bold text-white tabular-nums">
-                  {business.years_in_business}+
+                  {business.years_in_business || 10}+
                 </p>
                 <p className="text-slate-500 text-sm mt-1">years serving {business.city}</p>
               </div>
