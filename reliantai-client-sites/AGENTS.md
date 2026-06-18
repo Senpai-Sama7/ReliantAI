@@ -50,7 +50,7 @@ npm run test       # Playwright E2E (mock API on :8765)
 
 ## Hard Constraints
 
-- **No per-site builds** — all sites render via ISR from DB content
+- **Design quality**: All templates MUST comply with `lib/design-quality-standards.ts` — no AI-slop patterns (gradients, backdrop-blur, animate-ping, generic copy) — all sites render via ISR from DB content
 - **Slug**: `generate_slug(business_name, city)` on platform — never from `place_id`
 - **Preview domain**: `preview.reliantai.org` — NOT `reliantai.org/preview/`
 - **API**: `GET {API_BASE_URL}/api/v2/generated-sites/{slug}` — flat `SiteContent`, no auth

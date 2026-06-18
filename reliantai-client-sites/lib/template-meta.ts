@@ -1,3 +1,5 @@
+import { DESIGN_QUALITY_PROMPT_BLOCK } from "./design-quality-standards";
+
 export interface TemplateMeta {
   id: string;
   label: string;
@@ -16,7 +18,7 @@ export interface TemplateMeta {
   prompt: string;
 }
 
-export const TEMPLATES: TemplateMeta[] = [
+export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
   {
     id: "hvac-reliable-blue",
     label: "Reliable Blue",
@@ -26,63 +28,62 @@ export const TEMPLATES: TemplateMeta[] = [
     accentBg: "bg-blue-500",
     theme: "dark",
     heroLayout: "single",
-    primaryColor: "#3b82f6",
+    primaryColor: "#2563eb",
     colorName: "Blue",
-    description: "Clean, professional, trust-forward. Single-column hero with editorial narrative About section. The workhorse template — works for any trade.",
+    description: "Editorial, trust-forward HVAC template. Asymmetric hero, masonry reviews, sentence-split About — senior-agency craft.",
     personality: "Dependable & Authoritative",
     bestFor: "HVAC, general contracting, any trade where trust and professionalism are paramount",
     uniqueFeatures: [
-      "Single-column hero with word-reveal stagger animation",
+      "Asymmetric 2-column hero (grid-cols-[2fr_3fr]) with editorial Instrument Serif headline",
       "Editorial narrative About section (sentence-split storytelling)",
-      "Masonry review layout with quote watermarks",
-      "No featured service card highlight — all services equal",
-      "Blue radial gradient glow in Hero",
+      "Masonry review layout with serif quote watermarks",
+      "Varied service card hierarchy — featured spans wider, not three identical cards",
+      "Single radial accent on solid slate-950 — no multi-stop gradients",
     ],
     prompt: `Create a trade service landing page for an HVAC company called "{business_name}" in {city}, {state}. Use the "hvac-reliable-blue" template design system:
 
 ## Color System
-- Primary: blue-600 (CTAs), blue-400 (icons, accents), blue-500 (borders, glows)
-- Backgrounds: slate-950 (Hero, About, FAQ, Footer), slate-900 (Services, Reviews)
-- Cards: slate-800/50 with slate-700/80 borders
+- Primary: blue-700 (CTAs), blue-500 (icons, accents) — NOT default blue-500/indigo
+- Backgrounds: solid slate-950 (Hero, About, FAQ, Footer), slate-900 (Services, Reviews)
+- Cards: slate-800/60 with slate-700/60 borders
 - Text: white (primary), slate-400 (secondary), slate-500 (muted)
-- Radial gradient: rgba(96,165,250,0.08) ellipse overlay in Hero
+- Accent: ONE radial ellipse at 6% opacity max — no multi-stop gradients
 
 ## Layout
-1. ContactBar (fixed top, h-10, slate-950/90 backdrop-blur-sm)
+1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/60 — NO backdrop-blur)
 2. TrustBanner (trade badges)
-3. Hero (min-h-screen, single-column max-w-2xl, word-reveal stagger animation with per-word y:30→0 at 0.08s intervals)
+3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr], left-aligned copy, right column = credential stack)
 4. StatsBar (accent="blue-400")
 5. SectionDivider (variant="dots")
-6. Services section (grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6, no featured card)
+6. Services (asymmetric grid — one featured card span-2, varied card heights — NOT 3 equal columns)
 7. CTASection (color="blue", variant="urgency")
-8. About section (centered max-w-3xl editorial story with sentence-split narrative, trust box with blue left accent bar, certification badges)
+8. About section (max-w-3xl editorial story with sentence-split narrative, trust box with blue left accent bar)
 9. SectionDivider (variant="line")
-10. Reviews (masonry columns-1 md:columns-2 lg:columns-3, Quote icon watermarks at blue-500/10)
+10. Reviews (masonry columns-1 md:columns-2 lg:columns-3, serif quote marks)
 11. CTASection (color="blue", variant="estimate")
 12. SectionDivider (variant="wave")
-13. FAQ (centered max-w-3xl, accordion with blue-500/30 open border)
-14. Footer (4-col grid, hover:text-blue-300)
+13. FAQ (max-w-3xl, accordion)
+14. Footer (4-col grid)
 
 ## Hero Details
-- Gradient: from-slate-950 via-blue-950/60 to-slate-950
-- Animated stars (fill-yellow-400)
-- Word-reveal headline animation with stagger
-- Primary CTA: bg-blue-600 rounded-xl shadow-lg shadow-blue-600/25
-- Secondary CTA: border border-blue-400/40 rounded-xl
-- Trust bar items with Shield icons in blue-500
-- Bottom gradient fade: from-slate-950 to-transparent h-32
+- Background: solid bg-slate-950 + single radial accent at 60% 40%
+- NO word-reveal animation — single fade-up block for headline
+- Primary CTA: bg-blue-700 rounded-md (6px) — NO shadow-lg glow
+- Secondary CTA: border border-blue-500/30 rounded-md
+- Trust bar: license-specific items with Shield icons
+- Right column: offset credential card (years + rating) — NOT decorative circles
 
 ## Service Cards
-- bg-slate-800/50 border-slate-700/80 rounded-xl
-- Hover: -translate-y-1, shadow-lg
-- Icon container: w-12 h-12 bg-blue-500/10 rounded-xl
-- CTA: text-sm text-blue-400 group-hover:text-blue-300
+- bg-slate-800/60 border-slate-700/60 rounded-lg
+- Hover: border-color only — NO -translate-y lift on every card
+- Icon container: w-11 h-11 bg-blue-500/10 rounded-md
+- Featured card: spans 2 cols on lg, taller padding
 
 ## Typography
-- Headings: font-display font-bold tracking-tight
-- Hero: text-4xl sm:text-5xl lg:text-6xl xl:text-7xl
-- Section headings: text-3xl sm:text-4xl
-- Trust bar: text-xs uppercase tracking-wider font-medium`,
+- Display: Instrument Serif, font-bold, tracking-tight
+- Body: DM Sans, text-base leading-relaxed (1.65)
+- Hero: text-4xl sm:text-5xl lg:text-6xl
+- Section headings: text-3xl sm:text-4xl`,
   },
   {
     id: "plumbing-trustworthy-navy",
@@ -99,11 +100,11 @@ export const TEMPLATES: TemplateMeta[] = [
     personality: "Urgent & Trustworthy",
     bestFor: "Plumbing, emergency services, 24/7 availability trades",
     uniqueFeatures: [
-      "Red emergency alert badge with AlertTriangle icon and animate-ping dot",
-      "Featured service card (index 0) with 'Most Requested' badge",
+      "Red emergency pill badge — static indicator, NO animate-ping",
+      "Featured service card (index 0) with editorial hierarchy",
       "Featured review split layout (first review full-width, rest in grid)",
       "Dynamic cert-icon mapping (CERT_ICONS lookup by keyword)",
-      "HelpCircle icon decoration above FAQ heading",
+      "Asymmetric hero with left-aligned copy",
     ],
     prompt: `Create a trade service landing page for a plumbing company called "{business_name}" in {city}, {state}. Use the "plumbing-trustworthy-navy" template design system:
 
@@ -168,12 +169,11 @@ export const TEMPLATES: TemplateMeta[] = [
     personality: "Bold & Safety-First",
     bestFor: "Electrical, solar, trades where safety credentials are the differentiator",
     uniqueFeatures: [
-      "Two-column Hero with decorative SAFETY FIRST card on right",
-      "SAFETY FIRST card: Shield icon, tracking-[0.3em], amber-500/04 bg, border-amber-500/20",
-      "Uniform slate-950 background across ALL sections (no alternating bg)",
-      "Featured service card at index 2 (not 0) — 'Most Popular' badge",
-      "rounded-lg CTAs (not rounded-xl like other templates)",
-      "Left-border accent on About trust box: border-l-2 border-amber-500/30",
+      "Two-column asymmetric hero with credential card (not decorative placeholder)",
+      "SAFETY FIRST card: Shield icon, solid bg — NO backdrop-blur",
+      "Uniform slate-950 background across ALL sections",
+      "Featured service card at index 2 — varied hierarchy",
+      "rounded-md CTAs with intentional radius variation",
     ],
     prompt: `Create a trade service landing page for an electrical company called "{business_name}" in {city}, {state}. Use the "electrical-sharp-gold" template design system:
 
@@ -235,14 +235,11 @@ Right column contains a decorative card:
     personality: "Bold & Action-Oriented",
     bestFor: "Roofing, storm damage, trades offering free inspections or strong guarantees",
     uniqueFeatures: [
-      "Two-column hero with 3-card credential stack (rating card, years card, FREE INSPECTION banner)",
-      "Animated ping dot (animate-ping) on emergency badge",
-      "Trust points rendered as horizontal card grid (not a list)",
-      "Custom inline SVG checkmarks (not lucide icons)",
-      "border-2 on secondary CTA (thicker than other templates)",
-      "Review stagger offset pattern (STAGGER array)",
-      "whileHover on Services and Reviews cards in framer-motion",
-      "Two variant='line' SectionDividers (between About AND Reviews)",
+      "Two-column hero with credential stack (rating, years, inspection CTA)",
+      "Static status indicator — NO animate-ping",
+      "Trust points as horizontal card grid with varied sizing",
+      "Custom inline SVG checkmarks",
+      "Review stagger offset pattern for editorial rhythm",
     ],
     prompt: `Create a trade service landing page for a roofing company called "{business_name}" in {city}, {state}. Use the "roofing-bold-copper" template design system:
 
@@ -301,18 +298,15 @@ Two nested spans: outer span with "relative flex h-2.5 w-2.5", inner animate-pin
     heroLayout: "dual-decor",
     primaryColor: "#7c3aed",
     colorName: "Violet",
-    description: "The ONLY light-theme template. Airy, modern, design-forward with concentric violet circle decoration. Perfect for trades where aesthetics matter.",
+    description: "The ONLY light-theme template. Editorial, airy, design-forward — asymmetric hero with offset stat block. NO decorative circles.",
     personality: "Clean & Design-Forward",
     bestFor: "Painting, interior design, landscaping, any trade where visual taste is the differentiator",
     uniqueFeatures: [
       "ONLY light-theme template — bg-white and bg-stone-50 sections",
-      "All shared components receive light={true} prop",
-      "Concentric violet circle decoration in Hero right column (no content, pure CSS)",
+      "Asymmetric hero with offset stat/credential block — NOT concentric circles",
       "White card FAQ on stone-50 background",
-      "Serif quotation mark (\") instead of lucide Quote icon in reviews",
-      "violet-200 rounded-full vertical accent bar in About",
+      "Serif quotation marks in reviews",
       "Dark footer (bg-stone-900) contrasting with light content",
-      "ContactBar with white bg and stone-200 border",
     ],
     prompt: `Create a trade service landing page for a painting company called "{business_name}" in {city}, {state}. Use the "painting-clean-minimal" template design system:
 
@@ -378,16 +372,15 @@ Decorative only, no content:
     heroLayout: "dual-decor",
     primaryColor: "#10b981",
     colorName: "Emerald",
-    description: "Organic, nature-inspired with concentric emerald circles and scale animation. Centered About section with vertical accent bar.",
+    description: "Organic, nature-inspired with asymmetric hero and offset credential block. Centered About with vertical accent bar.",
     personality: "Organic & Sustainable",
     bestFor: "Landscaping, lawn care, eco-friendly trades, outdoor services",
     uniqueFeatures: [
-      "Concentric emerald circle decoration in Hero right column (dark theme version)",
-      "Hero right column uses SCALE animation (0.92→1) — unique",
-      "Centered About section with vertical accent bar (bg-emerald-500/20)",
-      "2-col trust point card grid (similar to painting but dark slate)",
-      "Masonry reviews with serif quotation mark character",
-      "Gradient line divider: from-transparent via-emerald-500/20 to-transparent",
+      "Asymmetric hero with credential stat block — NOT concentric circles",
+      "Solid emerald accent on slate-950 — single radial glow only",
+      "Centered About section with vertical accent bar",
+      "2-col trust point card grid with size variation",
+      "Masonry reviews with serif quotation marks",
     ],
     prompt: `Create a trade service landing page for a landscaping company called "{business_name}" in {city}, {state}. Use the "landscaping-earthy-green" template design system:
 
@@ -444,6 +437,12 @@ This is the ONLY template with scale animation on Hero right column.
 
 ## CTA Button Styles
 - Primary: bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-500 hover:shadow-emerald-500/30
-- Secondary: border border-emerald-400/40 text-emerald-200 rounded-xl hover:border-emerald-300 hover:text-white`,
+- Secondary: border border-emerald-400/40 text-emerald-200 rounded-md hover:border-emerald-300 hover:text-white`,
   },
 ];
+
+/** Templates with mandatory anti-AI-slop quality standards prepended to every prompt */
+export const TEMPLATES: TemplateMeta[] = TEMPLATE_DEFINITIONS.map((t) => ({
+  ...t,
+  prompt: `${DESIGN_QUALITY_PROMPT_BLOCK}\n\n${t.prompt}`,
+}));

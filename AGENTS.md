@@ -26,6 +26,7 @@ docker compose logs -f [service]
 - **Tool _run()**: SYNCHRONOUS only (sync httpx.Client)
 - **Preview domain**: `preview.reliantai.org` — NOT reliantai.org/preview/
 - **CopyAgent LLM**: gemini-1.5-pro | **All other agents**: gemini-1.5-flash
+- **Design quality**: client templates + Copy/Outreach agents follow `reliantai-client-sites/lib/design-quality-standards.ts` and `reliantai/agents/quality_standards.py` — no AI-slop patterns
 - All tool `_run()` are sync. CrewAI threads internally.
 
 ## Current Sprint
