@@ -1,7 +1,10 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from reliantai.services.site_registration_service import SiteRegistrationService
+from reliantai.services.site_registration_service import (
+    SiteRegistrationService,
+    _build_schema_for_slug,
+)
 
 
 @patch("reliantai.services.site_registration_service.SiteRegistrationService._revalidate_preview_cache")
@@ -148,3 +151,22 @@ def test_preview_revalidate_url_honors_env_override(monkeypatch):
         SiteRegistrationService._preview_revalidate_url()
         == "https://reliantai-client-sites.vercel.app/api/revalidate"
     )
+
+
+def test_build_schema_for_slug_embeds_slug():
+    prospect = MagicMock()
+    prospect.trade = "hvac"
+    prospect.business_name = "Apex HVAC"
+    prospect.phone = "+18325551234"
+    prospect.address = "123 Main St"
+
+    schema, schema_valid = _build_schema_for_slug(
+        "apex-hvac-houston-ab12",
+        {"name": "Apex HVAC", "city": "Houston", "state": "TX"},
+        prospect,
+        {"reviews": {"reviews": []}},
+        [],
+    )
+
+    assert isinstance(schema_valid, bool)
+    assert schema.get("url") == "https://preview.reliantai.org/apex-hvac-houston-ab12"

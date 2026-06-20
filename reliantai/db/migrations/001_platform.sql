@@ -1,5 +1,6 @@
 -- ReliantAI Platform Schema
--- Initial migration: all core tables
+-- REFERENCE ONLY: initialize schema via Alembic (`alembic upgrade head`).
+-- Do not mount this file into Postgres docker-entrypoint-initdb.d.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
@@ -87,6 +88,22 @@ CREATE TABLE competitor_intelligence (
 
 CREATE INDEX idx_competitor_intelligence_prospect_id ON competitor_intelligence(prospect_id);
 
+-- ─── CLIENTS ────────────────────────────────────────────────────────
+CREATE TABLE clients (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    prospect_id UUID NOT NULL REFERENCES prospects(id) ON DELETE CASCADE,
+    stripe_customer_id VARCHAR(255),
+    stripe_subscription_id VARCHAR(255),
+    package VARCHAR(50),
+    custom_domain VARCHAR(255),
+    status VARCHAR(50) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_clients_prospect_id ON clients(prospect_id);
+CREATE INDEX idx_clients_stripe_customer_id ON clients(stripe_customer_id);
+
 -- ─── GENERATED SITES ────────────────────────────────────────────────
 CREATE TABLE generated_sites (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -110,22 +127,6 @@ CREATE TABLE generated_sites (
 CREATE INDEX idx_generated_sites_prospect_id ON generated_sites(prospect_id);
 CREATE INDEX idx_generated_sites_slug ON generated_sites(slug);
 CREATE INDEX idx_generated_sites_status ON generated_sites(status);
-
--- ─── CLIENTS ────────────────────────────────────────────────────────
-CREATE TABLE clients (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    prospect_id UUID NOT NULL REFERENCES prospects(id) ON DELETE CASCADE,
-    stripe_customer_id VARCHAR(255),
-    stripe_subscription_id VARCHAR(255),
-    package VARCHAR(50),
-    custom_domain VARCHAR(255),
-    status VARCHAR(50) DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX idx_clients_prospect_id ON clients(prospect_id);
-CREATE INDEX idx_clients_stripe_customer_id ON clients(stripe_customer_id);
 
 -- ─── OUTREACH SEQUENCES ─────────────────────────────────────────────
 CREATE TABLE outreach_sequences (

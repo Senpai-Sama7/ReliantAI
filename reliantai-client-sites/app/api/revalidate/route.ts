@@ -1,16 +1,13 @@
+import { timingSafeEqual } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import { isValidSlug } from "@/lib/slug";
 
-function timingSafeEqual(a: string, b: string): boolean {
-  const bufA = new TextEncoder().encode(a);
-  const bufB = new TextEncoder().encode(b);
-  if (bufA.length !== bufB.length) return false;
-  let result = 0;
-  for (let i = 0; i < bufA.length; i++) {
-    result |= bufA[i] ^ bufB[i];
-  }
-  return result === 0;
+function secretsMatch(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
 
 export async function POST(request: NextRequest) {
@@ -26,12 +23,19 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization") || "";
   const token = authHeader.replace(/^Bearer\s+/i, "");
 
-  if (!token || !timingSafeEqual(token, secret)) {
+  if (!token || !secretsMatch(token, secret)) {
     return NextResponse.json({}, { status: 401 });
   }
 
   try {
-    const body: unknown = await request.json();
+    const raw = await request.text();
+    if (raw.length > 4096) {
+      return NextResponse.json(
+        { revalidated: false, error: "request body too large" },
+        { status: 413 }
+      );
+    }
+    const body: unknown = raw ? JSON.parse(raw) : null;
     if (!body || typeof body !== "object" || !("slug" in body)) {
       return NextResponse.json(
         { revalidated: false, error: "slug is required" },
@@ -48,6 +52,8 @@ export async function POST(request: NextRequest) {
     }
 
     revalidatePath(`/${slug}`);
+
+    console.info("[revalidate] success", { slug, path: `/${slug}` });
 
     return NextResponse.json({ revalidated: true, slug });
   } catch (error) {

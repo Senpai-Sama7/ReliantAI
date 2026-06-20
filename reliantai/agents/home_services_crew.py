@@ -1,5 +1,6 @@
 from crewai import Agent, Task, Crew, Process
 from .llm import get_gemini_pro, get_gemini_flash
+from .quality_standards import COPY_AGENT_QUALITY_RULES, OUTREACH_AGENT_QUALITY_RULES
 from .tools.google_places import GooglePlacesTool
 from .tools.pagespeed import PageSpeedTool
 from .tools.gbp_scraper import GBPScraperTool
@@ -56,13 +57,17 @@ def create_prospect_crew(prospect_data: dict) -> Crew:
 
     copy_agent = Agent(
         role="Copy Agent",
-        goal="Write high-converting website copy, SEO meta data, and outreach SMS",
+        goal=(
+            "Write Awwwards-level website copy, SEO metadata, and outreach SMS — "
+            "specific, researched, and indistinguishable from a senior agency writer"
+        ),
         backstory=(
-            "You're a direct-response copywriter who specializes in home services. "
-            "Every word you write is designed to get a homeowner to pick up the phone. "
-            "You write headlines that stop thumbs, meta descriptions that rank, "
-            "and SMS messages that feel personal — not spammy. Your copy makes "
-            "a $497 website look like it cost $10,000."
+            "You're a senior direct-response copywriter who spent a decade at top agencies "
+            "before specializing in local home services. You hate generic AI copy — vague "
+            "headlines, empty superlatives, template trust badges. Every line you write "
+            "references something real: the owner's name, the city, a review theme, a license. "
+            "Your headlines read like editorial. Your SMS messages feel like a neighbor "
+            "who did their homework. Your work makes a preview site look like a $50k engagement."
         ),
         llm=get_gemini_pro(),
         verbose=True,
@@ -86,12 +91,16 @@ def create_prospect_crew(prospect_data: dict) -> Crew:
 
     outreach_agent = Agent(
         role="Outreach Agent",
-        goal="Send the first outreach message and set up the follow-up sequence",
+        goal=(
+            "Send a first outreach SMS that feels hand-written — specific, under 155 chars, "
+            "preview URL at the end — never automated or template-like"
+        ),
         backstory=(
-            "You're the closer. You write SMS messages that feel like they came from a neighbor, "
-            "not a bot. You know that the first message is everything — if it feels automated, "
-            "it's dead. You craft a message under 155 characters that references something real "
-            "about their business and ends with a preview link that builds trust."
+            "You're a thoughtful founder doing personal outreach, not a sales bot. "
+            "You've seen thousands of cold texts die because they opened with 'Hi! We noticed...' "
+            "You reference one specific fact about their business, bridge to value in plain language, "
+            "and end with the full preview URL. If it could be sent unchanged to 100 businesses, "
+            "you rewrite it until it couldn't."
         ),
         tools=[twilio_sms, resend_email],
         llm=get_gemini_flash(),
@@ -139,17 +148,20 @@ def create_prospect_crew(prospect_data: dict) -> Crew:
     t_copy = Task(
         description=(
             f"Write website copy for {business_name} ({trade}) in {city}, {state}.\n\n"
+            f"{COPY_AGENT_QUALITY_RULES}\n\n"
             "Using the research and competitor data, produce a copy_package dict:\n\n"
-            "1. HERO: headline (include business name), subheadline, trust_bar (3 items)\n"
-            "2. SERVICES: list of 3-5 services with icon name, title, description\n"
-            "3. ABOUT: owner_story paragraph, trust_points (3 items)\n"
-            "4. REVIEWS: aggregate_line, individual reviews (3 items)\n"
-            "5. FAQ: 5 question/answer pairs relevant to the trade\n"
-            "6. SEO: title (60 chars max), description (155 chars max)\n"
+            "1. HERO: headline (business name OR city + concrete outcome), subheadline "
+            "(specific benefit + proof), trust_bar (3 items with certifications/licenses/times)\n"
+            "2. SERVICES: 3-5 services with icon name, title, description (each with one concrete detail)\n"
+            "3. ABOUT: owner_story paragraph (founder name, year, specific moment), trust_points (3 with numbers)\n"
+            "4. REVIEWS: aggregate_line, individual reviews (3 items — use real review data when available)\n"
+            f"5. FAQ: 5 question/answer pairs a real homeowner in {city} would ask for {trade}\n"
+            "6. SEO: title (60 chars max, name + city + service), description (155 chars max, benefit + CTA)\n"
             "7. OUTREACH SMS (< 155 chars)\n"
-            "   Example: 'Hey {owner_first}, {specific_review_theme} is why {city} trusts "
-            "{business_name}. See what your site could look like: {PREVIEW_URL}'\n"
+            "   Structure: '[Name], [specific observation] — [value]. [PREVIEW_URL]'\n"
             "   Constraint: PREVIEW_URL must appear at end. Never shorten it.\n\n"
+            "Before returning: verify business name or city appears in headline; no banned phrases; "
+            "every trust_bar item is specific (not 'Quality Service').\n\n"
             "Return as a JSON-compatible dict."
         ),
         agent=copy_agent,
@@ -177,14 +189,16 @@ def create_prospect_crew(prospect_data: dict) -> Crew:
     t_outreach = Task(
         description=(
             f"Send the first outreach SMS to {phone} for {business_name}.\n\n"
+            f"{OUTREACH_AGENT_QUALITY_RULES}\n\n"
             "1. Use the SMS message from the copy agent's output\n"
-            "2. Call send_sms with to={phone} and body=sms_message\n"
-            "3. If email is available ({email}), also send via send_email\n\n"
-            "The SMS must:\n"
-            "- Be under 155 characters\n"
-            "- Reference something specific about their business\n"
-            "- End with the full preview URL\n"
-            "- Feel personal, not automated\n\n"
+            "2. Reject and rewrite if it contains banned openers, emoji, or generic praise\n"
+            f"3. Call send_sms with to={phone} and body=sms_message\n"
+            f"4. If email is available ({email}), also send via send_email\n\n"
+            "Pre-send checklist:\n"
+            "- Under 155 characters\n"
+            "- One specific observation from research (not 'great reviews')\n"
+            "- Full preview URL at the very end\n"
+            "- Could NOT be sent unchanged to a different business\n\n"
             "Return: {sms_sent: bool, sms_sid: str, email_sent: bool}"
         ),
         agent=outreach_agent,

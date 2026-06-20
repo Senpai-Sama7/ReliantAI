@@ -82,6 +82,18 @@ def build_local_business_schema(
         "logo": business_data.get("logo"),
         "priceRange": "$$",
         "address": _format_address(address),
+        "areaServed": [
+            {"@type": "City", name: city},
+            {"@type": "State", name: state},
+        ],
+        "knowsAbout": [trade, f"{trade} services", f"{city} {trade}"],
+        "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": f"{name} Services",
+            "itemListElement": [
+                {"@type": "Offer", "itemOffered": {"@type": "Service", "name": trade}},
+            ],
+        },
     }
 
     if lat and lng:
@@ -118,6 +130,9 @@ def build_local_business_schema(
                 for item in items
             ],
         }
+    elif "hasOfferCatalog" in schema:
+        # Already set with default trade service above
+        pass
 
     if competitor_keywords:
         schema["keywords"] = ", ".join(competitor_keywords[:10])

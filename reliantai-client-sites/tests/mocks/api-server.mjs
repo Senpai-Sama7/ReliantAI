@@ -28,6 +28,22 @@ const sites = new Map([
       },
     },
   ],
+  [
+    "unsafe-url-plumbing",
+    {
+      ...baseSiteContent,
+      slug: "unsafe-url-plumbing",
+      status: "live",
+      business: {
+        ...baseSiteContent.business,
+        website_url: "javascript:alert(document.domain)",
+      },
+      site_config: {
+        ...baseSiteContent.site_config,
+        template_id: "plumbing-trustworthy-navy",
+      },
+    },
+  ],
 ]);
 
 function sendJson(res, status, body) {

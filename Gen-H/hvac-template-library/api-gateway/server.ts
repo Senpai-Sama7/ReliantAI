@@ -145,27 +145,53 @@ app.post('/api/companies', async (req: Request, res: Response) => {
 app.get('/api/deployments', async (req: Request, res: Response) => {
   try {
     const { company_id, template_id, status } = req.query;
-    let query = 'SELECT * FROM deployments WHERE 1=1';
+    let query = `SELECT d.*, t.name AS template_name, c.name AS company_name
+                 FROM deployments d
+                 LEFT JOIN templates t ON t.id = d.template_id
+                 LEFT JOIN companies c ON c.id = d.company_id
+                 WHERE 1=1`;
     const params: unknown[] = [];
 
     if (company_id) {
-      query += ' AND company_id = $' + (params.length + 1);
+      query += ' AND d.company_id = $' + (params.length + 1);
       params.push(company_id);
     }
     if (template_id) {
-      query += ' AND template_id = $' + (params.length + 1);
+      query += ' AND d.template_id = $' + (params.length + 1);
       params.push(template_id);
     }
     if (status) {
-      query += ' AND status = $' + (params.length + 1);
+      query += ' AND d.status = $' + (params.length + 1);
       params.push(status);
     }
 
-    query += ' ORDER BY created_at DESC';
+    query += ' ORDER BY d.created_at DESC';
     const result = await pool.query(query, params);
     res.json({ success: true, data: result.rows });
   } catch (error) {
     res.status(500).json({ success: false, error: getErrorMessage(error) });
+  }
+});
+
+app.get('/api/deployments/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT d.*, t.name AS template_name, c.name AS company_name
+       FROM deployments d
+       LEFT JOIN templates t ON t.id = d.template_id
+       LEFT JOIN companies c ON c.id = d.company_id
+       WHERE d.id = $1`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Deployment not found' });
+    }
+
+    return res.json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    return res.status(500).json({ success: false, error: getErrorMessage(error) });
   }
 });
 

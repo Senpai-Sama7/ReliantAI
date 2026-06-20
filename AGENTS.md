@@ -26,6 +26,7 @@ docker compose logs -f [service]
 - **Tool _run()**: SYNCHRONOUS only (sync httpx.Client)
 - **Preview domain**: `preview.reliantai.org` — NOT reliantai.org/preview/
 - **CopyAgent LLM**: gemini-1.5-pro | **All other agents**: gemini-1.5-flash
+- **Design quality**: client templates + Copy/Outreach agents follow `reliantai-client-sites/lib/design-quality-standards.ts` and `reliantai/agents/quality_standards.py` — no AI-slop patterns
 - All tool `_run()` are sync. CrewAI threads internally.
 
 ## Current Sprint
@@ -149,3 +150,65 @@ curl http://localhost:3000/api/health
 **Celery workers** — require full `requirements.txt` (crewai) which does not pip-resolve today; skip unless Docker image build is fixed upstream.
 
 **Full monorepo stack** — root `./scripts/deploy.sh local` starts 15+ microservices on different ports; it does **not** start `reliantai/` or `reliantai-client-sites/`.
+
+---
+
+## RALPH BUILD PROTOCOL
+
+**Progress tracker:** [`PROGRESS_TRACKER.md`](PROGRESS_TRACKER.md)  
+**These rules were established at project init and apply permanently.**
+
+### EXECUTION RULES (apply to every phase and every task)
+
+**Planning:**
+- Use step-by-step reasoning to produce the implementation plan.
+  Show your reasoning before code — but the plan is not proof of completion.
+
+**Gates (non-negotiable before marking any task [x]):**
+- Every task must pass its gate command before being marked complete.
+- Gate command output must appear verbatim in the Proof line (trimmed to relevant lines + timestamp).
+- If the gate fails: task stays [ ], error is logged under ❌ FAIL:, and you fix
+  before continuing. You do not move to the next task on a failing gate.
+
+**Failures:**
+- Do NOT delete original implementation attempts that failed.
+- Keep the original code/approach, append ❌ FAIL: with the exact error,
+  then append ✅ FIX: with what replaced it and why it worked.
+
+**Proof format (required on every task):**
+```
+Proof: `<exact command>` → `<trimmed output with exit code>` @ <timestamp>
+```
+
+### TRACKER MUTATION RULES — PERMANENT, NON-NEGOTIABLE
+
+These rules apply to every agent (human or AI) editing `PROGRESS_TRACKER.md`. Violating them
+invalidates the proof chain.
+
+1. **Permitted changes on completion only:**
+   - `[ ]` → `[x]`
+   - Replace `_pending_` with actual proof (command + output + timestamp)
+   - Append a row to the Completion Log table
+
+2. **Forbidden at all times:**
+   - Rewriting, removing, or reordering any task
+   - Adding or removing sections
+   - Editing any uncompleted task
+   - Replacing proof text without retaining the original attempt record
+
+3. **On failure:** Leave `[ ]`. Append below the Proof line:
+   ```
+   ❌ FAIL: [error message, timestamp]
+   ✅ FIX: [what replaced it and why]
+   Proof: [final passing result]
+   ```
+
+### Client-sites final gate (project complete only when all pass)
+
+```bash
+cd reliantai-client-sites
+npm run build      # exit 0, 0 errors
+npm run typecheck  # exit 0
+npm run lint       # exit 0 (or documented exceptions)
+npm run test       # exit 0
+```

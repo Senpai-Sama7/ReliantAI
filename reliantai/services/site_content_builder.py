@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .url_safety import sanitize_http_url
+
 TRADE_AEO_DEFAULTS: dict[str, dict[str, Any]] = {
     "hvac": {
         "local_business_type": "HVACBusiness",
@@ -181,7 +183,7 @@ def build_site_content(
                 research_data.get("review_count")
                 or getattr(prospect, "review_count", None)
             ),
-            "website_url": (
+            "website_url": sanitize_http_url(
                 research_data.get("website")
                 or research_data.get("website_url")
                 or getattr(prospect, "website_url", None)

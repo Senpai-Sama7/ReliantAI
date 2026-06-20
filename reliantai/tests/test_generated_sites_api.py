@@ -53,3 +53,10 @@ def test_get_generated_site_not_found(mock_get_db, _mock_get_cache, client):
 
     response = client.get("/api/v2/generated-sites/missing-slug")
     assert response.status_code == 404
+
+
+def test_get_generated_site_rejects_invalid_slug(client):
+    response = client.get("/api/v2/generated-sites/../admin")
+    assert response.status_code in (400, 404)
+    if response.status_code == 400:
+        assert response.json()["detail"] == "Invalid slug"

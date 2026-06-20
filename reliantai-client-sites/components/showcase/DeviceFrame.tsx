@@ -126,8 +126,8 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
         key={device}
         className="relative transition-all duration-500 ease-out"
         style={{
-          width: device === "mobile" ? 375 : 768,
-          height: device === "mobile" ? 812 : 1024,
+          width: config.width,
+          height: config.height,
           maxHeight: "90vh",
         }}
       >
