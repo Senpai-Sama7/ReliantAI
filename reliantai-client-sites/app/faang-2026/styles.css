@@ -1,0 +1,182 @@
+/* FAANG 2026 Design Tokens */
+.faang-2026-root {
+  --faang-bg: #050508;
+  --faang-surface: #0c0c10;
+  --faang-surface-elevated: #12121a;
+  --faang-border: rgba(255, 255, 255, 0.08);
+  --faang-border-strong: rgba(255, 255, 255, 0.14);
+  --faang-text: #f5f5f7;
+  --faang-text-muted: #86868b;
+  --faang-accent: #0a84ff;
+  --faang-accent-warm: #ff6b35;
+  --faang-accent-green: #30d158;
+  --faang-glass: rgba(12, 12, 16, 0.72);
+  --faang-blur: 24px;
+  --faang-radius: 0px;
+  --faang-font-display: var(--font-syne), ui-sans-serif, system-ui, sans-serif;
+  --faang-font-body: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --faang-font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  background: var(--faang-bg);
+  color: var(--faang-text);
+  font-family: var(--faang-font-body);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Grain overlay — human authorship signal */
+.faang-2026-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Aurora mesh background */
+.faang-aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.faang-aurora::before,
+.faang-aurora::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+}
+
+.faang-aurora::before {
+  width: 60vw;
+  height: 60vw;
+  top: -20%;
+  right: -10%;
+  background: radial-gradient(circle, #0a84ff40 0%, transparent 70%);
+  animation: aurora-drift 18s ease-in-out infinite alternate;
+}
+
+.faang-aurora::after {
+  width: 50vw;
+  height: 50vw;
+  bottom: -15%;
+  left: -10%;
+  background: radial-gradient(circle, #ff6b3525 0%, transparent 70%);
+  animation: aurora-drift 22s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes aurora-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to { transform: translate(5%, 8%) scale(1.08); }
+}
+
+/* Kinetic typography — scroll-driven */
+@supports (animation-timeline: view()) {
+  .kinetic-word {
+    animation: kinetic-reveal linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 35%;
+  }
+
+  @keyframes kinetic-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(1.2em) skewY(2deg);
+      filter: blur(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) skewY(0);
+      filter: blur(0);
+    }
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations */
+@supports not (animation-timeline: view()) {
+  .kinetic-word {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Hero entrance */
+.hero-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(100%);
+  animation: hero-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes hero-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tactile brutalism — 1px engineered borders */
+.faang-border {
+  border: 1px solid var(--faang-border);
+}
+
+.faang-border-strong {
+  border: 1px solid var(--faang-border-strong);
+}
+
+/* Glassmorphism 2.0 — restrained, secondary layers only */
+.faang-glass {
+  background: var(--faang-glass);
+  backdrop-filter: blur(var(--faang-blur));
+  -webkit-backdrop-filter: blur(var(--faang-blur));
+  border: 1px solid var(--faang-border);
+}
+
+/* Archival index numbering */
+.archival-index {
+  font-family: var(--faang-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  color: var(--faang-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .faang-aurora::before,
+  .faang-aurora::after {
+    animation: none;
+  }
+
+  .hero-word,
+  .kinetic-word {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+
+/* Custom selection */
+.faang-2026-root ::selection {
+  background: rgba(10, 132, 255, 0.35);
+  color: #fff;
+}
+
+/* Scrollbar */
+.faang-2026-root::-webkit-scrollbar {
+  width: 6px;
+}
+.faang-2026-root::-webkit-scrollbar-track {
+  background: var(--faang-bg);
+}
+.faang-2026-root::-webkit-scrollbar-thumb {
+  background: var(--faang-border-strong);
+  border-radius: 0;
+}
