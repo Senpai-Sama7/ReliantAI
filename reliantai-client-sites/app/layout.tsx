@@ -154,11 +154,6 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-
         <link rel="alternate" hrefLang="en-US" href="https://reliantai.org" />
         <link rel="alternate" hrefLang="en" href="https://reliantai.org" />
         <link rel="alternate" hrefLang="x-default" href="https://reliantai.org" />
