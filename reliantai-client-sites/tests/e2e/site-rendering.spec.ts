@@ -19,12 +19,16 @@ test.describe("Live site rendering from API content", () => {
     page,
   }) => {
     await page.goto("/test-hvac-austin");
-    const ldScript = page.locator('script[type="application/ld+json"]');
-    await expect(ldScript).toHaveCount(1);
+    const ldScripts = page.locator('script[type="application/ld+json"]');
+    // Page emits multiple JSON-LD tags (LocalBusiness, FAQPage, Services, BreadcrumbList, legacy schema_org)
+    const count = await ldScripts.count();
+    expect(count).toBeGreaterThanOrEqual(1);
 
-    const raw = await ldScript.textContent();
+    // The legacy schema_org block contains the hostile description from the fixture.
+    // It is the last ld+json tag on the page.
+    const legacySchema = ldScripts.last();
+    const raw = await legacySchema.textContent();
     expect(raw).toBeTruthy();
-    // The fixture contains "</script>" in schema_org.description.
     // Escaping must prevent a literal closing tag inside the script body...
     expect(raw!).not.toContain("</script");
     // ...while JSON.parse round-trips to the original hostile string intact.

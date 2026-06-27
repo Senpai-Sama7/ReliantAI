@@ -8,7 +8,7 @@
     "start": "next start",
     "typecheck": "next typegen && tsc --noEmit",
     "lint": "eslint",
-    "pretest": "playwright install chromium",
+    "pretest": "echo 'Using system Chrome (channel: chrome)'",
     "test": "npm run test:unit && playwright test",
     "test:unit": "vitest run",
     "test:e2e": "playwright test"

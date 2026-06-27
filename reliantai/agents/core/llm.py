@@ -41,3 +41,13 @@ def get_research_llm() -> ChatGoogleGenerativeAI:
 def get_outreach_llm() -> ChatGoogleGenerativeAI:
     """Balanced LLM for outreach messages."""
     return get_llm("flash", temperature=0.4, max_tokens=1024)
+
+
+def get_gemini_pro(temperature: float = 0.5, max_tokens: int = 4096) -> ChatGoogleGenerativeAI:
+    """High-quality Gemini 1.5 Pro instance for content generation."""
+    return get_llm("pro", temperature=temperature, max_tokens=max_tokens)
+
+
+def get_gemini_flash(temperature: float = 0.3, max_tokens: int = 2048) -> ChatGoogleGenerativeAI:
+    """Fast Gemini 1.5 Flash instance for quick generation tasks."""
+    return get_llm("flash", temperature=temperature, max_tokens=max_tokens)
