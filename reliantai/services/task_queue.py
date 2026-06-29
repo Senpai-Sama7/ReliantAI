@@ -1,5 +1,22 @@
-def enqueue_prospect_pipeline(prospect_id: str) -> None:
-    """Enqueue the research pipeline without importing Celery at module import time."""
-    from ..tasks.prospect_tasks import run_prospect_pipeline
+"""Service layer for task queuing and background jobs."""
 
-    run_prospect_pipeline.delay(prospect_id)
+import uuid
+from reliantai.models import ResearchJob
+from reliantai.db import get_db_session
+
+
+def enqueue_prospect_pipeline(prospect_id: str) -> str:
+    """Enqueue a prospect for the full pipeline (research, site generation, outreach)."""
+    job_id = str(uuid.uuid4())
+    
+    with get_db_session() as db:
+        job = ResearchJob(
+            id=job_id,
+            prospect_id=prospect_id,
+            job_type="prospect_pipeline",
+            status="queued"
+        )
+        db.add(job)
+        db.commit()
+    
+    return job_id

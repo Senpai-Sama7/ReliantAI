@@ -1,5 +1,6 @@
-from typing import Literal
+"""API v2 schemas for request/response validation."""
 
+from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 VALID_TRADES = frozenset(
@@ -8,6 +9,8 @@ VALID_TRADES = frozenset(
 
 
 class ProspectCreate(BaseModel):
+    """Schema for creating a new prospect."""
+    
     business_name: str = Field(..., min_length=1, max_length=255)
     trade: str
     city: str = Field(..., min_length=1, max_length=100)
@@ -41,6 +44,8 @@ class ProspectCreate(BaseModel):
 
 
 class ProspectResponse(BaseModel):
+    """Schema for prospect responses."""
+    
     id: str
     business_name: str
     trade: str
@@ -61,6 +66,8 @@ class ProspectResponse(BaseModel):
 
 
 class ProspectListResponse(BaseModel):
+    """Schema for list of prospects."""
+    
     items: list[ProspectResponse]
     total: int
     limit: int
@@ -68,6 +75,8 @@ class ProspectListResponse(BaseModel):
 
 
 class ResearchJobResponse(BaseModel):
+    """Schema for research job responses."""
+    
     job_id: str
-    status: Literal["queued", "running"]
+    status: Literal["queued", "running", "completed", "failed"]
     message: str

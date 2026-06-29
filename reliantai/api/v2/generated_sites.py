@@ -1,11 +1,12 @@
-from typing import Any
+"""API v2 generated sites router."""
 
+from typing import Any
 from fastapi import APIRouter, HTTPException
 
-from ...db import get_db_session
-from ...db.models import GeneratedSite
-from ...lib.slug import is_valid_slug
-from ...services.cache import get_cached_site, set_cached_site
+from reliantai.db import get_db_session
+from reliantai.models import GeneratedSite
+from reliantai.lib.slug import is_valid_slug
+from reliantai.services.cache import get_cached_site, set_cached_site
 
 router = APIRouter(prefix="/api/v2/generated-sites", tags=["generated-sites"])
 

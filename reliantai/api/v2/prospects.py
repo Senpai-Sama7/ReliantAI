@@ -1,12 +1,13 @@
-import uuid
+"""API v2 prospects router."""
 
+import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 
-from ..auth import verify_api_key
-from ...db import get_db_session
-from ...db.models import Prospect, ResearchJob
-from ...services.task_queue import enqueue_prospect_pipeline
+from reliantai.auth import verify_api_key
+from reliantai.db import get_db_session
+from reliantai.models import Prospect, ResearchJob
+from reliantai.services.task_queue import enqueue_prospect_pipeline
 from .schemas import (
     ProspectCreate,
     ProspectListResponse,
@@ -46,6 +47,7 @@ def list_prospects(
     trade: str | None = None,
     _: bool = Depends(verify_api_key),
 ):
+    """List all prospects with optional filtering."""
     with get_db_session() as db:
         query = db.query(Prospect)
         if status_filter:
@@ -75,7 +77,9 @@ def create_prospect(
     payload: ProspectCreate,
     _: bool = Depends(verify_api_key),
 ):
-    place_id = payload.place_id or f"manual-{uuid.uuid4()}"
+    """Create a new prospect."""
+    prospect_id = str(uuid.uuid4())
+    place_id = payload.place_id or f"manual-{prospect_id}"
 
     with get_db_session() as db:
         duplicate = (
@@ -96,6 +100,7 @@ def create_prospect(
             )
 
         prospect = Prospect(
+            id=prospect_id,
             place_id=place_id,
             business_name=payload.business_name.strip(),
             trade=payload.trade,
@@ -113,15 +118,19 @@ def create_prospect(
         )
         db.add(prospect)
         try:
-            db.flush()
+            db.commit()
             response = _prospect_response(prospect)
+            
+            # Enqueue pipeline job
+            enqueue_prospect_pipeline(prospect_id)
+            
+            return response
         except IntegrityError:
+            db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Prospect already exists",
-            ) from None
-
-    return response
+            )
 
 
 @router.get("/{prospect_id}", response_model=ProspectResponse)
@@ -129,50 +138,9 @@ def get_prospect(
     prospect_id: str,
     _: bool = Depends(verify_api_key),
 ):
+    """Get a specific prospect by ID."""
     with get_db_session() as db:
-        prospect = db.query(Prospect).filter_by(id=prospect_id).first()
+        prospect = db.query(Prospect).filter(Prospect.id == prospect_id).first()
         if not prospect:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prospect not found")
+            raise HTTPException(status_code=404, detail="Prospect not found")
         return _prospect_response(prospect)
-
-
-@router.post("/{prospect_id}/research", response_model=ResearchJobResponse)
-def trigger_research(
-    prospect_id: str,
-    _: bool = Depends(verify_api_key),
-):
-    with get_db_session() as db:
-        prospect = db.query(Prospect).filter_by(id=prospect_id).first()
-        if not prospect:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Prospect not found")
-
-        active_job = (
-            db.query(ResearchJob)
-            .filter(
-                ResearchJob.prospect_id == prospect_id,
-                ResearchJob.status.in_(("pending", "running")),
-            )
-            .first()
-        )
-        if active_job:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Research pipeline already in progress",
-            )
-
-        job = ResearchJob(
-            prospect_id=prospect_id,
-            status="pending",
-            step="queued",
-        )
-        db.add(job)
-        db.flush()
-        job_id = job.id
-
-    enqueue_prospect_pipeline(prospect_id)
-
-    return ResearchJobResponse(
-        job_id=job_id,
-        status="queued",
-        message="Research pipeline started",
-    )
