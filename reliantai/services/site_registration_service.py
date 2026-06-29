@@ -172,7 +172,12 @@ def _build_schema_for_slug(
 
 
 def _parse_task_output(output: object) -> dict | list | None:
-    """Best-effort parse of CrewAI task output into structured data."""
+    """Best-effort parse of CrewAI task output into structured data.
+
+    Uses json.JSONDecoder.raw_decode() for robust extraction of the first
+    valid JSON value from potentially noisy LLM output (markdown fences,
+    trailing text, etc.).
+    """
     if output is None:
         return None
     if isinstance(output, dict):
@@ -192,21 +197,40 @@ def _parse_task_output(output: object) -> dict | list | None:
     text = output.strip()
     if not text:
         return None
+    # Try direct parse first (fast path)
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        start = text.find("{")
-        end = text.rfind("}")
+        pass
+    # Strip common markdown code fences
+    cleaned = text
+    for fence in ("```json", "```"):
+        if cleaned.startswith(fence):
+            cleaned = cleaned[len(fence):]
+        if cleaned.endswith("```"):
+            cleaned = cleaned[:-3]
+    cleaned = cleaned.strip()
+    # Try raw_decode on cleaned text
+    decoder = json.JSONDecoder()
+    try:
+        result, _ = decoder.raw_decode(cleaned)
+        return result
+    except (json.JSONDecodeError, ValueError):
+        pass
+    # Fallback: find first { or [ and try to parse from there
+    for start_char, end_char in [("{}", "[]")]:
+        start = cleaned.find(start_char[0])
+        end = cleaned.rfind(start_char[1])
         if start != -1 and end > start:
             try:
-                return json.loads(text[start : end + 1])
+                return json.loads(cleaned[start:end + 1])
             except json.JSONDecodeError:
                 pass
-        start = text.find("[")
-        end = text.rfind("]")
+        start = cleaned.find(end_char[0])
+        end = cleaned.rfind(end_char[1])
         if start != -1 and end > start:
             try:
-                return json.loads(text[start : end + 1])
+                return json.loads(cleaned[start:end + 1])
             except json.JSONDecodeError:
                 pass
     return None

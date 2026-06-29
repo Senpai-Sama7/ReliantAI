@@ -1,0 +1,29 @@
+# ReliantAI — AI-Powered Websites for Home Service Businesses
+
+## About
+ReliantAI generates high-converting, SEO-optimized websites for HVAC, plumbing, electrical, roofing, painting, and landscaping businesses. Each site is built with Next.js ISR, comprehensive JSON-LD structured data, and AI-first content architecture.
+
+## Website
+https://reliantai.org
+
+## Products
+- AI Website Generator: Automatically generates complete, SEO-optimized websites for home service businesses
+- Template Studio: 6 production-ready templates (HVAC, Plumbing, Electrical, Roofing, Painting, Landscaping)
+- ISR Rendering: Server-side rendered pages with hourly revalidation
+- JSON-LD Structured Data: LocalBusiness, FAQPage, Service, Organization, WebSite schema
+
+## Key Pages
+- Showcase: https://reliantai.org/showcase
+- API Docs: https://reliantai.org/api/docs
+
+## Contact
+- Email: hello@reliantai.org
+- Twitter: https://twitter.com/reliantai
+- LinkedIn: https://linkedin.com/company/reliantai
+- GitHub: https://github.com/reliantai
+
+## Brand
+- Name: ReliantAI
+- Founded: 2024
+- Industry: AI / Web Development / SaaS
+- Target: Home service businesses (HVAC, plumbing, electrical, roofing, painting, landscaping)

@@ -277,12 +277,12 @@ PYTHONPATH=. pytest reliantai/tests/test_generated_sites_api.py -v
 ### Checklist
 
 - [ ] Import `reliantai-client-sites` as Vercel project (root directory setting)
-- [ ] Set `API_BASE_URL=https://api.reliantai.org` (or your API host)
+- [ ] Set `API_BASE_URL` — `https://api.reliantai.org` when hosted, or interim `https://reliantai-mock-platform-api.vercel.app` (see `mock-platform-api/README.md`)
 - [ ] Set `REVALIDATE_SECRET` (match platform `reliantai` env)
 - [ ] Set `NEXT_PUBLIC_CHECKOUT_BASE_URL=https://reliantai.org`
-- [ ] Point `preview.reliantai.org` DNS to Vercel: `A preview.reliantai.org → 76.76.21.21` (Cloudflare)
+- [ ] Point `preview.reliantai.org` DNS to Vercel: `A preview.reliantai.org → 76.76.21.21` (Cloudflare), or run `CLOUDFLARE_API_TOKEN=... node scripts/configure-preview-dns.mjs`
 - [ ] Until DNS works: set platform `PREVIEW_SITES_BASE_URL=https://reliantai-client-sites.vercel.app`
-- [ ] Seed at least one `generated_sites` row and verify `GET /{slug}` returns 200
+- [ ] Verify `GET /{slug}` returns 200 (e.g. `test-hvac-austin` against mock API or a seeded DB row)
 - [ ] Trigger revalidation from platform after site registration
 
 ### Post-deploy verification
@@ -302,7 +302,8 @@ curl -s -X POST https://preview.reliantai.org/api/revalidate \
 
 | Symptom | Likely cause | Fix |
 |---------|--------------|-----|
-| All slugs return 404 | API down or `API_BASE_URL` wrong | Check `curl $API_BASE_URL/health` and Vercel env |
+| All slugs return 404 | API down or `API_BASE_URL` wrong | `curl $API_BASE_URL/health` (FastAPI) or `curl $API_BASE_URL/api/health` (mock API) |
+| Production headers differ from local | `vercel.json` overrides `next.config.ts` headers | Keep `X-Frame-Options` aligned in both files (currently `SAMEORIGIN`) |
 | All slugs return 404 instantly | Invalid `API_TIMEOUT_MS` (was 0/NaN) | Remove or fix env var; defaults to 10s |
 | Content stale after DB update | ISR cache not purged | Verify `REVALIDATE_SECRET` on both sides; check platform logs for `revalidate_ok` |
 | Revalidate returns 503 | `REVALIDATE_SECRET` unset on Vercel | Add env var and redeploy |
@@ -327,4 +328,4 @@ curl -s -X POST https://preview.reliantai.org/api/revalidate \
 
 ---
 
-*Last updated: Phase 5 — post ISR hardening merge (`#17`)*
+*Last updated: Phase 5 — mock platform API + production ISR verified*

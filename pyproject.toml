@@ -1,0 +1,55 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "reliantai-agents"
+version = "1.0.0"
+description = "Autonomous AI agent CLI for ReliantAI"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.12"
+authors = [{name = "Douglas Mitchell", email = "DouglasMitchell@reliantai.org"}]
+
+dependencies = [
+    "crewai>=0.11.0",
+    "langchain>=0.1.0,<0.2.0",
+    "langchain-google-genai>=0.1.0",
+    "google-generativeai>=0.8.0",
+    "fastapi>=0.115.0",
+    "httpx>=0.28.0",
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14.0",
+    "celery[redis]>=5.4.0",
+    "redis>=5.2.0",
+    "click>=8.1.0",
+    "rich>=13.9.0",
+    "structlog>=24.4.0",
+    "pydantic>=2.10.0",
+    "python-dotenv>=1.0.0",
+    "tenacity>=9.0.0",
+    "orjson>=3.10.0",
+    "jinja2>=3.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.25.0",
+    "pytest-cov>=6.0.0",
+]
+
+[project.scripts]
+agents-cli = "reliantai.agents.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["reliantai"]
+
+[tool.ruff]
+line-length = 127
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["reliantai/agents/tests", "reliantai/agents/websiteforge/tests"]
+addopts = "-v --tb=short"
+asyncio_default_fixture_loop_scope = "function"

@@ -1,0 +1,106 @@
+/* Dollar Dank — brand system (restrained) */
+.dd-root {
+  --dd-bg: #0a0a0a;
+  --dd-surface: #111111;
+  --dd-line: #222222;
+  --dd-line-soft: #1a1a1a;
+  --dd-text: #ececec;
+  --dd-muted: #767676;
+  --dd-green: #3dff14;
+  --dd-green-dim: #2da610;
+  --dd-gold: #e8c547;
+  --dd-red: #e84c3d;
+  --dd-font: var(--font-dm), system-ui, sans-serif;
+  --dd-font-brand: var(--font-bebas), system-ui, sans-serif;
+  --dd-radius: 6px;
+
+  background: var(--dd-bg);
+  color: var(--dd-text);
+  font-family: var(--dd-font);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dd-root ::selection {
+  background: rgba(61, 255, 20, 0.25);
+}
+
+.dd-brand {
+  font-family: var(--dd-font-brand);
+  letter-spacing: 0.06em;
+}
+
+.dd-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--dd-green);
+  color: #0a0a0a;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--dd-radius);
+  transition: background 0.15s ease;
+}
+
+.dd-btn-primary:hover {
+  background: #52ff3a;
+}
+
+.dd-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: transparent;
+  color: var(--dd-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid var(--dd-line);
+  border-radius: var(--dd-radius);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.dd-btn-secondary:hover {
+  border-color: #444;
+  color: #fff;
+}
+
+.dd-section {
+  border-top: 1px solid var(--dd-line);
+}
+
+.dd-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dd-muted);
+}
+
+@keyframes dd-open-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.dd-open-dot {
+  animation: dd-open-pulse 2.4s ease-in-out infinite;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-open-dot {
+    animation: none;
+  }
+}

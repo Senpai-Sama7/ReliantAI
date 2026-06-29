@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 from ...db import get_db_session
 from ...db.models import GeneratedSite
+from ...lib.slug import is_valid_slug
 from ...services.cache import get_cached_site, set_cached_site
 
 router = APIRouter(prefix="/api/v2/generated-sites", tags=["generated-sites"])
@@ -12,6 +13,9 @@ router = APIRouter(prefix="/api/v2/generated-sites", tags=["generated-sites"])
 @router.get("/{slug}")
 def get_generated_site(slug: str) -> dict[str, Any]:
     """Retrieve generated site content by slug (public, no auth)."""
+    if not is_valid_slug(slug):
+        raise HTTPException(status_code=400, detail="Invalid slug")
+
     cached = get_cached_site(slug)
     if cached:
         return cached

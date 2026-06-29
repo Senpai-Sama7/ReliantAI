@@ -1,0 +1,464 @@
+{
+  "test-hvac-austin": {
+    "business": {
+      "business_name": "Comfort Pro HVAC",
+      "trade": "hvac",
+      "city": "Austin",
+      "state": "TX",
+      "phone": "(512) 555-0199",
+      "email": "info@comfortprohvac.com",
+      "address": "1234 Oak Lane, Austin, TX 78701",
+      "google_rating": 4.9,
+      "review_count": 342,
+      "website_url": "https://comfortprohvac.com",
+      "owner_name": "Mike Hartwell",
+      "owner_title": "Founder & Master Technician",
+      "years_in_business": 15,
+      "service_area": "Greater Austin Metro Area"
+    },
+    "hero": {
+      "headline": "Stay Comfortable Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "trust_bar": [
+        "Licensed & Insured",
+        "EPA Certified",
+        "Background Checked"
+      ],
+      "cta_primary": "Call Now",
+      "cta_primary_url": "tel:+15125550199",
+      "cta_secondary": "View Services",
+      "cta_secondary_url": "#services"
+    },
+    "services": [
+      {
+        "icon": "thermometer",
+        "title": "AC Repair & Install",
+        "description": "Same-day diagnostics and repair. New unit installation with 10-year warranty.",
+        "cta_text": "Get AC Help"
+      },
+      {
+        "icon": "flame",
+        "title": "Heating Services",
+        "description": "Furnace repair, heat pump service, and full heating system replacement.",
+        "cta_text": "Heating Help"
+      },
+      {
+        "icon": "wind",
+        "title": "Ductwork & Indoor Air",
+        "description": "Duct sealing, air filtration, and humidity control for healthier air.",
+        "cta_text": "Improve Air Quality"
+      },
+      {
+        "icon": "settings",
+        "title": "Maintenance Plans",
+        "description": "Annual tune-ups, priority scheduling, and 15% off all repairs.",
+        "cta_text": "See Plans"
+      }
+    ],
+    "about": {
+      "story": "Comfort Pro started in 2009 when founder Mike Hartwell got tired of watching Austin homeowners get hit with surprise charges and delayed service. He built this company on a simple promise: show up when we say we will, fix it right the first time, and charge a fair price. Fifteen years and 5,000+ homes later, that promise still drives everything we do.",
+      "trust_points": [
+        "15+ years serving Austin homeowners",
+        "4.9-star rating across 342 reviews",
+        "Same-day emergency service available",
+        "EPA-certified and background-checked technicians"
+      ],
+      "certifications": [
+        "EPA 608 Certified",
+        "NATE Certified",
+        "BBB A+ Rating"
+      ]
+    },
+    "reviews": {
+      "reviews": [
+        {
+          "author": "Sarah M.",
+          "rating": 5,
+          "text": "They came out same day when our AC died in August. Professional, fast, and fair pricing. Haven't had an issue since.",
+          "time": "2 weeks ago"
+        },
+        {
+          "author": "David R.",
+          "rating": 5,
+          "text": "Best HVAC company in Austin, period. Mike explained everything clearly and didn't try to upsell us on stuff we didn't need.",
+          "time": "1 month ago"
+        },
+        {
+          "author": "Jennifer K.",
+          "rating": 5,
+          "text": "Our furnace went out on the coldest night of the year. They were here within 2 hours. Eternally grateful.",
+          "time": "3 months ago"
+        }
+      ],
+      "aggregate_line": "4.9 average from 342 reviews"
+    },
+    "faq": [
+      {
+        "question": "How fast can you get here?",
+        "answer": "For emergencies, we typically arrive within 2 hours. Standard service calls are scheduled same-day or next business day."
+      },
+      {
+        "question": "Do you charge for estimates?",
+        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+      }
+    ],
+    "seo": {
+      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
+      "keywords": [
+        "hvac austin",
+        "ac repair austin",
+        "heating repair austin"
+      ]
+    },
+    "aeo_signals": {
+      "local_business_type": "HVACContractor",
+      "primary_category": "HVAC Repair",
+      "secondary_categories": [
+        "AC Installation",
+        "Furnace Repair",
+        "Duct Cleaning"
+      ],
+      "area_served": [
+        "Austin",
+        "Round Rock",
+        "Cedar Park",
+        "Pflugerville"
+      ]
+    },
+    "schema_org": {
+      "@context": "https://schema.org",
+      "@type": "HVACBusiness",
+      "name": "Comfort Pro HVAC",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Austin",
+        "addressRegion": "TX"
+      },
+      "description": "Austin HVAC specialists </script><img src=\"x\" onerror=\"alert(1)\"> est. 2009"
+    },
+    "site_config": {
+      "template_id": "hvac-reliable-blue",
+      "trade": "hvac",
+      "theme": {
+        "primary": "#1e40af",
+        "accent": "#60a5fa",
+        "font_display": "Outfit",
+        "font_body": "Inter"
+      }
+    },
+    "status": "live",
+    "slug": "test-hvac-austin",
+    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
+    "lighthouse_score": 97
+  },
+  "preview-hvac-austin": {
+    "business": {
+      "business_name": "Comfort Pro HVAC",
+      "trade": "hvac",
+      "city": "Austin",
+      "state": "TX",
+      "phone": "(512) 555-0199",
+      "email": "info@comfortprohvac.com",
+      "address": "1234 Oak Lane, Austin, TX 78701",
+      "google_rating": 4.9,
+      "review_count": 342,
+      "website_url": "https://comfortprohvac.com",
+      "owner_name": "Mike Hartwell",
+      "owner_title": "Founder & Master Technician",
+      "years_in_business": 15,
+      "service_area": "Greater Austin Metro Area"
+    },
+    "hero": {
+      "headline": "Stay Comfortable Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "trust_bar": [
+        "Licensed & Insured",
+        "EPA Certified",
+        "Background Checked"
+      ],
+      "cta_primary": "Call Now",
+      "cta_primary_url": "tel:+15125550199",
+      "cta_secondary": "View Services",
+      "cta_secondary_url": "#services"
+    },
+    "services": [
+      {
+        "icon": "thermometer",
+        "title": "AC Repair & Install",
+        "description": "Same-day diagnostics and repair. New unit installation with 10-year warranty.",
+        "cta_text": "Get AC Help"
+      },
+      {
+        "icon": "flame",
+        "title": "Heating Services",
+        "description": "Furnace repair, heat pump service, and full heating system replacement.",
+        "cta_text": "Heating Help"
+      },
+      {
+        "icon": "wind",
+        "title": "Ductwork & Indoor Air",
+        "description": "Duct sealing, air filtration, and humidity control for healthier air.",
+        "cta_text": "Improve Air Quality"
+      },
+      {
+        "icon": "settings",
+        "title": "Maintenance Plans",
+        "description": "Annual tune-ups, priority scheduling, and 15% off all repairs.",
+        "cta_text": "See Plans"
+      }
+    ],
+    "about": {
+      "story": "Comfort Pro started in 2009 when founder Mike Hartwell got tired of watching Austin homeowners get hit with surprise charges and delayed service. He built this company on a simple promise: show up when we say we will, fix it right the first time, and charge a fair price. Fifteen years and 5,000+ homes later, that promise still drives everything we do.",
+      "trust_points": [
+        "15+ years serving Austin homeowners",
+        "4.9-star rating across 342 reviews",
+        "Same-day emergency service available",
+        "EPA-certified and background-checked technicians"
+      ],
+      "certifications": [
+        "EPA 608 Certified",
+        "NATE Certified",
+        "BBB A+ Rating"
+      ]
+    },
+    "reviews": {
+      "reviews": [
+        {
+          "author": "Sarah M.",
+          "rating": 5,
+          "text": "They came out same day when our AC died in August. Professional, fast, and fair pricing. Haven't had an issue since.",
+          "time": "2 weeks ago"
+        },
+        {
+          "author": "David R.",
+          "rating": 5,
+          "text": "Best HVAC company in Austin, period. Mike explained everything clearly and didn't try to upsell us on stuff we didn't need.",
+          "time": "1 month ago"
+        },
+        {
+          "author": "Jennifer K.",
+          "rating": 5,
+          "text": "Our furnace went out on the coldest night of the year. They were here within 2 hours. Eternally grateful.",
+          "time": "3 months ago"
+        }
+      ],
+      "aggregate_line": "4.9 average from 342 reviews"
+    },
+    "faq": [
+      {
+        "question": "How fast can you get here?",
+        "answer": "For emergencies, we typically arrive within 2 hours. Standard service calls are scheduled same-day or next business day."
+      },
+      {
+        "question": "Do you charge for estimates?",
+        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+      }
+    ],
+    "seo": {
+      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
+      "keywords": [
+        "hvac austin",
+        "ac repair austin",
+        "heating repair austin"
+      ]
+    },
+    "aeo_signals": {
+      "local_business_type": "HVACContractor",
+      "primary_category": "HVAC Repair",
+      "secondary_categories": [
+        "AC Installation",
+        "Furnace Repair",
+        "Duct Cleaning"
+      ],
+      "area_served": [
+        "Austin",
+        "Round Rock",
+        "Cedar Park",
+        "Pflugerville"
+      ]
+    },
+    "schema_org": {
+      "@context": "https://schema.org",
+      "@type": "HVACBusiness",
+      "name": "Comfort Pro HVAC",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Austin",
+        "addressRegion": "TX"
+      },
+      "description": "Austin HVAC specialists </script><img src=\"x\" onerror=\"alert(1)\"> est. 2009"
+    },
+    "site_config": {
+      "template_id": "hvac-reliable-blue",
+      "trade": "hvac",
+      "theme": {
+        "primary": "#1e40af",
+        "accent": "#60a5fa",
+        "font_display": "Outfit",
+        "font_body": "Inter"
+      }
+    },
+    "status": "preview_live",
+    "slug": "preview-hvac-austin",
+    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
+    "lighthouse_score": 97
+  },
+  "bad-template-austin": {
+    "business": {
+      "business_name": "Comfort Pro HVAC",
+      "trade": "hvac",
+      "city": "Austin",
+      "state": "TX",
+      "phone": "(512) 555-0199",
+      "email": "info@comfortprohvac.com",
+      "address": "1234 Oak Lane, Austin, TX 78701",
+      "google_rating": 4.9,
+      "review_count": 342,
+      "website_url": "https://comfortprohvac.com",
+      "owner_name": "Mike Hartwell",
+      "owner_title": "Founder & Master Technician",
+      "years_in_business": 15,
+      "service_area": "Greater Austin Metro Area"
+    },
+    "hero": {
+      "headline": "Stay Comfortable Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "trust_bar": [
+        "Licensed & Insured",
+        "EPA Certified",
+        "Background Checked"
+      ],
+      "cta_primary": "Call Now",
+      "cta_primary_url": "tel:+15125550199",
+      "cta_secondary": "View Services",
+      "cta_secondary_url": "#services"
+    },
+    "services": [
+      {
+        "icon": "thermometer",
+        "title": "AC Repair & Install",
+        "description": "Same-day diagnostics and repair. New unit installation with 10-year warranty.",
+        "cta_text": "Get AC Help"
+      },
+      {
+        "icon": "flame",
+        "title": "Heating Services",
+        "description": "Furnace repair, heat pump service, and full heating system replacement.",
+        "cta_text": "Heating Help"
+      },
+      {
+        "icon": "wind",
+        "title": "Ductwork & Indoor Air",
+        "description": "Duct sealing, air filtration, and humidity control for healthier air.",
+        "cta_text": "Improve Air Quality"
+      },
+      {
+        "icon": "settings",
+        "title": "Maintenance Plans",
+        "description": "Annual tune-ups, priority scheduling, and 15% off all repairs.",
+        "cta_text": "See Plans"
+      }
+    ],
+    "about": {
+      "story": "Comfort Pro started in 2009 when founder Mike Hartwell got tired of watching Austin homeowners get hit with surprise charges and delayed service. He built this company on a simple promise: show up when we say we will, fix it right the first time, and charge a fair price. Fifteen years and 5,000+ homes later, that promise still drives everything we do.",
+      "trust_points": [
+        "15+ years serving Austin homeowners",
+        "4.9-star rating across 342 reviews",
+        "Same-day emergency service available",
+        "EPA-certified and background-checked technicians"
+      ],
+      "certifications": [
+        "EPA 608 Certified",
+        "NATE Certified",
+        "BBB A+ Rating"
+      ]
+    },
+    "reviews": {
+      "reviews": [
+        {
+          "author": "Sarah M.",
+          "rating": 5,
+          "text": "They came out same day when our AC died in August. Professional, fast, and fair pricing. Haven't had an issue since.",
+          "time": "2 weeks ago"
+        },
+        {
+          "author": "David R.",
+          "rating": 5,
+          "text": "Best HVAC company in Austin, period. Mike explained everything clearly and didn't try to upsell us on stuff we didn't need.",
+          "time": "1 month ago"
+        },
+        {
+          "author": "Jennifer K.",
+          "rating": 5,
+          "text": "Our furnace went out on the coldest night of the year. They were here within 2 hours. Eternally grateful.",
+          "time": "3 months ago"
+        }
+      ],
+      "aggregate_line": "4.9 average from 342 reviews"
+    },
+    "faq": [
+      {
+        "question": "How fast can you get here?",
+        "answer": "For emergencies, we typically arrive within 2 hours. Standard service calls are scheduled same-day or next business day."
+      },
+      {
+        "question": "Do you charge for estimates?",
+        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+      }
+    ],
+    "seo": {
+      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
+      "keywords": [
+        "hvac austin",
+        "ac repair austin",
+        "heating repair austin"
+      ]
+    },
+    "aeo_signals": {
+      "local_business_type": "HVACContractor",
+      "primary_category": "HVAC Repair",
+      "secondary_categories": [
+        "AC Installation",
+        "Furnace Repair",
+        "Duct Cleaning"
+      ],
+      "area_served": [
+        "Austin",
+        "Round Rock",
+        "Cedar Park",
+        "Pflugerville"
+      ]
+    },
+    "schema_org": {
+      "@context": "https://schema.org",
+      "@type": "HVACBusiness",
+      "name": "Comfort Pro HVAC",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Austin",
+        "addressRegion": "TX"
+      },
+      "description": "Austin HVAC specialists </script><img src=\"x\" onerror=\"alert(1)\"> est. 2009"
+    },
+    "site_config": {
+      "template_id": "nonexistent-template",
+      "trade": "hvac",
+      "theme": {
+        "primary": "#1e40af",
+        "accent": "#60a5fa",
+        "font_display": "Outfit",
+        "font_body": "Inter"
+      }
+    },
+    "status": "live",
+    "slug": "bad-template-austin",
+    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
+    "lighthouse_score": 97
+  }
+}

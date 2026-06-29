@@ -1,0 +1,6 @@
+{
+  "name": "reliantai-mock-platform-api",
+  "private": true,
+  "type": "module",
+  "description": "Public stand-in for GET /api/v2/generated-sites/{slug} until api.reliantai.org is hosted"
+}

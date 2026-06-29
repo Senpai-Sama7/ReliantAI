@@ -1,4 +1,44 @@
-"use client";
+import type { Metadata } from "next";
+import ShowcaseClient from "./showcase-client";
+
+export const metadata: Metadata = {
+  title: "Showcase — AI-Generated Websites for Every Trade",
+  description:
+    "Browse AI-generated websites for HVAC, plumbing, electrical, roofing, painting, and landscaping businesses. Each template is SEO-optimized, mobile-ready, and designed to convert. See your free preview instantly.",
+  keywords: [
+    "AI website generator showcase", "HVAC website template", "plumbing website design",
+    "electrical contractor website", "roofing website builder", "painting company website",
+    "landscaping website template", "home service website examples",
+    "AI web design examples", "contractor website templates", "local business SEO",
+  ],
+  alternates: {
+    canonical: "https://reliantai.org/showcase",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "ReliantAI",
+    title: "Showcase — AI-Generated Websites for Every Trade",
+    description:
+      "Browse AI-generated websites for HVAC, plumbing, electrical, roofing, painting, and landscaping. Free preview instantly.",
+    url: "https://reliantai.org/showcase",
+    images: [
+      {
+        url: "https://reliantai.org/og/showcase.png",
+        width: 1200,
+        height: 630,
+        alt: "ReliantAI Showcase — AI-Generated Websites for Home Service Businesses",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Showcase — AI-Generated Websites for Every Trade",
+    description:
+      "Browse AI-generated websites for HVAC, plumbing, electrical, roofing, painting, and landscaping.",
+    images: ["https://reliantai.org/og/showcase.png"],
+  },
+};
 
 import { useState, useEffect, useMemo, type ComponentType } from "react";
 import dynamic from "next/dynamic";
@@ -537,44 +577,6 @@ export default function ShowcasePage() {
           )}
         </main>
       </div>
-    </div>
-  );
-}
-
-// ─── Sub-components ────────────────────────────────────────────────────
-
-function DetailCell({ label, value, children }: { label: string; value: string; children?: React.ReactNode }) {
-  return (
-    <div className="p-2 rounded-lg bg-zinc-900/50 ring-1 ring-white/[0.03]">
-      <div className="text-[8px] text-zinc-600 uppercase tracking-wider font-semibold">{label}</div>
-      <div className="text-[11px] text-zinc-300 mt-0.5 font-medium">{value}</div>
-      {children && <div className="mt-1">{children}</div>}
-    </div>
-  );
-}
-
-function MetaCard({ label, value, accent }: { label: string; value: string; accent?: string }) {
-  return (
-    <div className="p-3 rounded-xl bg-zinc-900 ring-1 ring-white/[0.06]">
-      <div className="text-[9px] text-zinc-600 uppercase tracking-wider font-semibold mb-1">{label}</div>
-      <div className="flex items-center gap-2">
-        {accent && <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: accent }} />}
-        <span className="text-sm font-medium text-zinc-200">{value}</span>
-      </div>
-    </div>
-  );
-}
-
-function DataInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <div>
-      <label className="text-[9px] font-semibold tracking-[0.1em] uppercase text-zinc-600 block mb-0.5">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-2.5 py-1.5 text-[11px] bg-zinc-900 ring-1 ring-white/[0.06] rounded-md text-zinc-300 placeholder-zinc-700 focus:outline-none focus:ring-white/10 transition-all"
-      />
     </div>
   );
 }
