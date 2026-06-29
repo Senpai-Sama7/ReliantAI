@@ -158,13 +158,11 @@ async def health():
 
 # ─── ROUTERS ─────────────────────────────────────────────────────────
 
-from .api.v2 import prospects as prospects_router
-from .api.v2 import generated_sites as generated_sites_router
-from .api.v2 import webhooks as webhooks_router
+from .api.v2 import prospects_router, generated_sites_router, webhooks_router
 
-app.include_router(prospects_router.router)
-app.include_router(generated_sites_router.router)
-app.include_router(webhooks_router.router)
+app.include_router(prospects_router)
+app.include_router(generated_sites_router)
+app.include_router(webhooks_router)
 
 
 @app.get("/ready")
