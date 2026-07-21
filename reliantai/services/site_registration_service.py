@@ -423,7 +423,8 @@ class SiteRegistrationService:
             h = h.strip().lower()
             if h:
                 allowed.add(h)
-        if parsed.scheme not in {"http", "https"} or host not in allowed:
+        host_ok = host in allowed or host.endswith(".vercel.app")
+        if parsed.scheme not in {"http", "https"} or not host_ok:
             raise ValueError(f"PREVIEW_SITES_BASE_URL host not allowlisted: {host}")
         return f"{base}/api/revalidate"
 

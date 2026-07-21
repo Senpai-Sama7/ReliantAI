@@ -50,8 +50,9 @@ def test_create_prospect_rejects_invalid_trade(client):
     assert response.status_code == 422
 
 
+@patch("reliantai.api.v2.prospects.enqueue_prospect_pipeline")
 @patch("reliantai.api.v2.prospects.get_db_session")
-def test_create_prospect_returns_201(mock_get_db, client):
+def test_create_prospect_returns_201(mock_get_db, mock_enqueue, client):
     mock_db = MagicMock()
     mock_get_db.return_value.__enter__ = MagicMock(return_value=mock_db)
     mock_get_db.return_value.__exit__ = MagicMock(return_value=False)
@@ -91,6 +92,7 @@ def test_create_prospect_returns_201(mock_get_db, client):
     data = response.json()
     assert data["business_name"] == "ACME HVAC"
     assert data["status"] == "identified"
+    mock_enqueue.assert_called_once()
 
 
 @patch("reliantai.api.v2.prospects.enqueue_prospect_pipeline")
@@ -101,14 +103,8 @@ def test_trigger_research_enqueues_pipeline(mock_get_db, mock_enqueue, client):
     mock_get_db.return_value.__exit__ = MagicMock(return_value=False)
 
     prospect = MagicMock()
-    prospect_query = MagicMock()
-    prospect_query.filter_by.return_value.first.return_value = prospect
-
-    job_query = MagicMock()
-    job_query.filter.return_value.first.return_value = None
-
-    mock_db.query.side_effect = [prospect_query, job_query]
-    mock_db.add.side_effect = lambda obj: setattr(obj, "id", "job-1")
+    mock_db.query.return_value.filter_by.return_value.first.return_value = prospect
+    mock_enqueue.return_value = "job-1"
 
     response = client.post(
         "/api/v2/prospects/prospect-1/research",
