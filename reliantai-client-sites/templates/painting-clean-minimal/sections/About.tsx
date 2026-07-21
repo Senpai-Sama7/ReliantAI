@@ -16,7 +16,7 @@ export default function About({ content, copy }: AboutProps) {
     <section className="py-28 bg-stone-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">
-          <p className="text-violet-600 text-sm font-semibold uppercase tracking-wider mb-3">
+          <p className="text-amber-700 text-sm font-semibold uppercase tracking-wider mb-3">
             {copy.about_trust_title}
           </p>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 font-display tracking-tight">
@@ -25,13 +25,13 @@ export default function About({ content, copy }: AboutProps) {
         </div>
 
         <div className="relative">
-          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-violet-200 rounded-full hidden sm:block" />
+          <div className="absolute -left-4 top-0 bottom-0 w-1 bg-amber-200 rounded-full hidden sm:block" />
           <div className="sm:pl-8 space-y-8">
             <p className="text-slate-600 leading-relaxed text-lg">
               {about.story}
             </p>
             {business.years_in_business && (
-              <p className="text-violet-600 font-medium text-lg">
+              <p className="text-amber-700 font-medium text-lg">
                 Serving {business.city} for {business.years_in_business}+ years
               </p>
             )}
@@ -45,7 +45,7 @@ export default function About({ content, copy }: AboutProps) {
                 key={i}
                 className="flex items-start gap-3 bg-white border border-stone-200 rounded-lg px-5 py-4"
               >
-                <CheckCircle className="h-5 w-5 text-violet-600 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
                 <span className="text-slate-700 text-sm font-medium">{point}</span>
               </div>
             ))}
@@ -57,7 +57,7 @@ export default function About({ content, copy }: AboutProps) {
             {about.certifications.map((cert, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 border border-violet-200 text-violet-700 text-xs font-medium rounded-full"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium rounded-full"
               >
                 <Shield className="h-3 w-3" />
                 {cert}

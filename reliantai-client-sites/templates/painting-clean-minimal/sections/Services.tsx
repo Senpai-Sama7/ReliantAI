@@ -59,29 +59,29 @@ export default function Services({ content, copy }: ServicesProps) {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {services.map((service, i) => {
-            const isFeatured = i === 0;
+            const isFeatured = i === 0 && services.length >= 3;
             return (
               <motion.div
                 key={i}
                 variants={cardFade}
-                className={`rounded-xl p-6 transition-all duration-300 group ${
+                className={`rounded-lg p-6 transition-[transform,border-color,box-shadow] duration-300 group ${
                   isFeatured
-                    ? "bg-violet-50 border-2 border-violet-200 hover:border-violet-300 hover:shadow-xl shadow-lg"
-                    : "bg-white border border-stone-200 hover:-translate-y-1 hover:shadow-xl hover:border-violet-200"
+                    ? "md:col-span-2 bg-amber-50 border-2 border-amber-200 hover:border-amber-600/40 shadow-md"
+                    : "bg-white border border-stone-200 hover:-translate-y-1 hover:border-amber-600/40"
                 }`}
               >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
-                  isFeatured ? "bg-violet-600 text-white" : "bg-violet-50 text-violet-600"
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-md mb-4 ${
+                  isFeatured ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-700"
                 }`}>
                   {getIcon(service.icon)}
                 </div>
                 <h3 className={`text-lg font-semibold mb-2 ${
-                  isFeatured ? "text-violet-900" : "text-slate-900"
+                  isFeatured ? "text-stone-900" : "text-slate-900"
                 }`}>
                   {service.title}
                 </h3>
                 <p className={`text-sm leading-relaxed mb-4 ${
-                  isFeatured ? "text-violet-700/80" : "text-slate-600"
+                  isFeatured ? "text-amber-700/80" : "text-slate-600"
                 }`}>
                   {service.description}
                 </p>
@@ -89,8 +89,8 @@ export default function Services({ content, copy }: ServicesProps) {
                   href={`tel:${content.business.phone}`}
                   className={`inline-flex items-center text-sm font-medium transition-colors ${
                     isFeatured
-                      ? "text-violet-700 group-hover:text-violet-800"
-                      : "text-violet-600 group-hover:text-violet-700"
+                      ? "text-amber-700 group-hover:text-amber-900"
+                      : "text-amber-700 group-hover:text-amber-700"
                   }`}
                 >
                   {service.cta_text} →

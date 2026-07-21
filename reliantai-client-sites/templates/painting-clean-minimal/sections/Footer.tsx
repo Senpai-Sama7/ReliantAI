@@ -21,7 +21,7 @@ export default function Footer({ content }: FooterProps) {
               <h3 className="text-white font-semibold text-lg mb-3">
                 {business.business_name}
               </h3>
-              <div className="mb-3 flex items-center gap-2 text-violet-400 text-sm font-medium">
+              <div className="mb-3 flex items-center gap-2 text-amber-500 text-sm font-medium">
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clipRule="evenodd" />
                 </svg>
@@ -30,7 +30,7 @@ export default function Footer({ content }: FooterProps) {
               <div className="space-y-2 text-sm text-stone-400">
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center gap-2 hover:text-violet-400 transition-colors"
+                  className="flex items-center gap-2 hover:text-amber-500 transition-colors"
                 >
                   <Phone className="h-4 w-4" />
                   {business.phone}
@@ -49,11 +49,11 @@ export default function Footer({ content }: FooterProps) {
                 Quick Links
               </h4>
               <ul className="space-y-1 text-sm text-stone-400">
-                <li><a href="#services" className="hover:text-violet-400 transition-colors">Services</a></li>
-                <li><a href="#about" className="hover:text-violet-400 transition-colors">About Us</a></li>
-                <li><a href="#reviews" className="hover:text-violet-400 transition-colors">Reviews</a></li>
-                <li><a href="#faq" className="hover:text-violet-400 transition-colors">FAQ</a></li>
-                <li><a href="#contact" className="hover:text-violet-400 transition-colors">Contact</a></li>
+                <li><a href="#services" className="hover:text-amber-500 transition-colors">Services</a></li>
+                <li><a href="#about" className="hover:text-amber-500 transition-colors">About Us</a></li>
+                <li><a href="#reviews" className="hover:text-amber-500 transition-colors">Reviews</a></li>
+                <li><a href="#faq" className="hover:text-amber-500 transition-colors">FAQ</a></li>
+                <li><a href="#contact" className="hover:text-amber-500 transition-colors">Contact</a></li>
               </ul>
             </div>
 
@@ -77,7 +77,7 @@ export default function Footer({ content }: FooterProps) {
                   href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-stone-400 hover:text-violet-400 transition-colors"
+                  className="inline-flex items-center gap-2 text-stone-400 hover:text-amber-500 transition-colors"
                   aria-label="Website"
                 >
                   <Globe className="h-5 w-5" />
@@ -92,7 +92,7 @@ export default function Footer({ content }: FooterProps) {
             Built by{" "}
             <a
               href="https://reliantai.org"
-              className="text-stone-500 hover:text-violet-400 transition-colors"
+              className="text-stone-500 hover:text-amber-500 transition-colors"
             >
               ReliantAI
             </a>

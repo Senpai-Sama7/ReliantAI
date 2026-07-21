@@ -35,7 +35,6 @@ function getIcon(name: string) {
 
 export default function Services({ content, copy }: ServicesProps) {
   const { services, business } = content;
-  const featured = 0;
 
   return (
     <section className="py-28 bg-slate-950">
@@ -51,7 +50,7 @@ export default function Services({ content, copy }: ServicesProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => {
-            const isFeatured = i === featured;
+            const isFeatured = i === 0 && services.length >= 3;
             return (
               <motion.div
                 key={i}
@@ -61,14 +60,14 @@ export default function Services({ content, copy }: ServicesProps) {
                 viewport={{ once: true, amount: 0.1 }}
                 variants={cardVariants}
                 whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className={`group rounded-xl p-7 transition-all duration-300 ${
+                className={`group rounded-lg p-7 transition-[transform,border-color,box-shadow] duration-300 ${
                   isFeatured
-                    ? "bg-orange-500/10 border-2 border-orange-500/40 shadow-lg shadow-orange-500/10"
-                    : "bg-slate-900/40 border-2 border-slate-800/60 hover:border-orange-500/50 hover:bg-slate-900/80"
+                    ? "md:col-span-2 bg-orange-500/10 border-2 border-orange-500/40 shadow-md"
+                    : "bg-slate-900/40 border-2 border-slate-800/60 hover:border-orange-500/40 hover:bg-slate-900/80"
                 }`}
               >
                 <div
-                  className={`inline-flex items-center justify-center w-14 h-14 rounded-xl mb-5 transition-all duration-300 ${
+                  className={`inline-flex items-center justify-center w-14 h-14 rounded-md mb-5 transition-[transform,background-color] duration-300 ${
                     isFeatured
                       ? "bg-orange-500 text-white group-hover:scale-110"
                       : "bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:scale-110"

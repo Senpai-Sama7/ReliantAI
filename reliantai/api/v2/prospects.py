@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from reliantai.auth import verify_api_key
 from reliantai.db import get_db_session
-from reliantai.models import Prospect, ResearchJob
+from reliantai.db.models import Prospect
 from reliantai.services.task_queue import enqueue_prospect_pipeline
 from .schemas import (
     ProspectCreate,

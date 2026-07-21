@@ -42,7 +42,7 @@ export default function Reviews({ content }: ReviewsProps) {
           {reviews.reviews.map((review, i) => (
             <div
               key={i}
-              className="mb-6 break-inside-avoid rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-amber-900/20"
+              className="mb-6 break-inside-avoid rounded-xl border border-slate-800 bg-slate-900/50 p-6 transition-[transform,border-color] duration-200 hover:-translate-y-0.5 hover:border-amber-500/40"
             >
               <Quote className="mb-2 h-5 w-5 text-amber-500/30" />
               <StarRating rating={review.rating} />

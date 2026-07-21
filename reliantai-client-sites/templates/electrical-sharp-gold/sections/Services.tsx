@@ -36,7 +36,6 @@ const card = {
 export default function Services({ content }: ServicesProps) {
   const { services } = content;
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.electrical;
-  const featuredIndex = Math.min(2, services.length - 1);
 
   return (
     <section id="services" className="bg-slate-950 py-28">
@@ -58,15 +57,15 @@ export default function Services({ content }: ServicesProps) {
           className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
         >
           {services.map((service, i) => {
-            const isFeatured = i === featuredIndex;
+            const isFeatured = i === 0 && services.length >= 3;
             return (
               <motion.div
                 key={i}
                 variants={card}
-                className={`rounded-xl p-6 transition-all duration-200 group hover:-translate-y-1 ${
+                className={`rounded-lg p-6 transition-[transform,border-color,box-shadow] duration-200 group hover:-translate-y-1 ${
                   isFeatured
-                    ? "border-2 border-amber-500/40 bg-amber-950/30 shadow-lg shadow-amber-500/10 hover:border-amber-400/60"
-                    : "border border-slate-800 bg-slate-900/50 hover:border-amber-500/50"
+                    ? "md:col-span-2 border-2 border-amber-500/40 bg-amber-950/30 shadow-md hover:border-amber-500/40"
+                    : "border border-slate-800 bg-slate-900/50 hover:border-amber-500/40"
                 }`}
               >
                 {isFeatured && (
@@ -75,7 +74,7 @@ export default function Services({ content }: ServicesProps) {
                   </span>
                 )}
                 <div
-                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg ${
+                  className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-md ${
                     isFeatured
                       ? "bg-amber-500/20 text-amber-300"
                       : "bg-amber-950/40 text-amber-400"

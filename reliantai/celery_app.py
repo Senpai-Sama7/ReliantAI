@@ -1,11 +1,19 @@
 import os
 from celery import Celery
 
+_redis_url = os.environ.get("REDIS_URL")
+if not _redis_url:
+    # Fail closed outside explicit local/test — never silently use an open Redis.
+    if os.environ.get("ENVIRONMENT", "production").lower() in {"dev", "development", "local", "test"}:
+        _redis_url = "redis://localhost:6379/0"
+    else:
+        raise RuntimeError("REDIS_URL is required")
+
 app = Celery("reliantai")
 
 app.config_from_object({
-    "broker_url": os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
-    "result_backend": os.environ.get("REDIS_URL", "redis://localhost:6379/0"),
+    "broker_url": _redis_url,
+    "result_backend": _redis_url,
     "task_serializer": "json",
     "result_serializer": "json",
     "accept_content": ["json"],

@@ -20,12 +20,12 @@ export default function PaintingTemplate({ content }: { content: SiteContent }) 
       <ContactBar content={content} />
       <TrustBanner trade={content.site_config.trade} light={true} />
       <Hero content={content} />
-      <StatsBar content={content} accent="violet-600" light={true} />
+      <StatsBar content={content} accent="amber-700" light={true} />
       <SectionDivider variant="dots" light={true} />
       <div id="services">
         <Services content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="violet" variant="urgency" light={true} />
+      <CTASection content={content} color="amber" variant="urgency" light={true} />
       <SectionDivider variant="line" light={true} />
       <div id="about">
         <About content={content} copy={copy} />
@@ -34,7 +34,7 @@ export default function PaintingTemplate({ content }: { content: SiteContent }) 
       <div id="reviews">
         <Reviews content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="violet" variant="estimate" light={true} />
+      <CTASection content={content} color="amber" variant="estimate" light={true} />
       <SectionDivider variant="wave" light={true} />
       <div id="faq">
         <FAQ content={content} copy={copy} />

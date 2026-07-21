@@ -2,6 +2,8 @@ import os
 import httpx
 from crewai.tools import BaseTool
 
+from reliantai.services.url_safety import is_public_http_url, sanitize_http_url
+
 
 class PageSpeedTool(BaseTool):
     name: str = "pagespeed_analyzer"
@@ -11,12 +13,13 @@ class PageSpeedTool(BaseTool):
     )
 
     def _run(self, url: str) -> str:
-        if not url:
-            return str({"score": 0, "error": "no_url"})
+        cleaned = sanitize_http_url(url)
+        if not cleaned or not is_public_http_url(cleaned):
+            return str({"score": 0, "error": "invalid_or_private_url"})
 
         api_key = os.environ.get("GOOGLE_PAGESPEED_API_KEY", "")
         params = {
-            "url": url,
+            "url": cleaned,
             "strategy": "mobile",
             "category": "performance",
         }
@@ -40,7 +43,7 @@ class PageSpeedTool(BaseTool):
             lcp = audits.get("largest-contentful-paint", {}).get("numericValue", 0) / 1000
             fid = audits.get("max-potential-fid", {}).get("numericValue", 0)
             cls = audits.get("cumulative-layout-shift", {}).get("numericValue", 0)
-            has_ssl = url.startswith("https://")
+            has_ssl = cleaned.startswith("https://")
 
             return str({
                 "score": score,

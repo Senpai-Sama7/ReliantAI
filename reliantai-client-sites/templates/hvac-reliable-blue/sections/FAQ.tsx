@@ -4,20 +4,7 @@ import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { SiteContent } from "@/types/SiteContent";
-
-interface TradeCopy {
-  services_title: string;
-  services_subtitle: string;
-  about_title: string;
-  about_trust_title: string;
-  reviews_title: string;
-  faq_title: string;
-  urgency_message: string;
-  estimate_heading: string;
-  estimate_subtext: string;
-  trust_badges: string[];
-  stats: { label: string; value_key: string; suffix: string; fallback: string }[];
-}
+import type { TradeCopy } from "@/lib/trade-copy";
 
 interface FAQProps {
   content: SiteContent;
@@ -29,9 +16,6 @@ export default function FAQ({ content, copy }: FAQProps) {
 
   return (
     <section className="relative py-24 bg-slate-950">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-blue-600/3 blur-3xl" />
-      </div>
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
         <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-14 font-display">
           {copy.faq_title}

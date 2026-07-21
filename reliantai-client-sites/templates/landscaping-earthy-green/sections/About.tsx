@@ -1,19 +1,6 @@
 import { CheckCircle, Shield } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
-
-interface TradeCopy {
-  services_title: string;
-  services_subtitle: string;
-  about_title: string;
-  about_trust_title: string;
-  reviews_title: string;
-  faq_title: string;
-  urgency_message: string;
-  estimate_heading: string;
-  estimate_subtext: string;
-  trust_badges: string[];
-  stats: { label: string; value_key: string; suffix: string; fallback: string }[];
-}
+import type { TradeCopy } from "@/lib/trade-copy";
 
 interface AboutProps {
   content: SiteContent;
@@ -25,7 +12,7 @@ export default function About({ content, copy }: AboutProps) {
 
   return (
     <section className="relative py-24 bg-slate-950 overflow-hidden">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+      <div className="absolute top-0 inset-x-0 border-t border-slate-800" />
 
       <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12">

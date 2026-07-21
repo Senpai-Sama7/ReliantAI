@@ -23,6 +23,11 @@ REQUEST_TIMEOUT = 10.0
 
 
 async def _get(url: str, params: dict | None = None) -> dict | None:
+    from reliantai.services.url_safety import is_public_http_url
+
+    if not is_public_http_url(url):
+        log.warning("ssrf_blocked_fetch", url=url[:200])
+        return None
     try:
         async with httpx.AsyncClient(
             timeout=REQUEST_TIMEOUT,
@@ -33,15 +38,12 @@ async def _get(url: str, params: dict | None = None) -> dict | None:
             if resp.status_code == 200:
                 return {"status": resp.status_code, "text": resp.text[:8000]}
     except Exception as exc:
-        log.warning("http_get_failed", url=url, error=str(exc))
+        log.warning("http_get_failed", url=url[:200], error=str(exc))
     return None
 
 
 async def web_search(query: str, max_results: int = 5) -> list[dict]:
-    """
-    Search the web. Uses DuckDuckGo HTML endpoint (no API key required).
-    Returns list of {title, url, snippet}.
-    """
+    """Search the web via DuckDuckGo HTML (no API key). Returns {title, url, snippet}."""
     results: list[dict] = []
     try:
         data = await _get(
@@ -51,7 +53,6 @@ async def web_search(query: str, max_results: int = 5) -> list[dict]:
         if not data:
             return results
 
-        # Parse DDG HTML results
         text = data["text"]
         titles = re.findall(r'<a[^>]+class="result__a"[^>]*>(.*?)</a>', text, re.S)
         urls = re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', text)
@@ -77,7 +78,11 @@ async def web_search(query: str, max_results: int = 5) -> list[dict]:
 
 
 async def fetch_page_text(url: str, max_chars: int = 5000) -> str:
-    """Fetch a page and return cleaned text content."""
+    """Fetch a page and return cleaned text content. SSRF-guarded."""
+    from reliantai.services.url_safety import is_public_http_url
+
+    if not is_public_http_url(url):
+        return ""
     data = await _get(url)
     if not data:
         return ""

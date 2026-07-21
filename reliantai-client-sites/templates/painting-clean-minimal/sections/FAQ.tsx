@@ -29,18 +29,18 @@ export default function FAQ({ content, copy }: FAQProps) {
               <div
                 key={i}
                 className={`bg-white border rounded-xl overflow-hidden transition-colors duration-200 ${
-                  isOpen ? "border-violet-200 shadow-sm" : "border-stone-200 hover:border-stone-300"
+                  isOpen ? "border-amber-200 shadow-sm" : "border-stone-200 hover:border-stone-300"
                 }`}
               >
                 <dt>
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left text-slate-800 font-medium hover:text-violet-600 transition-colors"
+                    className="w-full flex items-center justify-between px-6 py-4 text-left text-slate-800 font-medium hover:text-amber-700 transition-colors"
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
                       className={`h-5 w-5 flex-shrink-0 transition-transform duration-200 ${
-                        isOpen ? "rotate-180 text-violet-500" : "text-slate-400"
+                        isOpen ? "rotate-180 text-amber-600" : "text-slate-400"
                       }`}
                     />
                   </button>

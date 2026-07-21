@@ -42,7 +42,7 @@ export default function Reviews({ content }: ReviewsProps) {
         </div>
 
         {featured && (
-          <div className="bg-gradient-to-br from-blue-950/40 to-slate-800/60 border border-blue-500/20 rounded-2xl p-8 md:p-10 relative hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-400/30 transition-all duration-300">
+          <div className="bg-blue-950/40 border border-blue-500/20 rounded-2xl p-8 md:p-10 relative hover:border-blue-500/40 transition-colors duration-300">
             <span className="absolute top-3 left-6 text-6xl text-blue-400/10 font-serif leading-none select-none pointer-events-none">
               &ldquo;
             </span>
@@ -71,7 +71,7 @@ export default function Reviews({ content }: ReviewsProps) {
             {rest.map((review, i) => (
               <div
                 key={i}
-                className="relative bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-500/20 transition-all duration-300"
+                className="relative bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 hover:-translate-y-1.5 hover:border-blue-500/40 transition-[transform,border-color] duration-300"
               >
                 <span className="absolute top-2 left-4 text-5xl text-blue-400/10 font-serif leading-none select-none pointer-events-none">
                   &ldquo;

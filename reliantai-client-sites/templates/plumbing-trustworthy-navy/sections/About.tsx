@@ -31,7 +31,7 @@ export default function About({ content }: AboutProps) {
 
   return (
     <section id="about" className="py-28 bg-slate-950 relative">
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+      <div className="absolute top-0 inset-x-0 border-t border-slate-800" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <span className="inline-block text-blue-400 text-xs font-semibold tracking-[0.2em] uppercase mb-4">

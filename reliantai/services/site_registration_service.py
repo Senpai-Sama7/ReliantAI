@@ -408,6 +408,23 @@ class SiteRegistrationService:
             "PREVIEW_SITES_BASE_URL",
             "https://preview.reliantai.org",
         ).rstrip("/")
+        from urllib.parse import urlparse
+
+        parsed = urlparse(base)
+        host = (parsed.hostname or "").lower()
+        allowed = {
+            "preview.reliantai.org",
+            "localhost",
+            "127.0.0.1",
+        }
+        # Allow Vercel preview hosts when explicitly configured
+        extra = os.environ.get("PREVIEW_REVALIDATE_ALLOWED_HOSTS", "")
+        for h in extra.split(","):
+            h = h.strip().lower()
+            if h:
+                allowed.add(h)
+        if parsed.scheme not in {"http", "https"} or host not in allowed:
+            raise ValueError(f"PREVIEW_SITES_BASE_URL host not allowlisted: {host}")
         return f"{base}/api/revalidate"
 
     @staticmethod
@@ -417,9 +434,10 @@ class SiteRegistrationService:
             log.warning("revalidate_skipped", reason="REVALIDATE_SECRET not set", slug=slug)
             return
         try:
+            url = SiteRegistrationService._preview_revalidate_url()
             with httpx.Client(timeout=10.0) as client:
                 response = client.post(
-                    SiteRegistrationService._preview_revalidate_url(),
+                    url,
                     json={"slug": slug},
                     headers={"Authorization": f"Bearer {secret}"},
                 )

@@ -1,15 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
+  weight: "400",
+  display: "swap",
 });
 
 export const viewport: Viewport = {
@@ -29,19 +32,22 @@ export const metadata: Metadata = {
   description:
     "ReliantAI generates high-converting, SEO-optimized websites for HVAC, plumbing, electrical, roofing, and home service businesses. Get a professional website in minutes, not weeks. Free preview.",
   keywords: [
-    "AI website generator", "HVAC website", "plumbing website", "electrical website",
-    "roofing website", "home service website", "contractor website builder",
-    "AI web design", "small business website", "local SEO website",
-    "ISR website", "Next.js website generator", "ReliantAI",
+    "AI website generator",
+    "HVAC website",
+    "plumbing website",
+    "electrical website",
+    "roofing website",
+    "home service website",
+    "contractor website builder",
+    "local SEO website",
+    "ReliantAI",
   ],
   authors: [{ name: "ReliantAI", url: "https://reliantai.org" }],
   creator: "ReliantAI",
   publisher: "ReliantAI",
   applicationName: "ReliantAI",
-  generator: "Next.js",
   referrer: "origin-when-cross-origin",
   category: "technology",
-  classification: "AI Website Generator",
 
   robots: {
     index: true,
@@ -62,14 +68,13 @@ export const metadata: Metadata = {
     canonical: "https://reliantai.org",
     languages: {
       "en-US": "https://reliantai.org",
-      "en": "https://reliantai.org",
+      en: "https://reliantai.org",
     },
   },
 
   openGraph: {
     type: "website",
     locale: "en_US",
-    alternateLocale: ["en_US"],
     siteName: "ReliantAI",
     title: "ReliantAI — AI-Powered Websites for Home Service Businesses",
     description:
@@ -101,18 +106,8 @@ export const metadata: Metadata = {
     ],
   },
 
-  verification: {
-    google: "google-site-verification-code",
-  },
   other: {
-    "geo.region": "US",
-    "geo.placename": "United States",
-    "geo.position": "39.8283;-98.5795",
-    "ICBM": "39.8283, -98.5795",
-    "country": "US",
     "format-detection": "telephone=no",
-    "msvalidate.01": "bing-verification-code",
-    "yandex-verification": "yandex-verification-code",
   },
 
   icons: {
@@ -139,14 +134,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html
+      lang="en"
+      dir="ltr"
+      className={`${dmSans.variable} ${instrumentSerif.variable} h-full antialiased`}
+    >
       <head>
-        <meta name="geo.region" content="US" />
-        <meta name="geo.placename" content="United States" />
-        <meta name="geo.position" content="39.8283;-98.5795" />
-        <meta name="ICBM" content="39.8283, -98.5795" />
-        <meta name="country" content="US" />
-
         <meta name="application-name" content="ReliantAI" />
         <meta name="apple-mobile-web-app-title" content="ReliantAI" />
         <meta name="theme-color" content="#09090b" media="(prefers-color-scheme: dark)" />
@@ -175,7 +168,8 @@ export default function RootLayout({
                     width: 512,
                     height: 512,
                   },
-                  description: "AI-powered website generator for home service businesses. Generate high-converting, SEO-optimized websites for HVAC, plumbing, electrical, roofing, painting, and landscaping.",
+                  description:
+                    "AI-powered website generator for home service businesses. Generate high-converting, SEO-optimized websites for HVAC, plumbing, electrical, roofing, painting, and landscaping.",
                   foundingDate: "2024",
                   sameAs: [
                     "https://twitter.com/reliantai",
@@ -189,12 +183,6 @@ export default function RootLayout({
                       email: "hello@reliantai.org",
                       areaServed: "US",
                     },
-                    {
-                      "@type": "ContactPoint",
-                      contactType: "customer service",
-                      email: "support@reliantai.org",
-                      areaServed: "US",
-                    },
                   ],
                 },
                 {
@@ -204,29 +192,6 @@ export default function RootLayout({
                   url: "https://reliantai.org",
                   description: "AI-powered website generator for home service businesses",
                   publisher: { "@id": "https://reliantai.org/#organization" },
-                  potentialAction: {
-                    "@type": "SearchAction",
-                    target: "https://reliantai.org/search?q={search_term_string}",
-                    "query-input": "required name=search_term_string",
-                  },
-                },
-                {
-                  "@type": "WebPage",
-                  "@id": "https://reliantai.org/#webpage",
-                  url: "https://reliantai.org",
-                  name: "ReliantAI — AI-Powered Websites for Home Service Businesses",
-                  description: "Generate high-converting, SEO-optimized websites for HVAC, plumbing, electrical, roofing, painting, and landscaping businesses.",
-                  isPartOf: { "@id": "https://reliantai.org/#website" },
-                  about: { "@id": "https://reliantai.org/#organization" },
-                  datePublished: "2024-01-01",
-                  dateModified: new Date().toISOString().split("T")[0],
-                  inLanguage: "en-US",
-                  primaryImageOfPage: {
-                    "@type": "ImageObject",
-                    url: "https://reliantai.org/og/home.png",
-                    width: 1200,
-                    height: 630,
-                  },
                 },
               ],
             }).replace(/</g, "\\u003c"),

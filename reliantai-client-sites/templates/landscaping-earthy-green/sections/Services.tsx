@@ -3,20 +3,7 @@
 import { TreePine, Flower2, Shovel, Tractor, Sun, Sprout } from "lucide-react";
 import { motion } from "framer-motion";
 import type { SiteContent } from "@/types/SiteContent";
-
-interface TradeCopy {
-  services_title: string;
-  services_subtitle: string;
-  about_title: string;
-  about_trust_title: string;
-  reviews_title: string;
-  faq_title: string;
-  urgency_message: string;
-  estimate_heading: string;
-  estimate_subtext: string;
-  trust_badges: string[];
-  stats: { label: string; value_key: string; suffix: string; fallback: string }[];
-}
+import type { TradeCopy } from "@/lib/trade-copy";
 
 interface ServicesProps {
   content: SiteContent;
@@ -52,9 +39,6 @@ export default function Services({ content, copy }: ServicesProps) {
 
   return (
     <section className="relative py-28 bg-slate-900 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-emerald-600/3 blur-3xl" />
-      </div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-bold text-white font-display">
@@ -73,18 +57,18 @@ export default function Services({ content, copy }: ServicesProps) {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           {services.map((service, i) => {
-            const isFeatured = i === 0;
+            const isFeatured = i === 0 && services.length >= 3;
             return (
               <motion.div
                 key={i}
                 variants={cardFade}
-                className={`rounded-xl p-6 transition-all duration-300 group ${
+                className={`rounded-lg p-6 transition-[transform,border-color,box-shadow] duration-300 group ${
                   isFeatured
-                    ? "bg-emerald-900/30 border-2 border-emerald-500/40 hover:border-emerald-400/60 shadow-lg shadow-emerald-500/10"
-                    : "bg-slate-800/50 border border-slate-700/80 hover:-translate-y-1 hover:shadow-xl hover:border-emerald-500/50"
+                    ? "md:col-span-2 bg-emerald-900/30 border-2 border-emerald-500/40 hover:border-emerald-500/40 shadow-md"
+                    : "bg-slate-800/50 border border-slate-700/80 hover:-translate-y-1 hover:border-emerald-500/40"
                 }`}
               >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-lg mb-4 ${
+                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-md mb-4 ${
                   isFeatured ? "bg-emerald-400/20 text-emerald-300" : "bg-emerald-500/10 text-emerald-400"
                 }`}>
                   {getIcon(service.icon)}

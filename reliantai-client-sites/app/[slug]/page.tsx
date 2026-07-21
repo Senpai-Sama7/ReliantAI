@@ -7,6 +7,13 @@ import PreviewBanner from "@/components/PreviewBanner";
 
 export const revalidate = 3600;
 
+const PREVIEW_DOMAIN =
+  process.env.NEXT_PUBLIC_PREVIEW_DOMAIN || "preview.reliantai.org";
+
+function siteUrl(slug: string): string {
+  return `https://${PREVIEW_DOMAIN}/${slug}`;
+}
+
 export async function generateStaticParams() {
   return [];
 }
@@ -20,8 +27,20 @@ export async function generateMetadata({
   const content = await getSiteContent(slug);
   if (!content) return {};
 
-  const title = content.seo?.title || content.meta_title || `${content.business.business_name} - ${content.business.trade.toUpperCase()} in ${content.business.city}, ${content.business.state}`;
-  const description = content.seo?.description || content.meta_description || `Professional ${content.business.trade} services in ${content.business.city}, ${content.business.state}. ${content.business.google_rating}★ rated. Call ${content.business.phone}.`;
+  const title =
+    content.seo?.title ||
+    content.meta_title ||
+    `${content.business.business_name} — ${content.business.trade} in ${content.business.city}, ${content.business.state}`;
+  const description =
+    content.seo?.description ||
+    content.meta_description ||
+    `Professional ${content.business.trade} services in ${content.business.city}, ${content.business.state}. ${content.business.google_rating}★ rated. Call ${content.business.phone}.`;
+
+  const url = siteUrl(slug);
+  const other: Record<string, string> = {
+    "geo.region": `US-${content.business.state}`,
+    "geo.placename": `${content.business.city}, ${content.business.state}`,
+  };
 
   return {
     title,
@@ -29,15 +48,14 @@ export async function generateMetadata({
     keywords: content.seo?.keywords || [
       content.business.trade,
       `${content.business.trade} ${content.business.city}`,
-      `${content.business.trade} services`,
-      `best ${content.business.trade} in ${content.business.city}`,
-      `${content.business.state} ${content.business.trade}`,
+      `${content.business.trade} near me`,
+      `${content.business.city} ${content.business.trade} repair`,
     ],
     authors: [{ name: content.business.business_name }],
     creator: content.business.business_name,
     publisher: content.business.business_name,
     alternates: {
-      canonical: `https://reliantai.org/${slug}`,
+      canonical: url,
     },
     openGraph: {
       type: "website",
@@ -45,27 +63,14 @@ export async function generateMetadata({
       siteName: content.business.business_name,
       title,
       description,
-      url: `https://reliantai.org/${slug}`,
-      images: [
-        {
-          url: `https://reliantai.org/og/${slug}.png`,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      url,
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`https://reliantai.org/og/${slug}.png`],
     },
-    other: {
-      "geo.region": `US-${content.business.state}`,
-      "geo.placename": `${content.business.city}, ${content.business.state}`,
-      "ICBM": "0, 0",
-    },
+    other,
   };
 }
 
@@ -97,13 +102,15 @@ export default async function ClientSitePage({
   const aeo = content.aeo_signals;
   const areaServed = aeo?.area_served?.map((a) => ({ "@type": "City", name: a as string })) || [{ "@type": "City", name: city }];
 
+  const url = siteUrl(slug);
+
   // LocalBusiness JSON-LD
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": aeo?.local_business_type || "LocalBusiness",
     name: businessName,
     description: content.seo?.description || content.meta_description || `Professional ${trade} services in ${city}, ${state}`,
-    url: `https://reliantai.org/${slug}`,
+    url,
     telephone: phone,
     email: content.business.email || undefined,
     address: {
@@ -154,8 +161,8 @@ export default async function ClientSitePage({
 
   // BreadcrumbList JSON-LD
   const breadcrumbListContent = generateBreadcrumbList([
-    { name: "Home", url: "https://reliantai.org" },
-    { name: businessName, url: `https://reliantai.org/${slug}` },
+    { name: "Home", url: `https://${PREVIEW_DOMAIN}` },
+    { name: businessName, url },
   ]);
 
   return (

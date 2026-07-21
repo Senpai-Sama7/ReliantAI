@@ -1,5 +1,6 @@
 import { Phone, Clock, ArrowRight } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
+import { TRADE_COPY } from "@/lib/trade-copy";
 
 interface CTASectionProps {
   content: SiteContent;
@@ -10,7 +11,7 @@ interface CTASectionProps {
 
 const BG_CLASSES: Record<string, string> = {
   blue: "bg-blue-700 hover:bg-blue-600",
-  amber: "bg-amber-600 hover:bg-amber-500",
+  amber: "bg-amber-700 hover:bg-amber-600",
   orange: "bg-orange-600 hover:bg-orange-500",
   violet: "bg-violet-700 hover:bg-violet-600",
   emerald: "bg-emerald-700 hover:bg-emerald-600",
@@ -18,25 +19,19 @@ const BG_CLASSES: Record<string, string> = {
 
 const ACCENT_COLORS: Record<string, string> = {
   blue: "text-blue-400",
-  amber: "text-amber-400",
+  amber: "text-amber-700",
   orange: "text-orange-400",
   violet: "text-violet-600",
   emerald: "text-emerald-400",
 };
 
-const TRADE_URGENCY: Record<string, string> = {
-  hvac: "AC broken? We can be there today.",
-  plumbing: "Burst pipe? 24/7 emergency response.",
-  electrical: "Sparking outlet? Don\u2019t wait \u2014 call now.",
-  roofing: "Storm damage? Free inspection within 24 hours.",
-  painting: "Ready to transform your space? Free color consultation.",
-  landscaping: "Want a yard you love? Get a free estimate.",
-};
-
 export default function CTASection({ content, color = "blue", variant = "urgency", light = false }: CTASectionProps) {
   const { business } = content;
   const trade = content.site_config?.trade || "hvac";
-  const message = TRADE_URGENCY[trade] || TRADE_URGENCY.hvac;
+  const copy = TRADE_COPY[trade] || TRADE_COPY.hvac;
+  const message = copy.urgency_message;
+  const estimateHeading = copy.estimate_heading;
+  const estimateSub = `${business.business_name} ${copy.estimate_subtext}`;
   const btnClass = BG_CLASSES[color] || BG_CLASSES.blue;
   const accentClass = ACCENT_COLORS[color] || ACCENT_COLORS.blue;
 
