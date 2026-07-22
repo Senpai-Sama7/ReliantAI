@@ -1,0 +1,22 @@
+{
+  "name": "@reliantai/client-integration",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client CRM/scheduling/notification credential validation and triage alerting",
+  "scripts": {
+    "validate": "tsx src/validate-credentials.ts",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^20.17.19",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}
