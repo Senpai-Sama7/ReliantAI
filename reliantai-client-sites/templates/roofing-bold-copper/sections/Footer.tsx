@@ -21,8 +21,8 @@ export default function Footer({ content }: FooterProps) {
 
   return (
     <footer className="bg-slate-950 border-t border-slate-800">
-      <div className="pb-24 sm:pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+      <div className="pb-8 sm:pb-12">
+        <div className="craft-container py-14">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
             {/* Brand */}
             <div>

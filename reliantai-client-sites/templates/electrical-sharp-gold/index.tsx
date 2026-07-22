@@ -1,45 +1,44 @@
 import type { SiteContent } from "@/types/SiteContent";
 import { TRADE_COPY } from "@/lib/trade-copy";
-import ContactBar from "./sections/ContactBar";
+import ContactBar from "@/components/shared/ContactBar";
 import TrustBanner from "@/components/shared/TrustBanner";
-import Hero from "./sections/Hero";
+import BrandHero from "@/components/shared/BrandHero";
 import StatsBar from "@/components/shared/StatsBar";
-import SectionDivider from "@/components/shared/SectionDivider";
-import Services from "./sections/Services";
+import EditorialServices from "@/components/shared/EditorialServices";
 import CTASection from "@/components/shared/CTASection";
 import About from "./sections/About";
 import Reviews from "./sections/Reviews";
 import FAQ from "./sections/FAQ";
 import Footer from "./sections/Footer";
+import SectionDivider from "@/components/shared/SectionDivider";
+import MobileCallBar from "@/components/shared/MobileCallBar";
 
 export default function ElectricalTemplate({ content }: { content: SiteContent }) {
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.electrical;
 
   return (
-    <div data-trade="electrical" className="bg-[var(--trade-ink)] text-white">
-      <ContactBar content={content} />
-      <Hero content={content} />
+    <div data-trade="electrical" className="template-shell bg-[var(--trade-ink)] text-white">
+      <ContactBar content={content} tagline="Licensed · NEC compliant" />
+      <BrandHero content={content} signature="gold-rule" />
       <TrustBanner trade={content.site_config.trade} />
       <StatsBar content={content} accent="gold" />
       <SectionDivider variant="dots" />
       <div id="services">
-        <Services content={content} copy={copy} />
+        <EditorialServices content={content} copy={copy} />
       </div>
       <CTASection content={content} color="gold" variant="urgency" />
-      <SectionDivider variant="line" />
       <div id="about">
         <About content={content} copy={copy} />
       </div>
-      <SectionDivider />
       <div id="reviews">
-        <Reviews content={content} />
+        <Reviews content={content} copy={copy} />
       </div>
       <CTASection content={content} color="gold" variant="estimate" />
-      <SectionDivider variant="wave" />
       <div id="faq">
-        <FAQ content={content} />
+        <FAQ content={content} copy={copy} />
       </div>
       <Footer content={content} />
+      <MobileCallBar content={content} />
     </div>
   );
 }

@@ -21,7 +21,7 @@ const TRADE_TRUST: Record<string, { label: string; icon: IconKey }[]> = {
   ],
   plumbing: [
     { label: "Licensed & Insured", icon: "shield" },
-    { label: "Master Plumber Certified", icon: "award" },
+    { label: "Master Plumber", icon: "award" },
     { label: "Background Checked", icon: "filecheck" },
   ],
   electrical: [
@@ -32,17 +32,17 @@ const TRADE_TRUST: Record<string, { label: string; icon: IconKey }[]> = {
   roofing: [
     { label: "Licensed & Insured", icon: "shield" },
     { label: "GAF Certified", icon: "award" },
-    { label: "Worker\u2019s Comp Covered", icon: "filecheck" },
+    { label: "Workers Comp", icon: "filecheck" },
   ],
   painting: [
     { label: "Licensed & Insured", icon: "shield" },
     { label: "Lead-Safe Certified", icon: "award" },
-    { label: "Satisfaction Guaranteed", icon: "filecheck" },
+    { label: "Satisfaction Guarantee", icon: "filecheck" },
   ],
   landscaping: [
     { label: "Licensed & Insured", icon: "shield" },
-    { label: "Green Industry Certified", icon: "award" },
-    { label: "Satisfaction Guaranteed", icon: "filecheck" },
+    { label: "Industry Certified", icon: "award" },
+    { label: "Satisfaction Guarantee", icon: "filecheck" },
   ],
 };
 
@@ -50,22 +50,35 @@ export default function TrustBanner({ trade = "hvac", light = false }: TrustBann
   const trustItems = TRADE_TRUST[trade] || TRADE_TRUST.hvac;
 
   return (
-    <div className={light
-      ? "bg-white border-b border-stone-200"
-      : "relative bg-slate-950 border-b border-slate-800"
-    }>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
-        {trustItems.map((item, i) => {
-          const Icon = ICONS[item.icon];
-          return (
-            <div key={i} className="flex items-center gap-2">
-              <Icon className={`h-4 w-4 ${light ? "text-stone-500" : "text-slate-500"}`} />
-              <span className={`text-xs font-semibold tracking-wide uppercase ${light ? "text-stone-600" : "text-slate-400"}`}>
-                {item.label}
-              </span>
-            </div>
-          );
-        })}
+    <div
+      className={
+        light
+          ? "bg-[var(--trade-elevated)] border-b border-stone-200"
+          : "relative bg-[var(--trade-ink)] border-b border-white/10"
+      }
+    >
+      {/* Horizontal scroll on narrow phones — never wraps into a smushed pile */}
+      <div className="craft-container py-3.5">
+        <ul className="flex items-center gap-5 sm:gap-8 lg:gap-12 overflow-x-auto scrollbar-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {trustItems.map((item, i) => {
+            const Icon = ICONS[item.icon];
+            return (
+              <li key={i} className="flex items-center gap-2 shrink-0">
+                <Icon
+                  className={`h-3.5 w-3.5 ${light ? "text-stone-500" : "text-slate-500"}`}
+                  aria-hidden
+                />
+                <span
+                  className={`text-[0.6875rem] sm:text-xs font-semibold tracking-[0.12em] uppercase whitespace-nowrap ${
+                    light ? "text-stone-600" : "text-slate-400"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
