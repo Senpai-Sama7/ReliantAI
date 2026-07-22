@@ -50,7 +50,7 @@ export default function Services({ content }: ServicesProps) {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services.map((service, i) => {
-            const isFeatured = i === 0;
+            const isFeatured = i === 0 && services.length >= 3;
 
             return (
               <motion.div
@@ -60,10 +60,10 @@ export default function Services({ content }: ServicesProps) {
                 whileInView="visible"
                 viewport={{ once: true, margin: "-50px" }}
                 variants={cardVariants}
-                className={`rounded-2xl p-7 transition-all duration-300 hover:-translate-y-1.5 group ${
+                className={`rounded-lg p-7 transition-[transform,border-color,box-shadow] duration-300 hover:-translate-y-1.5 group ${
                   isFeatured
-                    ? "bg-gradient-to-br from-blue-950/50 to-slate-900/60 border border-blue-500/30 shadow-lg shadow-blue-900/10 hover:shadow-blue-900/25 hover:border-blue-400/40"
-                    : "bg-slate-800/40 border border-slate-700/60 hover:shadow-xl hover:shadow-blue-900/10 hover:border-blue-500/30"
+                    ? "md:col-span-2 bg-blue-950/50 border border-blue-500/30 shadow-md hover:border-blue-500/40"
+                    : "bg-slate-800/40 border border-slate-700/60 hover:border-blue-500/40"
                 }`}
               >
                 {isFeatured && (
@@ -72,7 +72,7 @@ export default function Services({ content }: ServicesProps) {
                   </span>
                 )}
                 <div
-                  className={`inline-flex items-center justify-center rounded-xl bg-blue-500/10 text-blue-400 mb-5 group-hover:bg-blue-500/20 transition-colors ${
+                  className={`inline-flex items-center justify-center rounded-md bg-blue-500/10 text-blue-400 mb-5 group-hover:bg-blue-500/20 transition-colors ${
                     isFeatured ? "w-14 h-14" : "w-12 h-12"
                   }`}
                 >
@@ -93,7 +93,7 @@ export default function Services({ content }: ServicesProps) {
                   className="inline-flex items-center text-sm font-medium text-blue-400 group-hover:text-blue-300 transition-colors"
                 >
                   {service.cta_text}
-                  <span className="ml-1.5 group-hover:ml-2 transition-all">&rarr;</span>
+                  <span className="ml-1.5 group-hover:ml-2 transition-[margin]">&rarr;</span>
                 </a>
               </motion.div>
             );

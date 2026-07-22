@@ -13,7 +13,7 @@ export default function ContactBar({ content }: ContactBarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-center sm:justify-between">
         <a
           href={`tel:${phone}`}
-          className="flex items-center gap-2 text-sm font-medium text-slate-800 hover:text-violet-600 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-slate-800 hover:text-amber-700 transition-colors"
         >
           <Phone className="h-4 w-4" />
           <span className="hidden sm:inline">{phone}</span>

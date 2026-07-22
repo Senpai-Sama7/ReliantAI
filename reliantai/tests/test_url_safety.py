@@ -1,4 +1,4 @@
-from reliantai.services.url_safety import sanitize_http_url
+from reliantai.services.url_safety import is_public_http_url, sanitize_http_url
 
 
 def test_sanitize_http_url_accepts_https():
@@ -26,3 +26,20 @@ def test_sanitize_http_url_rejects_empty_and_none():
 def test_sanitize_http_url_prepends_https_for_bare_domains():
     assert sanitize_http_url("www.example.com") == "https://www.example.com"
     assert sanitize_http_url("example.com/path") == "https://example.com/path"
+
+
+def test_is_public_http_url_rejects_localhost():
+    assert is_public_http_url("http://127.0.0.1/secret") is False
+    assert is_public_http_url("http://localhost/admin") is False
+
+
+def test_is_public_http_url_rejects_metadata():
+    assert is_public_http_url("http://169.254.169.254/latest/meta-data") is False
+
+
+def test_is_public_http_url_rejects_credentials():
+    assert is_public_http_url("https://user:pass@example.com/") is False
+
+
+def test_is_public_http_url_accepts_public_https():
+    assert is_public_http_url("https://example.com/page") is True

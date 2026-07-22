@@ -2,19 +2,25 @@
 sections — HTML section renderers for standalone site output.
 
 Each function accepts a SiteContent dict and returns an HTML string fragment.
-All CSS is injected via the parent compile_html() call using BASE_CSS from
-html_renderer — no style leakage here.
+All dynamic values are HTML-escaped to prevent stored XSS.
 """
 
 from __future__ import annotations
 
+import html
 import json
 from typing import Any
 
 
+def _e(value: Any) -> str:
+    """Escape a value for safe HTML text/attribute interpolation."""
+    if value is None:
+        return ""
+    return html.escape(str(value), quote=True)
+
+
 def render_schema_org(site_content: dict[str, Any]) -> str:
-    """Render JSON-LD schema script tag. Auto-generates minimal LocalBusiness
-    schema when site_config is empty but business name is present."""
+    """Render JSON-LD schema script tag with XSS-safe serialization."""
     schema = site_content.get("schema_org")
     if not schema or not isinstance(schema, dict):
         business = site_content.get("business", {})
@@ -27,9 +33,10 @@ def render_schema_org(site_content: dict[str, Any]) -> str:
         }
     if not schema:
         return ""
+    payload = json.dumps(schema, ensure_ascii=False).replace("<", "\\u003c")
     return (
-        "\n<script type=\"application/ld+json\">\n"
-        + json.dumps(schema, ensure_ascii=False)
+        '\n<script type="application/ld+json">\n'
+        + payload
         + "\n</script>\n"
     )
 
@@ -37,16 +44,16 @@ def render_schema_org(site_content: dict[str, Any]) -> str:
 def render_hero(site_content: dict[str, Any]) -> str:
     hero = site_content.get("hero", {})
     business = site_content.get("business", {})
-    phone = business.get("phone", "")
-    trust_bar = hero.get("trust_bar", [])
+    phone = _e(business.get("phone", ""))
+    trust_bar = hero.get("trust_bar", []) or []
     chips = "\n    ".join(
-        f"<span class=\"trust-chip\">{t}</span>" for t in trust_bar
+        f'<span class="trust-chip">{_e(t)}</span>' for t in trust_bar
     )
     return f"""\
     <section class="hero">
       <div class="hero-copy">
-        <h1>{hero.get("headline", "")}</h1>
-        <p class="subhead">{hero.get("subheadline", "")}</p>
+        <h1>{_e(hero.get("headline", ""))}</h1>
+        <p class="subhead">{_e(hero.get("subheadline", ""))}</p>
         <div class="cta-row">
           <a href="tel:{phone}" class="btn btn-primary">
             <span>Call Now</span> <span>&rarr;</span>
@@ -75,7 +82,7 @@ def render_services(site_content: dict[str, Any]) -> str:
     <section class="services" id="services">
       <div class="section-header">
         <h2>What We Do</h2>
-        <p class="lead">Comprehensive services designed around homeowner needs.</p>
+        <p class="lead">Trade-specific services for homeowners in your area.</p>
       </div>
       <div class="service-grid">
         {cards}
@@ -85,10 +92,10 @@ def render_services(site_content: dict[str, Any]) -> str:
 
 
 def render_service_card(service: dict[str, Any]) -> str:
-    title = service.get("title", "")
-    desc = service.get("description", "")
-    cta = service.get("cta_text", "Learn More")
-    icon = service.get("icon", "\u2699")
+    title = _e(service.get("title", ""))
+    desc = _e(service.get("description", ""))
+    cta = _e(service.get("cta_text", "Learn More"))
+    icon = _e(service.get("icon", "\u2699"))
     return f"""\
       <div class="service-card">
         <div class="service-icon">{icon}</div>
@@ -102,19 +109,20 @@ def render_service_card(service: dict[str, Any]) -> str:
 def render_about(site_content: dict[str, Any]) -> str:
     about = site_content.get("about", {})
     business = site_content.get("business", {})
-    story = about.get("story", "")
-    trust_points = about.get("trust_points", [])
-    certs = about.get("certifications", [])
-    tp_list = "\n    ".join(f"<li>{t}</li>" for t in trust_points)
+    story = _e(about.get("story", ""))
+    trust_points = about.get("trust_points", []) or []
+    certs = about.get("certifications", []) or []
+    tp_list = "\n    ".join(f"<li>{_e(t)}</li>" for t in trust_points)
     cert_grid = (
-        "\n    ".join(f"<div class=\"cert-badge\">{c}</div>" for c in certs)
-        if certs else ""
+        "\n    ".join(f'<div class="cert-badge">{_e(c)}</div>' for c in certs)
+        if certs
+        else ""
     )
     return f"""\
     <section class="about" id="about">
       <div class="about-inner">
         <div>
-          <h2>About {business.get("business_name", "Us")}</h2>
+          <h2>About {_e(business.get("business_name", "Us"))}</h2>
           <p class="founder">{story}</p>
           <ul class="trust-points">{tp_list}</ul>
         </div>
@@ -129,8 +137,8 @@ def render_about(site_content: dict[str, Any]) -> str:
 
 def render_reviews(site_content: dict[str, Any]) -> str:
     reviews_block = site_content.get("reviews", {})
-    reviews = reviews_block.get("reviews", [])
-    aggregate = reviews_block.get("aggregate_line", "")
+    reviews = reviews_block.get("reviews", []) if isinstance(reviews_block, dict) else []
+    aggregate = _e(reviews_block.get("aggregate_line", "") if isinstance(reviews_block, dict) else "")
     if not reviews:
         return ""
     cards = "\n    ".join(render_review_card(r) for r in reviews)
@@ -148,12 +156,17 @@ def render_reviews(site_content: dict[str, Any]) -> str:
 
 
 def render_review_card(review: dict[str, Any]) -> str:
-    stars = "\u2605" * round(review.get("rating", 5))
+    try:
+        rating = int(round(float(review.get("rating", 5))))
+    except (TypeError, ValueError):
+        rating = 5
+    rating = max(0, min(5, rating))
+    stars = "\u2605" * rating
     return f"""\
       <div class="review-card">
         <div class="review-stars">{stars}</div>
-        <p class="review-text">&quot{review.get("text", "")}&quot</p>
-        <p class="review-author">&mdash; {review.get("author", "Customer")}</p>
+        <p class="review-text">&quot;{_e(review.get("text", ""))}&quot;</p>
+        <p class="review-author">&mdash; {_e(review.get("author", "Customer"))}</p>
       </div>
 """
 
@@ -165,8 +178,8 @@ def render_faq(site_content: dict[str, Any]) -> str:
     items = "\n    ".join(
         f"""\
       <details class="faq-item">
-        <summary>{item.get("question", "")}</summary>
-        <p>{item.get("answer", "")}</p>
+        <summary>{_e(item.get("question", ""))}</summary>
+        <p>{_e(item.get("answer", ""))}</p>
       </details>"""
         for item in faqs
     )
@@ -182,9 +195,9 @@ def render_faq(site_content: dict[str, Any]) -> str:
 
 def render_contact(site_content: dict[str, Any]) -> str:
     business = site_content.get("business", {})
-    name = business.get("business_name", "")
-    phone = business.get("phone", "")
-    email = business.get("email", "hello@example.com")
+    phone = _e(business.get("phone", ""))
+    email = _e(business.get("email", ""))
+    email_href = f"mailto:{email}" if email else "#contact"
     return f"""\
     <section class="contact-bar" id="contact">
       <h2>Ready to get started?</h2>
@@ -192,14 +205,14 @@ def render_contact(site_content: dict[str, Any]) -> str:
       <div class="phone">
         <a href="tel:{phone}">{phone}</a>
       </div>
-      <a href="mailto:{email}" class="btn btn-secondary" style="border-color:#444;color:#fff">Email Us</a>
+      <a href="{email_href}" class="btn btn-secondary" style="border-color:#444;color:#fff">Email Us</a>
     </section>
 """
 
 
 def render_footer(site_content: dict[str, Any]) -> str:
     business = site_content.get("business", {})
-    biz_name = business.get("business_name", "")
+    biz_name = _e(business.get("business_name", ""))
     return f"""\
     <footer class="footer">
       <p>&copy; 2025 {biz_name}. All rights reserved. Licensed &amp; insured.</p>

@@ -83,8 +83,8 @@ def build_local_business_schema(
         "priceRange": "$$",
         "address": _format_address(address),
         "areaServed": [
-            {"@type": "City", name: city},
-            {"@type": "State", name: state},
+            {"@type": "City", "name": city},
+            {"@type": "State", "name": state},
         ],
         "knowsAbout": [trade, f"{trade} services", f"{city} {trade}"],
         "hasOfferCatalog": {

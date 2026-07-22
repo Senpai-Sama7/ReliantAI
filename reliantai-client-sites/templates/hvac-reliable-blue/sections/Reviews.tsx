@@ -1,19 +1,6 @@
 import { Star, Quote } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
-
-interface TradeCopy {
-  services_title: string;
-  services_subtitle: string;
-  about_title: string;
-  about_trust_title: string;
-  reviews_title: string;
-  faq_title: string;
-  urgency_message: string;
-  estimate_heading: string;
-  estimate_subtext: string;
-  trust_badges: string[];
-  stats: { label: string; value_key: string; suffix: string; fallback: string }[];
-}
+import type { TradeCopy } from "@/lib/trade-copy";
 
 interface ReviewsProps {
   content: SiteContent;
@@ -40,9 +27,6 @@ export default function Reviews({ content, copy }: ReviewsProps) {
 
   return (
     <section className="relative py-24 bg-slate-900">
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-blue-600/3 blur-3xl" />
-      </div>
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-bold text-white font-display">

@@ -6,7 +6,7 @@ from sqlalchemy.exc import IntegrityError
 
 from reliantai.auth import verify_api_key
 from reliantai.db import get_db_session
-from reliantai.models import Prospect, ResearchJob
+from reliantai.db.models import Prospect
 from reliantai.services.task_queue import enqueue_prospect_pipeline
 from .schemas import (
     ProspectCreate,
@@ -144,3 +144,22 @@ def get_prospect(
         if not prospect:
             raise HTTPException(status_code=404, detail="Prospect not found")
         return _prospect_response(prospect)
+
+
+@router.post("/{prospect_id}/research", response_model=ResearchJobResponse)
+def trigger_research(
+    prospect_id: str,
+    _: bool = Depends(verify_api_key),
+):
+    """Enqueue the prospect research + site + outreach pipeline."""
+    with get_db_session() as db:
+        prospect = db.query(Prospect).filter_by(id=prospect_id).first()
+        if not prospect:
+            raise HTTPException(status_code=404, detail="Prospect not found")
+
+    job_id = enqueue_prospect_pipeline(prospect_id)
+    return ResearchJobResponse(
+        job_id=job_id,
+        status="queued",
+        message="Research pipeline started",
+    )

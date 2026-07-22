@@ -1,19 +1,6 @@
 import { Star } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
-
-interface TradeCopy {
-  services_title: string;
-  services_subtitle: string;
-  about_title: string;
-  about_trust_title: string;
-  reviews_title: string;
-  faq_title: string;
-  urgency_message: string;
-  estimate_heading: string;
-  estimate_subtext: string;
-  trust_badges: string[];
-  stats: { label: string; value_key: string; suffix: string; fallback: string }[];
-}
+import type { TradeCopy } from "@/lib/trade-copy";
 
 interface ReviewsProps {
   content: SiteContent;
@@ -57,7 +44,7 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           {reviews.reviews.map((review, i) => (
             <div
               key={i}
-              className="break-inside-avoid bg-slate-800/50 border border-slate-700/80 rounded-xl p-6 shadow-sm hover:shadow-lg hover:border-slate-600 transition-all duration-300"
+              className="break-inside-avoid bg-slate-800/50 border border-slate-700/80 rounded-xl p-6 shadow-sm hover:border-slate-600 transition-colors duration-300"
             >
               <span className="block text-5xl leading-none text-emerald-500/30 font-serif select-none" aria-hidden="true">
                 &ldquo;

@@ -45,16 +45,16 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           {reviews.reviews.map((review, i) => (
             <div
               key={i}
-              className="break-inside-avoid bg-white border border-stone-200 rounded-xl p-6 hover:shadow-lg hover:border-stone-300 transition-all duration-300"
+              className="break-inside-avoid bg-white border border-stone-200 rounded-xl p-6 hover:border-stone-300 transition-colors duration-300"
             >
-              <span className="block text-5xl leading-none text-violet-200 font-serif select-none" aria-hidden="true">
+              <span className="block text-5xl leading-none text-amber-200 font-serif select-none" aria-hidden="true">
                 &ldquo;
               </span>
               <p className="text-slate-600 text-sm leading-relaxed -mt-3 line-clamp-5">
                 {review.text}
               </p>
               <div className="mt-4 pt-4 border-t border-stone-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-semibold text-xs">
+                <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-semibold text-xs">
                   {review.author.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">

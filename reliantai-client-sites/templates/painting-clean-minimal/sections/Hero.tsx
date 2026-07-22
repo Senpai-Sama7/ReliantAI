@@ -71,14 +71,14 @@ export default function Hero({ content }: HeroProps) {
             >
               <a
                 href={`tel:${business.phone}`}
-                className="inline-flex items-center gap-2 px-7 py-3 bg-violet-700 text-white font-semibold rounded-md hover:bg-violet-600"
+                className="inline-flex items-center gap-2 px-7 py-3 bg-amber-700 text-white font-semibold rounded-md hover:bg-amber-700"
               >
                 <Phone className="h-4 w-4" />
                 {hero.cta_primary}
               </a>
               <a
                 href="#services"
-                className="px-7 py-3 border border-stone-300 text-violet-800 font-medium rounded-md hover:bg-violet-50"
+                className="px-7 py-3 border border-stone-300 text-amber-900 font-medium rounded-md hover:bg-amber-50"
               >
                 {hero.cta_secondary}
               </a>
@@ -94,7 +94,7 @@ export default function Hero({ content }: HeroProps) {
               >
                 {hero.trust_bar.map((item, i) => (
                   <div key={i} className="flex items-center gap-2 text-slate-500 text-sm">
-                    <ShieldCheck className="h-4 w-4 text-violet-600" />
+                    <ShieldCheck className="h-4 w-4 text-amber-700" />
                     {item}
                   </div>
                 ))}
@@ -110,7 +110,7 @@ export default function Hero({ content }: HeroProps) {
             className="hidden lg:block"
           >
             <div className="border border-stone-200 bg-stone-50 rounded-lg p-8 max-w-sm ml-auto">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-600 mb-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-700 mb-4">
                 Color consultation
               </p>
               <p className="font-display text-3xl text-slate-900">Included free</p>

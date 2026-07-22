@@ -4,7 +4,7 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from reliantai.db import get_db_session
-from reliantai.models import GeneratedSite
+from reliantai.db.models import GeneratedSite
 from reliantai.lib.slug import is_valid_slug
 from reliantai.services.cache import get_cached_site, set_cached_site
 
