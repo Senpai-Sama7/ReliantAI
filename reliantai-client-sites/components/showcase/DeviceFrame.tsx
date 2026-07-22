@@ -55,21 +55,21 @@ const DEVICE_CONFIG: Record<Device, {
 
 function DesktopChrome({ url }: { url?: string }) {
   return (
-    <div className="flex items-center h-9 px-3 bg-[#1e1e1e] border-b border-[#2a2a2a]">
-      <div className="flex items-center gap-1.5 mr-4">
+    <div className="flex items-center h-9 px-2 sm:px-3 bg-[#1e1e1e] border-b border-[#2a2a2a]">
+      <div className="hidden sm:flex items-center gap-1.5 mr-4">
         <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
         <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
         <div className="w-3 h-3 rounded-full bg-[#28c840]" />
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <div className="flex items-center gap-2 px-4 py-1 bg-[#2a2a2a] rounded-md max-w-md w-full">
-          <svg className="w-3 h-3 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="flex-1 flex items-center justify-center min-w-0">
+        <div className="flex items-center gap-2 px-3 sm:px-4 py-1 bg-[#2a2a2a] rounded-md max-w-md w-full min-w-0">
+          <svg className="w-3 h-3 text-zinc-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
           <span className="text-[11px] text-zinc-400 font-mono truncate">{url || "localhost:3000"}</span>
         </div>
       </div>
-      <div className="w-16" />
+      <div className="w-0 sm:w-16 flex-shrink-0" />
     </div>
   );
 }
@@ -111,9 +111,9 @@ export default function DeviceFrame({ device, children, url, className = "" }: D
 
   if (device === "desktop") {
     return (
-      <div className={`flex flex-col h-full ${className}`}>
+      <div className={`flex flex-col h-full min-h-0 ${className}`}>
         <DesktopChrome url={url} />
-        <div className="flex-1 overflow-hidden bg-white">
+        <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden bg-white overscroll-contain">
           {children}
         </div>
       </div>
