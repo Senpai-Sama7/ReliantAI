@@ -48,7 +48,8 @@ async def render_isr_scaffold(
     name = bus.get("business_name", "Site")
     theme = site_content.get("site_config", {}).get("theme", {})
     primary = theme.get("primary", "#1e3a5f")
-    accent = theme.get("accent", "#3b82f6")
+    # Default steel accent — never Tailwind blue-500 (#3b82f6)
+    accent = theme.get("accent", "#6b8fa8")
 
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)

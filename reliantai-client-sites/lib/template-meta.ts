@@ -24,78 +24,67 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     label: "Reliable Blue",
     trade: "hvac",
     tradeLabel: "HVAC",
-    accent: "blue-400",
-    accentBg: "bg-blue-500",
+    accent: "steel",
+    accentBg: "bg-[var(--trade-primary)]",
     theme: "dark",
     heroLayout: "single",
-    primaryColor: "#2563eb",
-    colorName: "Blue",
-    description: "Editorial, trust-forward HVAC template. Asymmetric hero, masonry reviews, sentence-split About — senior-agency craft.",
+    primaryColor: "#3d5a73",
+    colorName: "Steel Ink",
+    description: "T1 editorial HVAC. Brand-first hero, steel OKLCH palette (never Tailwind blue-500), numbered asymmetric services, proof below the fold.",
     personality: "Dependable & Authoritative",
     bestFor: "HVAC, general contracting, any trade where trust and professionalism are paramount",
     uniqueFeatures: [
-      "Asymmetric 2-column hero (grid-cols-[2fr_3fr]) with editorial Instrument Serif headline",
-      "Editorial narrative About section (sentence-split storytelling)",
-      "Masonry review layout with serif quote watermarks",
-      "Varied service card hierarchy — featured spans wider, not three identical cards",
-      "Single radial accent on solid slate-950 — no multi-stop gradients",
+      "Brand-first hero: business name at display scale; proof moved below fold",
+      "Steel Ink OKLCH palette (#3d5a73 / #6b8fa8) — not Tailwind blue-500",
+      "Numbered editorial services on 12-col asymmetric grid",
+      "CSS scroll-driven .reveal moments + reduced-motion path",
+      "Atmosphere: grain + single radial using trade tokens",
     ],
-    prompt: `Create a trade service landing page for an HVAC company called "{business_name}" in {city}, {state}. Use the "hvac-reliable-blue" template design system:
+    prompt: `Create a trade service landing page for an HVAC company called "{business_name}" in {city}, {state}. Use the "hvac-reliable-blue" template (T1 editorial):
 
-## Color System
-- Primary: blue-700 (CTAs), blue-500 (icons, accents) — NOT default blue-500/indigo
-- Backgrounds: solid slate-950 (Hero, About, FAQ, Footer), slate-900 (Services, Reviews)
-- Cards: slate-800/60 with slate-700/60 borders
-- Text: white (primary), slate-400 (secondary), slate-500 (muted)
-- Accent: ONE radial ellipse at 6% opacity max — no multi-stop gradients
+## Color System (OKLCH / custom hex — NEVER #3b82f6 or #6366f1)
+- data-trade="hvac"
+- Primary CTA: #3d5a73 (steel). Accent: #6b8fa8. Ink: #0b1220. Surface: #121a2b.
+- Use CSS vars --trade-ink / --trade-surface / --trade-primary / --trade-accent
+- ONE radial accent via color-mix(in oklab, var(--trade-accent) …) at ≤14% — no multi-stop gradients
 
-## Layout
-1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/60 — NO backdrop-blur)
-2. TrustBanner (trade badges)
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr], left-aligned copy, right column = credential stack)
-4. StatsBar (accent="blue-400")
-5. SectionDivider (variant="dots")
-6. Services (asymmetric grid — one featured card span-2, varied card heights — NOT 3 equal columns)
-7. CTASection (color="blue", variant="urgency")
-8. About section (max-w-3xl editorial story with sentence-split narrative, trust box with blue left accent bar)
-9. SectionDivider (variant="line")
-10. Reviews (masonry columns-1 md:columns-2 lg:columns-3, serif quote marks)
-11. CTASection (color="blue", variant="estimate")
-12. SectionDivider (variant="wave")
-13. FAQ (max-w-3xl, accordion)
-14. Footer (4-col grid)
+## Layout order
+1. ContactBar (fixed, bg trade-ink)
+2. Hero brand-first (min-h-[85svh]) — NO stars, trust chips, or NOT a credential card in hero — proof below folds
+3. TrustBanner + StatsBar (proof BELOW fold)
+4. Services — numbered editorial list, lg:grid-cols-12 (featured col-span-12, others col-span-6). NEVER grid-cols-3 equal cards
+5. CTASection color="steel"
+6. About editorial + left accent rule
+7. Reviews masonry
+8. FAQ accordion
+9. Footer
 
-## Hero Details
-- Background: solid bg-slate-950 + single radial accent at 60% 40%
-- NO word-reveal animation — single fade-up block for headline
-- Primary CTA: bg-blue-700 rounded-md (6px) — NO shadow-lg glow
-- Secondary CTA: border border-blue-500/30 rounded-md
-- Trust bar: license-specific items with Shield icons
-- Right column: offset credential card (years + rating) — NOT decorative circles
-
-## Service Cards
-- bg-slate-800/60 border-slate-700/60 rounded-lg
-- Hover: border-color only — NO -translate-y lift on every card
-- Icon container: w-11 h-11 bg-blue-500/10 rounded-md
-- Featured card: spans 2 cols on lg, taller padding
+## Hero budget (first viewport only)
+- Business name: font-display clamp(~2.75rem–5.5rem)
+- h1: specific local outcome headline
+- One supporting sentence
+- CTA group: btn-trade + btn-trade-outline
+- Atmosphere: grain + single radial + optional grid
+- City / years as tiny tracking label — not a card
 
 ## Typography
-- Display: Instrument Serif, font-bold, tracking-tight
-- Body: DM Sans, text-base leading-relaxed (1.65)
-- Hero: text-4xl sm:text-5xl lg:text-6xl
-- Section headings: text-3xl sm:text-4xl`,
+- Display: Instrument Serif. Body: DM Sans leading-relaxed (1.65)
+- No Inter / Geist / Roboto / Outfit for display
+
+## Copy
+- Specific + local. No buzzwords. No "It's not just X — it's Y." Minimize em dashes.`,
   },
   {
     id: "plumbing-trustworthy-navy",
     label: "Trustworthy Navy",
     trade: "plumbing",
     tradeLabel: "Plumbing",
-    accent: "blue-400",
-    accentBg: "bg-blue-700",
+    accent: "copper",
+    accentBg: "bg-[var(--trade-primary)]",
     theme: "dark",
     heroLayout: "single",
-    primaryColor: "#1d4ed8",
-    colorName: "Navy",
+    primaryColor: "#1e3a5f",
+    colorName: "Ink + Copper",
     description: "Emergency-focused with a static red alert badge. Featured service card hierarchy and featured-review split layout — urgency without AI-slop motion.",
     personality: "Urgent & Trustworthy",
     bestFor: "Plumbing, emergency services, 24/7 availability trades",
@@ -109,22 +98,22 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     prompt: `Create a trade service landing page for a plumbing company called "{business_name}" in {city}, {state}. Use the "plumbing-trustworthy-navy" template design system:
 
 ## Color System
-- Primary: blue-700 (CTAs), blue-500 (icons, accents) — NOT default blue-500 as CTA fill
+- Primary: #1e3a5f (ink). Accent: #c45c26 (copper emergency). NEVER #3b82f6
 - Emergency accent: red-500/10 bg, red-500/20 border, red-300 text (static badge only)
 - Backgrounds: solid slate-950 (Hero, About, FAQ, Footer), slate-900 (Services, Reviews)
-- Cards: slate-800/60 with slate-700/60 borders; featured: solid bg-blue-950/40 border-blue-500/30
+- Cards: slate-800/60 with slate-700/60 borders; featured: solid bg-[var(--trade-elevated)] border-[var(--trade-accent)]/30
 - Text: white (primary), slate-400 (secondary), slate-500 (muted)
 - Accent: ONE radial ellipse at 6% opacity max — no multi-stop gradients, no blur-3xl
 
 ## Layout
 1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/60 — NO backdrop-blur; "24/7 Emergency Plumbing")
 2. TrustBanner (trade badges — license/response-time specifics)
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr], left-aligned copy, right column = emergency credential stack)
-4. StatsBar (accent="blue-400")
+3. Hero (min-h-[85svh], asymmetric lg:grid-cols-[2fr_3fr], left-aligned copy, right column = emergency atmosphere only — credentials BELOW fold)
+4. StatsBar (accent="copper")
 5. SectionDivider (variant="dots")
 6. Services (asymmetric grid — index 0 featured with "Most Requested" badge, varied card heights — NOT 3 equal columns)
-7. CTASection (color="blue", variant="urgency")
-8. About section (max-w-2xl editorial story, trust box with blue left accent bar border-l-2 border-blue-500/40)
+7. CTASection (color="copper", variant="urgency")
+8. About section (max-w-2xl editorial story, trust box with copper left accent bar border-l-2 border-[var(--trade-accent)]/40)
 9. Reviews (featured first review full-width with serif quote watermark, remaining in grid-cols-1 md:grid-cols-2)
 10. FAQ (HelpCircle icon above heading, max-w-3xl accordion)
 11. Footer (4-col grid, website URL link)
@@ -133,15 +122,15 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - Background: solid bg-slate-950 + single radial accent at 60% 40%
 - Static emergency pill above stars: bg-red-500/10 border-red-500/20 rounded-full, AlertTriangle + "24/7 EMERGENCY", solid red-400 status dot (NO animate-ping)
 - NO word-reveal animation — single fade-up block for headline
-- Primary CTA: bg-blue-700 rounded-md (6px) — NO shadow-lg glow
-- Secondary CTA: border border-blue-500/30 rounded-md
-- Right column: offset credential card (response time + rating) — NOT decorative circles
+- Primary CTA: bg-[var(--trade-primary)] rounded-md (6px) — NO shadow-lg glow
+- Secondary CTA: border border-[var(--trade-accent)]/30 rounded-md
+- Right column: offset NOT a credential card in hero — proof below fold (response time + rating) — NOT decorative circles
 
 ## Service Cards
 - bg-slate-800/60 border-slate-700/60 rounded-lg
-- Featured (index 0): solid bg-blue-950/40 border-blue-500/30, larger icon w-14 h-14, "Most Requested" badge text-[0.65rem] tracking-widest uppercase
+- Featured (index 0): solid bg-[var(--trade-elevated)] border-[var(--trade-accent)]/30, larger icon w-14 h-14, "Most Requested" badge text-[0.65rem] tracking-widest uppercase
 - Hover: border-color only — NO -translate-y lift on every card
-- Icon container (regular): w-11 h-11 bg-blue-500/10 rounded-md
+- Icon container (regular): w-11 h-11 bg-[color-mix(in_oklab,var(--trade-accent)_12%,transparent)] rounded-md
 
 ## Dynamic Cert Icons
 - CERT_ICONS map: { licensed: ShieldCheck, master: Award, certified: BadgeCheck, insured: Shield, bonded: Shield, background: UserCheck, epa: Leaf, nec: Zap }
@@ -165,13 +154,13 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     accentBg: "bg-amber-500",
     theme: "dark",
     heroLayout: "dual-card",
-    primaryColor: "#d97706",
-    colorName: "Amber/Gold",
-    description: "Two-column asymmetric hero with a solid SAFETY FIRST credential card. Uniform slate-950 sections. Bold, safety-first energy — no glassmorphism.",
+    primaryColor: "#9a6b1f",
+    colorName: "Charcoal Gold",
+    description: "Two-column asymmetric hero with a solid SAFETY FIRST NOT a credential card in hero — proof below fold. Uniform slate-950 sections. Bold, safety-first energy — no glassmorphism.",
     personality: "Bold & Safety-First",
     bestFor: "Electrical, solar, trades where safety credentials are the differentiator",
     uniqueFeatures: [
-      "Asymmetric hero lg:grid-cols-[2fr_3fr] with SAFETY FIRST credential card (solid bg — no backdrop-blur)",
+      "Asymmetric hero lg:grid-cols-[2fr_3fr] with SAFETY FIRST NOT a credential card in hero — proof below fold (solid bg — no backdrop-blur)",
       "Uniform slate-950 background across ALL sections",
       "Featured service card at index 2 — varied hierarchy",
       "Intentional radius: rounded-md CTAs, rounded-lg cards",
@@ -190,7 +179,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 ## Layout
 1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/60 — NO backdrop-blur; "24/7 Emergency Electrical")
 2. TrustBanner (trade="electrical" — license/NEC/safety specifics)
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=SAFETY FIRST credential card)
+3. Hero (min-h-[85svh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=SAFETY FIRST NOT a credential card in hero — proof below fold)
 4. StatsBar (accent="amber-400")
 5. SectionDivider (variant="dots")
 6. Services (featured card at INDEX 2 with "Most Popular" badge, varied heights — NOT 3 equal columns)
@@ -206,7 +195,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - NO word-reveal animation — single fade-up block for headline
 - Primary CTA: bg-amber-700 rounded-md (6px) — NO shadow-lg glow
 - Secondary CTA: border border-amber-500/30 rounded-md
-- Right column SAFETY FIRST card (semantic content, NOT decorative circles):
+- NO hero cards — SAFETY proof lives below fold (semantic content, NOT decorative circles):
   - solid border border-amber-500/20 bg-amber-950/40 rounded-lg p-8 sm:p-10 — NO backdrop-blur
   - Shield icon h-10 w-10 text-amber-400
   - "SAFETY FIRST" text-sm font-bold tracking-[0.3em] uppercase
@@ -240,13 +229,13 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     accentBg: "bg-orange-500",
     theme: "dark",
     heroLayout: "dual-card",
-    primaryColor: "#ea580c",
-    colorName: "Orange/Copper",
-    description: "Two-column hero with rating/years/inspection credential stack. Static free-inspection badge — bold, action-oriented, no ping animation.",
+    primaryColor: "#9a4520",
+    colorName: "Umber Copper",
+    description: "Two-column hero with rating/years/inspection atmosphere only — credentials BELOW fold. Static free-inspection badge — bold, action-oriented, no ping animation.",
     personality: "Bold & Action-Oriented",
     bestFor: "Roofing, storm damage, trades offering free inspections or strong guarantees",
     uniqueFeatures: [
-      "Asymmetric hero with credential stack (rating, years, inspection CTA)",
+      "Asymmetric hero with atmosphere only — credentials BELOW fold (rating, years, inspection CTA)",
       "Static free-inspection status indicator — solid dot, no animate-ping",
       "Trust points as horizontal card grid with varied sizing",
       "Custom inline SVG checkmarks",
@@ -265,7 +254,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 ## Layout
 1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/60 — NO backdrop-blur; orange-400 phone icon)
 2. TrustBanner (trade="roofing" — warranty/inspection specifics)
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=credential card stack)
+3. Hero (min-h-[85svh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=NOT a credential card in hero — proof below fold stack)
 4. StatsBar (accent="orange-400")
 5. SectionDivider (variant="dots")
 6. Services (featured card at index 0 with border-2 and "MOST POPULAR" badge — NOT 3 equal columns)
@@ -284,7 +273,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - Primary CTA: bg-orange-700 rounded-md (6px) — NO shadow-lg glow
 - Secondary CTA: border-2 border-orange-500/40 rounded-md (thicker secondary border is this template's signature)
 - Business name pre-title: text-sm font-semibold uppercase tracking-widest text-orange-400
-- Right column 3-card stack (semantic content — NOT decorative circles):
+- NO hero cards — inspection/rating proof below fold (semantic content — NOT decorative circles):
   1. Rating card: text-5xl font-bold tabular-nums, 5 stars, review count
   2. Years card: text-4xl font-bold text-orange-400 + "serving {city}" text
   3. FREE INSPECTION banner: bg-orange-700 text-white text-base font-bold px-8 py-4 rounded-lg, ArrowRight icon
@@ -320,8 +309,8 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     accentBg: "bg-amber-700",
     theme: "light",
     heroLayout: "dual-decor",
-    primaryColor: "#b45309",
-    colorName: "Amber/Ink",
+    primaryColor: "#8b6914",
+    colorName: "Gallery Ochre",
     description: "The ONLY light-theme template. Editorial stone/amber/ink palette — asymmetric hero with offset credential block. No violet, no decorative circles.",
     personality: "Clean & Design-Forward",
     bestFor: "Painting, interior design, landscaping, any trade where visual taste is the differentiator",
@@ -355,7 +344,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 ## Layout
 1. ContactBar (bg-white border-stone-200, "Free Color Consultation", text-stone-800)
 2. TrustBanner (light={true})
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=offset credential/stat block)
+3. Hero (min-h-[85svh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=offset credential/stat block)
 4. StatsBar (accent="amber-700", light={true})
 5. SectionDivider (variant="dots", light={true})
 6. Services (featured card at index 0: bg-amber-50 border-2 border-amber-200 — NOT 3 equal columns)
@@ -373,7 +362,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - NO word-reveal animation — single fade-up block for headline
 - Primary CTA: bg-amber-700 text-white rounded-md (6px) — NO shadow-lg glow
 - Secondary CTA: border border-amber-200 text-amber-800 rounded-md hover:bg-amber-50
-- Right column: offset credential/stat block (years + rating + local project count) — semantic content, NOT concentric circles or blur orbs
+- NO right-column card in hero — brand-first single composition (years + rating + local project count) — semantic content, NOT concentric circles or blur orbs
 
 ## Service Cards
 - bg-white border-stone-200 rounded-lg
@@ -397,12 +386,12 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     label: "Earthy Green",
     trade: "landscaping",
     tradeLabel: "Landscaping",
-    accent: "emerald-400",
-    accentBg: "bg-emerald-500",
+    accent: "moss",
+    accentBg: "bg-[var(--trade-primary)]",
     theme: "dark",
     heroLayout: "dual-decor",
-    primaryColor: "#10b981",
-    colorName: "Emerald",
+    primaryColor: "#3d5c3d",
+    colorName: "Moss + Clay",
     description: "Organic, nature-inspired asymmetric hero with offset credential block. Centered About with vertical accent bar — solid emerald on slate, no orbs.",
     personality: "Organic & Sustainable",
     bestFor: "Landscaping, lawn care, eco-friendly trades, outdoor services",
@@ -416,9 +405,9 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     prompt: `Create a trade service landing page for a landscaping company called "{business_name}" in {city}, {state}. Use the "landscaping-earthy-green" template design system:
 
 ## Color System
-- Primary: emerald-700 (CTAs), emerald-400 (icons, accents), emerald-500 (borders)
+- Primary: #3d5c3d (moss). Accent: #a67c52 (clay). NEVER Tailwind emerald-500 as identity
 - Backgrounds: solid slate-950 (Hero, About, FAQ, Footer), slate-900 (Services, Reviews)
-- Cards: slate-800/50 border-slate-700/80; featured: solid bg-emerald-950/40 border-2 border-emerald-500/40
+- Cards: slate-800/50 border-slate-700/80; featured: solid bg-[var(--trade-elevated)] border-2 border-[var(--trade-accent)]/40
 - Text: white (primary), slate-400 (secondary), slate-500 (muted), emerald-200/80 (hero subtitle)
 - Stars: fill-yellow-400 text-yellow-400
 - Accent: ONE radial ellipse at 6% opacity max — no blur-3xl, no multi-stop gradients
@@ -426,34 +415,34 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 ## Layout
 1. ContactBar (fixed top, h-10, solid bg-slate-950 border-b border-slate-800/50 — NO backdrop-blur; "Free Landscape Estimate")
 2. TrustBanner (trade="landscaping" — season/service-area specifics)
-3. Hero (min-h-[85vh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=offset credential/stat block)
-4. StatsBar (accent="emerald-400")
+3. Hero (min-h-[85svh], asymmetric lg:grid-cols-[2fr_3fr]: left=copy, right=offset credential/stat block)
+4. StatsBar (accent="moss")
 5. SectionDivider (variant="dots")
 6. Services (featured card at index 0 — varied hierarchy, NOT 3 equal columns)
-7. CTASection (color="emerald", variant="urgency")
-8. About (centered header, vertical accent bar bg-emerald-500/20, trust cards grid sm:grid-cols-2 with size variation)
+7. CTASection (color="moss", variant="urgency")
+8. About (centered header, vertical accent bar bg-[color-mix(in_oklab,var(--trade-accent)_20%,transparent)], trust cards grid sm:grid-cols-2 with size variation)
 9. SectionDivider (variant="line")
-10. Reviews (masonry columns-1 md:columns-2 lg:columns-3, serif quotation marks, avatar bg-emerald-900 text-emerald-300)
-11. CTASection (color="emerald", variant="estimate")
+10. Reviews (masonry columns-1 md:columns-2 lg:columns-3, serif quotation marks, avatar bg-[var(--trade-elevated)] text-[var(--trade-accent)])
+11. CTASection (color="moss", variant="estimate")
 12. SectionDivider (variant="wave")
-13. FAQ (border-emerald-500/30 when open, max-w-3xl)
+13. FAQ (border-[var(--trade-accent)]/30 when open, max-w-3xl)
 14. Footer (4-col grid, "Visit Us" with Globe icon)
 
 ## Hero Details
 - Background: solid bg-slate-950 + single radial accent at 60% 40%
 - NO word-reveal animation — single fade-up block for headline
-- Primary CTA: bg-emerald-700 rounded-md (6px) — NO shadow-lg glow
-- Secondary CTA: border border-emerald-400/40 text-emerald-200 rounded-md
-- Right column: offset credential/stat block (years serving + seasonal packages + local project count) — semantic content, NOT concentric circles, blur orbs, or scale-pulse decoration
+- Primary CTA: bg-[var(--trade-primary)] rounded-md (6px) — NO shadow-lg glow
+- Secondary CTA: border border-[var(--trade-accent)]/40 text-[color-mix(in_oklab,var(--trade-accent)_80%,white)] rounded-md
+- NO right-column card in hero — brand-first single composition (years serving + seasonal packages + local project count) — semantic content, NOT concentric circles, blur orbs, or scale-pulse decoration
 
 ## Service Cards
-- Featured (index 0): solid bg-emerald-950/40 border-2 border-emerald-500/40, icon bg-emerald-400/20 text-emerald-300 w-14 h-14, "MOST POPULAR" badge
-- Regular: bg-slate-800/50 border-slate-700/80 rounded-lg, icon bg-emerald-500/10 text-emerald-400 w-11 h-11 rounded-md
+- Featured (index 0): solid bg-[var(--trade-elevated)] border-2 border-[var(--trade-accent)]/40, icon bg-[color-mix(in_oklab,var(--trade-accent)_20%,transparent)] text-[var(--trade-accent)] w-14 h-14, "MOST POPULAR" badge
+- Regular: bg-slate-800/50 border-slate-700/80 rounded-lg, icon bg-[color-mix(in_oklab,var(--trade-accent)_12%,transparent)] text-[var(--trade-accent)] w-11 h-11 rounded-md
 - Hover: border-color only — NO -translate-y on every card
 
 ## About Section
 - Centered header with emerald label
-- Left-side vertical accent bar: bg-emerald-500/20 rounded-full (inside max-w-4xl)
+- Left-side vertical accent bar: bg-[color-mix(in_oklab,var(--trade-accent)_20%,transparent)] rounded-full (inside max-w-4xl)
 - Trust point cards: bg-slate-900/50 border-slate-800 rounded-lg in sm:grid-cols-2 — vary padding/height on one card
 - Divider line: solid border-t border-emerald-500/20 (not multi-stop gradient line)
 
@@ -462,7 +451,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - Body: DM Sans, text-base leading-relaxed (1.65)
 - Hero: text-4xl sm:text-5xl lg:text-6xl
 - Section headings: text-3xl sm:text-4xl
-- About label: text-sm font-semibold uppercase tracking-wider text-emerald-400
+- About label: text-sm font-semibold uppercase tracking-wider text-[var(--trade-accent)]
 
 ## Local Copy Guidance
 - Headlines: city + outdoor seasonality ("{city} Landscape Design — Built for Local Soil & Seasons")

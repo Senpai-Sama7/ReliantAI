@@ -9,8 +9,9 @@ test.describe("Live site rendering from API content", () => {
     const res = await page.goto("/test-hvac-austin");
     expect(res?.status()).toBe(200);
     await expect(
-      page.getByRole("heading", { name: /Stay Comfortable Austin/i })
+      page.getByRole("heading", { name: /Same-Day AC Repair Across Austin/i })
     ).toBeVisible();
+    await expect(page.getByText("Comfort Pro HVAC").first()).toBeVisible();
     // Live sites must NOT show the preview banner
     await expect(page.getByText("This is your free preview site")).toHaveCount(0);
   });

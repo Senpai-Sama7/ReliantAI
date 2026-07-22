@@ -287,7 +287,8 @@ def compile_html(site_content: dict[str, Any]) -> str:
     site_content = _build_minimal_shell_guard(site_content)
     cfg = site_content.get("site_config", {})
     primary = cfg.get("theme", {}).get("primary", "#1e3a5f")
-    accent = cfg.get("theme", {}).get("accent", "#3b82f6")
+    # Default steel accent — never Tailwind blue-500 (#3b82f6)
+    accent = cfg.get("theme", {}).get("accent", "#6b8fa8")
 
     css = (
         BASE_CSS.replace("{primary}", primary)

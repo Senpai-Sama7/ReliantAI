@@ -181,12 +181,12 @@ export default function ShowcasePage() {
   return (
     <div className="h-screen bg-zinc-950 text-white flex flex-col overflow-hidden">
       {/* ─── Header ──────────────────────────────────────────── */}
-      <header className="flex-shrink-0 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-xl z-50">
+      <header className="flex-shrink-0 border-b border-white/[0.06] bg-zinc-950 z-50">
         <div className="flex items-center justify-between px-4 h-11">
           {/* Left: Brand */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center">
+              <div className="w-5 h-5 rounded-md bg-[var(--trade-primary,#3d5a73)] flex items-center justify-center">
                 <span className="text-[8px] font-bold text-white">R</span>
               </div>
               <div className="flex flex-col">

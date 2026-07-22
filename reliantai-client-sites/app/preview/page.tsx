@@ -6,12 +6,12 @@ import MOCK_DATA from "@/lib/mock-data";
 import { TEMPLATE_IDS, templateImports, type TemplateId } from "@/lib/templates";
 
 const TEMPLATE_META: Record<string, { label: string; accent: string; accentBg: string }> = {
-  "hvac-reliable-blue": { label: "HVAC — Reliable Blue", accent: "blue-400", accentBg: "bg-blue-500" },
-  "plumbing-trustworthy-navy": { label: "Plumbing — Trustworthy Navy", accent: "blue-400", accentBg: "bg-blue-700" },
-  "electrical-sharp-gold": { label: "Electrical — Sharp Gold", accent: "amber-400", accentBg: "bg-amber-500" },
-  "roofing-bold-copper": { label: "Roofing — Bold Copper", accent: "orange-400", accentBg: "bg-orange-500" },
-  "painting-clean-minimal": { label: "Painting — Clean Minimal", accent: "violet-400", accentBg: "bg-violet-500" },
-  "landscaping-earthy-green": { label: "Landscaping — Earthy Green", accent: "emerald-400", accentBg: "bg-emerald-500" },
+  "hvac-reliable-blue": { label: "HVAC — Steel Ink", accent: "steel", accentBg: "bg-[var(--trade-primary)]" },
+  "plumbing-trustworthy-navy": { label: "Plumbing — Ink + Copper", accent: "copper", accentBg: "bg-[var(--trade-primary)]" },
+  "electrical-sharp-gold": { label: "Electrical — Charcoal Gold", accent: "gold", accentBg: "bg-[var(--trade-primary)]" },
+  "roofing-bold-copper": { label: "Roofing — Umber Copper", accent: "copper", accentBg: "bg-[var(--trade-primary)]" },
+  "painting-clean-minimal": { label: "Painting — Gallery Ochre", accent: "ochre", accentBg: "bg-[var(--trade-primary)]" },
+  "landscaping-earthy-green": { label: "Landscaping — Moss + Clay", accent: "moss", accentBg: "bg-[var(--trade-primary)]" },
 };
 
 const DynamicTemplates: Record<string, React.ComponentType<{ content: import("@/types/SiteContent").SiteContent }>> = {};

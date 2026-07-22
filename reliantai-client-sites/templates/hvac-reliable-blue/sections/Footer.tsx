@@ -10,18 +10,18 @@ export default function Footer({ content }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-slate-950 border-t border-slate-800">
+    <footer className="bg-[var(--trade-ink)] border-t border-white/10">
       <div className="pb-24 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-white font-semibold text-lg mb-3">
+              <h3 className="text-white font-display text-xl mb-3">
                 {business.business_name}
               </h3>
               <div className="space-y-2 text-sm text-slate-400">
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center gap-2 hover:text-blue-300 transition-colors"
+                  className="flex items-center gap-2 hover:text-[var(--trade-accent)]"
                 >
                   <Phone className="h-4 w-4" />
                   {business.phone}
@@ -54,10 +54,10 @@ export default function Footer({ content }: FooterProps) {
                 Quick Links
               </h4>
               <ul className="space-y-2 text-sm text-slate-400">
-                <li><a href="#services" className="hover:text-blue-300 transition-colors">Our Services</a></li>
-                <li><a href="#about" className="hover:text-blue-300 transition-colors">About Us</a></li>
-                <li><a href="#reviews" className="hover:text-blue-300 transition-colors">Reviews</a></li>
-                <li><a href="#faq" className="hover:text-blue-300 transition-colors">FAQ</a></li>
+                <li><a href="#services" className="hover:text-[var(--trade-accent)]">Our Services</a></li>
+                <li><a href="#about" className="hover:text-[var(--trade-accent)]">About Us</a></li>
+                <li><a href="#reviews" className="hover:text-[var(--trade-accent)]">Reviews</a></li>
+                <li><a href="#faq" className="hover:text-[var(--trade-accent)]">FAQ</a></li>
               </ul>
             </div>
 
@@ -73,7 +73,7 @@ export default function Footer({ content }: FooterProps) {
             </div>
           </div>
 
-          <div className="mt-10 pt-6 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-10 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[11px] text-slate-600">
               &copy; {currentYear} {business.business_name}
             </p>
@@ -81,7 +81,7 @@ export default function Footer({ content }: FooterProps) {
               href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(business.business_name + " " + business.city)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs text-slate-500 hover:text-blue-400 transition-colors"
+              className="flex items-center gap-2 text-xs text-slate-500 hover:text-[var(--trade-accent)]"
               aria-label="Find us on Google"
             >
               <Globe className="h-4 w-4" />

@@ -1,6 +1,7 @@
 import { Star, Quote } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
 import type { TradeCopy } from "@/lib/trade-copy";
+import ScrollReveal from "@/components/shared/ScrollReveal";
 
 interface ReviewsProps {
   content: SiteContent;
@@ -26,51 +27,49 @@ export default function Reviews({ content, copy }: ReviewsProps) {
   const { business, reviews } = content;
 
   return (
-    <section className="relative py-24 bg-slate-900">
+    <section className="relative py-24 bg-[var(--trade-surface)]">
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white font-display">
+        <ScrollReveal className="mb-14 max-w-2xl">
+          <p className="text-[0.65rem] uppercase tracking-[0.28em] text-[var(--trade-accent)] mb-4">
+            Proof
+          </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-white font-display tracking-tight leading-[1.1]">
             {copy.reviews_title}
           </h2>
-          <div className="mt-3 flex items-center justify-center gap-2">
+          <div className="mt-4 flex items-center gap-2">
             <StarRating rating={Math.round(business.google_rating)} />
             <span className="text-slate-400 text-sm">
               {business.google_rating} ({business.review_count} reviews on Google)
             </span>
           </div>
-        </div>
+        </ScrollReveal>
 
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+        <div className="columns-1 md:columns-2 gap-6 space-y-6 lg:[column-count:3]">
           {reviews.reviews.map((review, i) => (
-            <div
+            <ScrollReveal
               key={i}
-              className="break-inside-avoid bg-slate-800/50 border border-slate-700 rounded-xl p-6 shadow-sm hover:border-slate-600 transition-colors duration-300 relative"
+              delayMs={i * 40}
+              className="break-inside-avoid bg-[var(--trade-elevated)] border border-white/10 rounded-lg p-6 relative mb-6"
             >
-              <Quote className="absolute top-4 right-4 h-8 w-8 text-blue-500/10 fill-current" />
+              <Quote className="absolute top-4 right-4 h-8 w-8 text-[var(--trade-accent)]/15 fill-current" />
               <StarRating rating={review.rating} />
               <p className="mt-3 text-slate-300 text-sm leading-relaxed">
                 &ldquo;{review.text}&rdquo;
               </p>
-              <div className="mt-4 pt-3 border-t border-slate-700/50 flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-900/60 flex items-center justify-center text-blue-300 font-semibold text-xs">
+              <div className="mt-4 pt-3 border-t border-white/10 flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-[color-mix(in_oklab,var(--trade-primary)_40%,transparent)] flex items-center justify-center text-[var(--trade-accent)] font-semibold text-xs">
                   {review.author.charAt(0)}
                 </div>
                 <div className="flex items-baseline gap-2">
-                  <p className="text-white text-sm font-medium">
-                    {review.author}
-                  </p>
+                  <p className="text-white text-sm font-medium">{review.author}</p>
                   <p className="text-slate-600 text-xs">{review.time}</p>
                 </div>
               </div>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="text-slate-500 text-xs">
-            {reviews.aggregate_line}
-          </p>
-        </div>
+        <p className="mt-8 text-slate-500 text-xs">{reviews.aggregate_line}</p>
       </div>
     </section>
   );
