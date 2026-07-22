@@ -30,17 +30,17 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
     heroLayout: "single",
     primaryColor: "#3d5a73",
     colorName: "Steel Ink",
-    description: "T1 editorial HVAC. Brand-first hero, steel OKLCH palette (never Tailwind blue-500), numbered asymmetric services, proof below the fold.",
+    description: "T2 cinematic HVAC. Brand-first hero, steel OKLCH palette (never Tailwind blue-500), numbered asymmetric services, proof below the fold.",
     personality: "Dependable & Authoritative",
     bestFor: "HVAC, general contracting, any trade where trust and professionalism are paramount",
     uniqueFeatures: [
       "Brand-first hero: business name at display scale; proof moved below fold",
       "Steel Ink OKLCH palette (#3d5a73 / #6b8fa8) — not Tailwind blue-500",
-      "Numbered editorial services on 12-col asymmetric grid",
-      "CSS scroll-driven .reveal moments + reduced-motion path",
+      "Cinematic numbered service reel with asymmetric card sizes",
+      "Lenis + GSAP pins/scrub on desktop; batch reveals on mobile; reduced-motion path",
       "Atmosphere: grain + single radial using trade tokens",
     ],
-    prompt: `Create a trade service landing page for an HVAC company called "{business_name}" in {city}, {state}. Use the "hvac-reliable-blue" template (T1 editorial):
+    prompt: `Create a trade service landing page for an HVAC company called "{business_name}" in {city}, {state}. Use the "hvac-reliable-blue" template (T2 cinematic):
 
 ## Color System (OKLCH / custom hex — NEVER #3b82f6 or #6366f1)
 - data-trade="hvac"

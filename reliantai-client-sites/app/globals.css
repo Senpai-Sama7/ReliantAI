@@ -329,3 +329,123 @@ button {
 [data-trade="painting"] .mobile-callbar {
   background: color-mix(in oklab, var(--trade-elevated) 96%, var(--trade-ink));
 }
+
+/* ── Immersive T2 flagship craft ─────────────────────────────────────── */
+:root {
+  --motion-fast: 0.2s;
+  --motion-base: 0.45s;
+  --motion-scrub: 0.85s;
+  --immersive-stage: 85svh;
+  --instrument-line: color-mix(in oklab, var(--trade-accent) 55%, transparent);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis {
+  scroll-behavior: auto;
+}
+
+.immersive-shell {
+  content-visibility: visible;
+}
+
+.immersive-stage {
+  min-height: var(--immersive-stage);
+}
+
+.immersive-stage::before {
+  content: "";
+  position: absolute;
+  inset: -20% -10% auto;
+  height: 70%;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 50% 60% at 20% 40%, color-mix(in oklab, var(--trade-accent) 18%, transparent), transparent 70%),
+    radial-gradient(ellipse 40% 50% at 85% 30%, color-mix(in oklab, var(--trade-primary) 22%, transparent), transparent 72%);
+  animation: atmosphere-drift 18s var(--ease-premium) infinite alternate;
+  opacity: 0.9;
+}
+
+@keyframes atmosphere-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(2%, 3%, 0) scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .immersive-stage::before {
+    animation: none;
+  }
+}
+
+.magnetic-cta {
+  will-change: transform;
+  transition: transform 180ms var(--ease-premium);
+}
+
+.instrument-stage {
+  filter: drop-shadow(0 24px 48px color-mix(in oklab, var(--trade-accent) 18%, transparent));
+}
+
+.instrument-svg {
+  overflow: visible;
+}
+
+.instrument-path {
+  transition: stroke-dashoffset var(--motion-base) var(--ease-premium);
+}
+
+.immersive-pin {
+  position: relative;
+}
+
+.immersive-track {
+  touch-action: pan-y;
+}
+
+.review-node:focus-visible {
+  outline: 2px solid var(--trade-accent);
+  outline-offset: 3px;
+}
+
+.coverage-label {
+  paint-order: stroke fill;
+}
+
+@media (max-width: 639px) {
+  .immersive-stage {
+    min-height: 0;
+  }
+
+  .immersive-track [data-service-card] {
+    width: min(100vw - 2 * var(--gutter), 28rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.lenis {
+    scroll-behavior: auto;
+  }
+
+  .instrument-path,
+  .immersive-track,
+  .review-node {
+    transition: none !important;
+  }
+}
+
+/* Below-fold immersive chapters — compositor-friendly */
+@media (min-width: 640px) {
+  #about,
+  #reviews,
+  #faq {
+    content-visibility: auto;
+    contain-intrinsic-size: 800px;
+  }
+}

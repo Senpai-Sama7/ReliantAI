@@ -26,16 +26,16 @@ export const RADIUS = {
 } as const;
 
 /**
- * Universal Router — local business / nonprofit playbook.
- * Primary verb: evaluate + buy. Visit: once-to-few. Content: semi-permanent NAP.
- * Tier: T1 editorial (CSS scroll-driven reveals, one accent moment, no pins).
+ * Universal Router — ReliantAI trade templates run T2 cinematic flagship
+ * (product-as-experience / sales theater). NAP, phone CTA, and mobile
+ * cohesion remain non-negotiable. Pins/Lenis desktop-only; phones stay T1-light.
  */
-export const EXECUTION_TIER = "T1" as const;
+export const EXECUTION_TIER = "T2" as const;
 
 export const TIER_RULES = {
   T0: "Static craft — CSS transitions only; zero scroll choreography",
   T1: "Editorial motion — CSS scroll-driven reveals, one accent moment, no pins/Lenis",
-  T2: "Cinematic scroll — Lenis + GSAP pins/scrub (campaign only)",
+  T2: "Cinematic scroll — Lenis + GSAP pins/scrub (desktop); light reveals on mobile",
   T3: "Immersive world — WebGL/video only when content requires it",
 } as const;
 
@@ -183,22 +183,26 @@ export const HERO_FORBIDDEN = [
 
 /** Shared prompt block prepended to every template generation prompt */
 export const DESIGN_QUALITY_PROMPT_BLOCK = `
-## MANDATORY: Anti-AI-Slop Design Standards (T1 Editorial / Senior Designer Bar)
+## MANDATORY: Anti-AI-Slop Design Standards (T2 Cinematic Flagship / Senior Designer Bar)
 
 You are building a local-business site that must look hand-crafted by a senior agency designer —
-NOT the statistical average of AI landing pages. Source: Master Guide anti-AI-slop (2026) +
-editorial craft reference (context-engineering-site).
+NOT the statistical average of AI landing pages. Source: Master Guide anti-AI-slop (2026).
+ReliantAI trade templates are product demos: T2 cinematic on desktop, T1-light on mobile.
 
 ### Execution tier
-- Surface: local home-service landing → tier T1 (editorial motion)
-- Motion: CSS scroll-driven reveals + one accent moment. No Lenis pins, no WebGL, no custom cursors.
-- When in doubt, lower the tier and execute it perfectly.
+- Surface: home-service flagship landing → tier T2 (Lenis + GSAP pins/scrub on desktop ≥640px)
+- Mobile (&lt;640px): no heavy pins; vertical flow + batch reveals; sticky call bar intact
+- Reduced motion: static final states, native scroll, no Lenis
+- Semantic trade instruments (SVG airflow / pressure / circuit / roof / wipe / site-plan) — never decorative blobs
 
 ### NEVER include (instant rejection):
 ${BANNED_AI_PATTERNS.map((p) => `- ${p}`).join("\n")}
 
 ### ALWAYS include:
 ${AWWWARDS_REQUIREMENTS.map((p) => `- ${p}`).join("\n")}
+- Scroll-story service reel (asymmetric numbered chapters; desktop horizontal scrub)
+- Proof as instruments (rating dial, coverage rings, review constellation) — not equal stat cards
+- Brand-first kinetic hero with trade instrument beside copy on desktop
 
 ### Hero (first viewport) — brand-first budget
 Allowed:
@@ -208,14 +212,14 @@ ${HERO_FORBIDDEN.map((p) => `- ${p}`).join("\n")}
 Move proof (rating, years, licenses, trust bar) to a section BELOW the fold.
 
 ### Typography
-- Display: Instrument Serif (editorial, tight tracking on headlines) — justified for local-service warmth
+- Display: Instrument Serif (editorial, tight tracking on headlines)
 - Body: DM Sans (humanist, 16–18px, line-height 1.65)
 - NO Inter, Geist, Roboto, Outfit, or system-ui for display type
 
 ### Layout
-- Hero: full-bleed atmosphere, brand name at hero scale, asymmetric composition, min-h-[85svh]
-- Services: numbered editorial list OR asymmetric 12-col spans — NEVER grid-cols-3 equal cards
-- Section rhythm: alternate density (tight proof bar → spacious about → tight FAQ)
+- Hero: full-bleed atmosphere, brand name at hero scale, instrument stage on desktop
+- Services: cinematic process reel — NEVER grid-cols-3 equal cards
+- Section rhythm: proof instrument → service reel → dispatch rail → workmanship story → coverage → reviews
 - At least one deliberate symmetry break the model would not invent alone
 
 ### Color
@@ -223,10 +227,10 @@ Move proof (rating, years, licenses, trust bar) to a section BELOW the fold.
 - Backgrounds: solid ink / surface / elevated tokens — single radial accent at 4–8% opacity max
 - CTAs: solid fill, subtle hover darken — no colored shadow-lg glow
 
-### Motion (T1)
-- Prefer CSS \`animation-timeline: view()\` reveals (class \`.reveal\`) inside prefers-reduced-motion: no-preference
-- If JS motion: cubic-bezier(0.22, 1, 0.36, 1); opacity + transform only; max 2 animated elements on load
-- Never transition-all / ease-in-out as the house default
+### Motion (T2 desktop / T1-light mobile)
+- GSAP ScrollTrigger pins + scrub only ≥640px and prefers-reduced-motion: no-preference
+- Animate transform / opacity / SVG stroke only; never transition-all / ease-in-out house default
+- Phrase-level reveals OK; ban word-by-word headline spam
 
 ### Copy (if generating text)
 - Headlines: specific + local ("Austin's 15-Year HVAC Team" not "Your Comfort Experts")
@@ -239,17 +243,19 @@ Move proof (rating, years, licenses, trust bar) to a section BELOW the fold.
 export const MASTER_STUDIO_BRIEF = `
 ROLE
 You are a senior creative technologist at an Awwwards-level studio. You build local-business
-web experiences at tier T1 (editorial). Zero tolerance for 2026 AI-default output.
+web experiences at tier T2 cinematic flagship (desktop) with T1-light mobile fallback.
+Zero tolerance for 2026 AI-default output.
 
 HARD EXCLUSIONS
 - No blue/indigo/purple-pink signature (#3b82f6, #6366f1, from-purple-500 to-pink-500)
 - No Inter/Roboto-only type. Instrument Serif + DM Sans, justified.
 - No centered generic SaaS hero. Brand name is hero-scale. Headline names a specific outcome.
-- No three-equal-card grids. Asymmetric or numbered editorial services required.
+- No three-equal-card grids. Cinematic numbered service reel required.
 - No decorative fade spam. Motion is scroll-tied or interaction-triggered.
 - No buzzwords; no "It's not just X — it's Y."; minimize em dashes.
 
 BEFORE CODE
-Output section inventory (hero → proof → services → about → reviews → CTA → FAQ → footer)
-with hero budget check. Do not invent credentials, reviews, or license numbers.
+Output section inventory (hero → proof instrument → service reel → dispatch → workmanship →
+coverage → reviews → CTA → FAQ → footer) with hero budget check. Do not invent credentials,
+reviews, or license numbers.
 `.trim();
