@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "AI web design examples", "contractor website templates", "local business SEO",
   ],
   alternates: {
-    canonical: "https://reliantai.org/showcase",
+    canonical: "https://preview.reliantai.org/showcase",
   },
   openGraph: {
     type: "website",
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: "Showcase — AI-Generated Websites for Every Trade",
     description:
       "Browse AI-generated websites for HVAC, plumbing, electrical, roofing, painting, and landscaping. Free preview instantly.",
-    url: "https://reliantai.org/showcase",
+    url: "https://preview.reliantai.org/showcase",
     images: [
       {
         url: "https://reliantai.org/og/showcase.png",

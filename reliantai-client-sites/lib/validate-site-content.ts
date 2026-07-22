@@ -3,12 +3,19 @@ import { sanitizeHttpUrl } from "@/lib/safe-url";
 import { isValidSlug } from "@/lib/slug";
 import { isTemplateId } from "@/lib/templates";
 
+/** Statuses the public ISR pipeline is allowed to render. */
+export const PUBLIC_SITE_STATUSES = new Set([
+  "preview_live",
+  "live",
+  "published",
+]);
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.length > 0;
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function stripUnsafeBusinessUrls(business: Record<string, unknown>): void {
@@ -23,6 +30,20 @@ function stripUnsafeBusinessUrls(business: Record<string, unknown>): void {
   }
 }
 
+function hasRequiredBusinessFields(business: Record<string, unknown>): boolean {
+  return (
+    isNonEmptyString(business.business_name) &&
+    isNonEmptyString(business.city) &&
+    isNonEmptyString(business.state) &&
+    isNonEmptyString(business.phone) &&
+    isNonEmptyString(business.trade)
+  );
+}
+
+function hasRequiredHeroFields(hero: Record<string, unknown>): boolean {
+  return isNonEmptyString(hero.headline);
+}
+
 export function parseSiteContent(payload: unknown): SiteContent | null {
   if (!isRecord(payload)) return null;
   if (!isRecord(payload.business) || !isRecord(payload.hero)) return null;
@@ -35,6 +56,10 @@ export function parseSiteContent(payload: unknown): SiteContent | null {
   if (!isRecord(payload.about)) return null;
   if (!isRecord(payload.reviews)) return null;
   if (!Array.isArray(payload.faq)) return null;
+  if (!isNonEmptyString(payload.status)) return null;
+  if (!PUBLIC_SITE_STATUSES.has(payload.status)) return null;
+  if (!hasRequiredBusinessFields(payload.business)) return null;
+  if (!hasRequiredHeroFields(payload.hero)) return null;
 
   stripUnsafeBusinessUrls(payload.business);
 

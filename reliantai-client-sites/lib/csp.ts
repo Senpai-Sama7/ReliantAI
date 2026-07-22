@@ -7,6 +7,9 @@
  * NOTE: 'unsafe-inline' and 'unsafe-eval' are required for Next.js
  * hydration and Turbopack HMR. When Next.js adds native nonce support,
  * migrate to nonce-based CSP for stronger XSS protection.
+ *
+ * Keep vercel.json Content-Security-Policy in sync — tests/unit/lib.test.ts
+ * asserts parity with CSP_HEADER_VALUE.
  */
 export const CSP_DIRECTIVES: string[] = [
   "default-src 'self'",

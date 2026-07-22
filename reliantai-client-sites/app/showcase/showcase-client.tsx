@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, type ComponentType } from "react";
+import { useState, useEffect, useMemo, useCallback, type ComponentType } from "react";
 import dynamic from "next/dynamic";
 import MOCK_DATA from "@/lib/mock-data";
 import { TEMPLATES, type TemplateMeta } from "@/lib/template-meta";
@@ -155,7 +155,7 @@ export default function ShowcasePage() {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const selectTemplate = (id: TemplateId, options?: { bumpScreen?: boolean; closeSidebarOnMobile?: boolean }) => {
+  const selectTemplate = useCallback((id: TemplateId, options?: { bumpScreen?: boolean; closeSidebarOnMobile?: boolean }) => {
     setActive(id);
     setOverrides({});
     if (options?.bumpScreen) {
@@ -164,7 +164,7 @@ export default function ShowcasePage() {
     if (options?.closeSidebarOnMobile && !isDesktop) {
       setSidebarOpen(false);
     }
-  };
+  }, [isDesktop]);
 
   const meta = TEMPLATES.find((t) => t.id === active)!;
   const baseContent = MOCK_DATA[active];
@@ -174,9 +174,18 @@ export default function ShowcasePage() {
     hero: { ...baseContent.hero, ...(overrides.headline && { headline: overrides.headline }) },
   }), [baseContent, overrides]);
 
-  // Keyboard navigation
+  // Keyboard navigation — ignore when typing in form controls
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      const typing =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        target?.isContentEditable;
+      if (typing) return;
+
       const idx = TEMPLATES.findIndex((t) => t.id === active);
       if (e.key === "ArrowDown" || e.key === "ArrowRight") {
         e.preventDefault();
@@ -196,7 +205,7 @@ export default function ShowcasePage() {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [active, sidebarOpen, isDesktop]);
+  }, [active, sidebarOpen, isDesktop, selectTemplate]);
 
   const Template = DynamicTemplates[active];
 
@@ -386,9 +395,15 @@ export default function ShowcasePage() {
             z-50 border-r border-white/[0.06] bg-zinc-950 overflow-hidden
             absolute inset-y-0 left-0 transition-transform duration-300 ease-out
             lg:static lg:translate-x-0 lg:transition-[width] lg:duration-300
-            ${sidebarOpen ? "translate-x-0 lg:w-72" : "-translate-x-full lg:w-0"}
+            ${sidebarOpen
+              ? "translate-x-0 lg:w-72"
+              : "-translate-x-full lg:w-0 pointer-events-none max-lg:invisible"}
           `}
           aria-hidden={!sidebarOpen}
+          role={!isDesktop && sidebarOpen ? "dialog" : undefined}
+          aria-modal={!isDesktop && sidebarOpen ? true : undefined}
+          aria-label={sidebarOpen ? "Templates" : undefined}
+          inert={!sidebarOpen ? true : undefined}
         >
           {sidebarInner}
         </aside>
@@ -410,7 +425,8 @@ export default function ShowcasePage() {
                   const T = DynamicTemplates[t.id];
                   return (
                     <div key={t.id} className="group relative border-b border-r border-white/[0.04]">
-                      <div className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3">
+                      {/* Touch: always-visible actions · Desktop: hover overlay */}
+                      <div className="absolute inset-x-0 bottom-0 z-10 p-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 bg-gradient-to-t from-black/80 via-black/50 to-transparent sm:inset-0 sm:bg-none sm:from-transparent sm:bg-black/60 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100 transition-opacity duration-200">
                         <button
                           onClick={() => { selectTemplate(t.id, { bumpScreen: true }); setView("preview"); }}
                           className="px-5 py-2.5 text-sm font-medium bg-white text-zinc-950 rounded-xl hover:bg-zinc-100 transition-colors shadow-lg"
@@ -421,7 +437,7 @@ export default function ShowcasePage() {
                           onClick={() => { selectTemplate(t.id); setView("prompt"); }}
                           className="px-4 py-1.5 text-xs font-medium bg-zinc-800/90 text-zinc-300 rounded-lg hover:bg-zinc-700 transition-colors ring-1 ring-white/10"
                         >
-                          <span className="flex items-center gap-1.5"><IconCode className="w-3 h-3" /> View Prompt</span>
+                          <span className="flex items-center justify-center gap-1.5"><IconCode className="w-3 h-3" /> View Prompt</span>
                         </button>
                       </div>
                       <div className="absolute top-3 left-3 z-5 flex items-center gap-1.5">
