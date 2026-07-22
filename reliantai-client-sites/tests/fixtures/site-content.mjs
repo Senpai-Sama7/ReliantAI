@@ -19,7 +19,7 @@ const baseSiteContent = {
     service_area: "Greater Austin Metro Area",
   },
   hero: {
-    headline: "Stay Comfortable Austin",
+    headline: "Same-Day AC Repair Across Austin",
     subheadline:
       "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
     trust_bar: ["Licensed & Insured", "EPA Certified", "Background Checked"],
@@ -132,8 +132,8 @@ const baseSiteContent = {
     template_id: "hvac-reliable-blue",
     trade: "hvac",
     theme: {
-      primary: "#1e40af",
-      accent: "#60a5fa",
+      primary: "#3d5a73",
+      accent: "#6b8fa8",
       font_display: "Outfit",
       font_body: "Inter",
     },

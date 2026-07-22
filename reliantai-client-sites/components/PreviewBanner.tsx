@@ -31,13 +31,13 @@ export default function PreviewBanner({
         <div className="flex gap-3 flex-shrink-0 w-full sm:w-auto">
           <Link
             href={starterUrl}
-            className="flex-1 sm:flex-initial px-4 py-2 bg-blue-700 text-white font-semibold text-sm rounded-md hover:bg-blue-600 transition-colors whitespace-nowrap text-center"
+            className="flex-1 sm:flex-initial px-4 py-2 bg-[#3d5a73] text-white font-semibold text-sm rounded-md hover:brightness-110 whitespace-nowrap text-center"
           >
             Get This Site &mdash; $497
           </Link>
           <Link
             href={growthUrl}
-            className="flex-1 sm:flex-initial px-4 py-2 border border-blue-500/40 text-blue-300 font-medium text-sm rounded-md hover:border-blue-400 transition-colors whitespace-nowrap text-center"
+            className="flex-1 sm:flex-initial px-4 py-2 border border-[#6b8fa8]/40 text-[#6b8fa8] font-medium text-sm rounded-md hover:border-[#6b8fa8] whitespace-nowrap text-center"
           >
             Growth &mdash; $297/mo
           </Link>

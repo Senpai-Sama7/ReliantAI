@@ -1,105 +1,83 @@
 "use client";
 
-import { Home, ShieldCheck, CloudRain, Wind, Sun, Umbrella } from "lucide-react";
-import { motion } from "framer-motion";
 import type { SiteContent } from "@/types/SiteContent";
 import type { TradeCopy } from "@/lib/trade-copy";
+import ScrollReveal from "@/components/shared/ScrollReveal";
 
 interface ServicesProps {
   content: SiteContent;
   copy: TradeCopy;
 }
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  home: Home,
-  "shield-check": ShieldCheck,
-  "cloud-rain": CloudRain,
-  wind: Wind,
-  sun: Sun,
-  umbrella: Umbrella,
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { delay: i * 0.08, duration: 0.5, ease: "easeOut" as const },
-  }),
-};
-
-function getIcon(name: string) {
-  const Icon = ICON_MAP[name] || Home;
-  return <Icon className="h-7 w-7" />;
-}
-
 export default function Services({ content, copy }: ServicesProps) {
   const { services, business } = content;
 
   return (
-    <section className="py-28 bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-16">
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+    <section className="relative py-28 bg-[var(--trade-surface)]">
+      <div className="absolute top-0 inset-x-0 border-t border-white/5" />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <ScrollReveal className="max-w-2xl mb-16">
+          <p className="text-[0.65rem] uppercase tracking-[0.28em] text-[var(--trade-accent)] mb-4">
+            Roofline priorities
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-[1.1]">
             {copy.services_title}
           </h2>
-          <p className="mt-4 text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="mt-4 text-slate-400 leading-relaxed">
             {copy.services_subtitle} {business.city}, {business.state}
           </p>
-        </div>
+        </ScrollReveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ol className="grid grid-cols-1 lg:grid-cols-12 gap-x-8 gap-y-10">
           {services.map((service, i) => {
-            const isFeatured = i === 0 && services.length >= 3;
+            const featured = i === 0;
             return (
-              <motion.div
+              <ScrollReveal
                 key={i}
-                custom={i}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
-                variants={cardVariants}
-                whileHover={{ y: -6, transition: { duration: 0.25 } }}
-                className={`group rounded-lg p-7 transition-[transform,border-color,box-shadow] duration-300 ${
-                  isFeatured
-                    ? "md:col-span-2 bg-orange-500/10 border-2 border-orange-500/40 shadow-md"
-                    : "bg-slate-900/40 border-2 border-slate-800/60 hover:border-orange-500/40 hover:bg-slate-900/80"
-                }`}
+                as="li"
+                delayMs={i * 60}
+                className={
+                  featured
+                    ? "lg:col-span-12 border-t-2 border-[var(--trade-accent)] pt-10"
+                    : "lg:col-span-6 border-t border-white/10 pt-8"
+                }
               >
-                <div
-                  className={`inline-flex items-center justify-center w-14 h-14 rounded-md mb-5 transition-[transform,background-color] duration-300 ${
-                    isFeatured
-                      ? "bg-orange-500 text-white group-hover:scale-110"
-                      : "bg-orange-500/10 text-orange-400 group-hover:bg-orange-500/20 group-hover:scale-110"
-                  }`}
-                >
-                  {getIcon(service.icon)}
-                </div>
-                {isFeatured && (
-                  <span className="inline-block bg-orange-500/15 text-orange-400 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3 border border-orange-500/25">
-                    Most Popular
+                <div className={`flex gap-6 ${featured ? "lg:gap-10" : ""}`}>
+                  <span
+                    className={`font-display tabular-nums leading-none text-[var(--trade-accent)] ${
+                      featured ? "text-5xl lg:text-6xl" : "text-3xl"
+                    }`}
+                    aria-hidden
+                  >
+                    {String(i + 1).padStart(2, "0")}
                   </span>
-                )}
-                <h3 className="font-display text-lg font-semibold text-white mb-2">
-                  {service.title}
-                </h3>
-                <p className="text-slate-400 text-sm leading-relaxed mb-5">
-                  {service.description}
-                </p>
-                <a
-                  href={`tel:${business.phone}`}
-                  className={`inline-flex items-center text-sm font-semibold transition-colors ${
-                    isFeatured
-                      ? "text-orange-300 hover:text-orange-200"
-                      : "text-orange-400 hover:text-orange-300"
-                  }`}
-                >
-                  {service.cta_text} →
-                </a>
-              </motion.div>
+                  <div className={featured ? "max-w-3xl" : "max-w-md"}>
+                    <h3
+                      className={`font-display text-white tracking-tight ${
+                        featured ? "text-2xl sm:text-3xl" : "text-xl"
+                      }`}
+                    >
+                      {service.title}
+                    </h3>
+                    <p
+                      className={`mt-3 text-slate-400 leading-relaxed ${
+                        featured ? "text-base sm:text-lg" : "text-sm"
+                      }`}
+                    >
+                      {service.description}
+                    </p>
+                    <a
+                      href={`tel:${business.phone}`}
+                      className="inline-flex mt-5 text-sm font-medium text-[var(--trade-accent)] hover:text-white"
+                    >
+                      {service.cta_text} →
+                    </a>
+                  </div>
+                </div>
+              </ScrollReveal>
             );
           })}
-        </div>
+        </ol>
       </div>
     </section>
   );

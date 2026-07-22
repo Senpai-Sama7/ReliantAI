@@ -16,16 +16,16 @@ export default function PaintingTemplate({ content }: { content: SiteContent }) 
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.painting;
 
   return (
-    <>
+    <div data-trade="painting" className="bg-[var(--trade-surface)] text-[var(--trade-ink)]">
       <ContactBar content={content} />
-      <TrustBanner trade={content.site_config.trade} light={true} />
       <Hero content={content} />
-      <StatsBar content={content} accent="amber-700" light={true} />
+      <TrustBanner trade={content.site_config.trade} light={true} />
+      <StatsBar content={content} accent="ochre" light={true} />
       <SectionDivider variant="dots" light={true} />
       <div id="services">
         <Services content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="amber" variant="urgency" light={true} />
+      <CTASection content={content} color="ochre" variant="urgency" light={true} />
       <SectionDivider variant="line" light={true} />
       <div id="about">
         <About content={content} copy={copy} />
@@ -34,12 +34,12 @@ export default function PaintingTemplate({ content }: { content: SiteContent }) 
       <div id="reviews">
         <Reviews content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="amber" variant="estimate" light={true} />
+      <CTASection content={content} color="ochre" variant="estimate" light={true} />
       <SectionDivider variant="wave" light={true} />
       <div id="faq">
         <FAQ content={content} copy={copy} />
       </div>
       <Footer content={content} />
-    </>
+    </div>
   );
 }

@@ -8,9 +8,10 @@ test.describe("Live site rendering from API content", () => {
   test("renders the template for a live slug", async ({ page }) => {
     const res = await page.goto("/test-hvac-austin");
     expect(res?.status()).toBe(200);
-    await expect(
-      page.getByRole("heading", { name: /Stay Comfortable Austin/i })
-    ).toBeVisible();
+    // Brand-first hero: business name is the dominant signal; h1 is the local outcome.
+    await expect(page.getByText("Comfort Pro HVAC").first()).toBeVisible();
+    await expect(page.locator("h1")).toBeVisible();
+    await expect(page.locator("h1")).toContainText(/Austin/i);
     // Live sites must NOT show the preview banner
     await expect(page.getByText("This is your free preview site")).toHaveCount(0);
   });

@@ -25,6 +25,7 @@ from ..constants import (
     COPY_NEVER,
     DEFAULT_FALLBACK_TEMPLATE,
     SITECONTENT_SCHEMA_SUMMARY,
+    TRADE_PALETTES,
     TRADE_TEMPLATE_MAP,
 )
 
@@ -56,14 +57,17 @@ Anti-patterns (NEVER include):
 Awwwards requirements (MUST include at least 5):
 {awwwards_reqs}
 
-Trade-specific palette:
-Use a trade-appropriate color scheme:
-- HVAC: reliable-blue (navy primary, sky-blue accent)
-- Plumbing: trustworthy-navy (deep navy, copper accent)
-- Electrical: sharp-gold (charcoal, gold accent)
-- Roofing: bold-copper (dark slate, copper highlight)
-- Painting: clean-minimal (warm white, accent color per brand)
-- Landscaping: earthy-green (forest green, warm earth accent)
+Trade-specific palette (OKLCH-authored hex — NEVER #3b82f6 / #6366f1):
+- HVAC: Steel Ink — primary #3d5a73, accent #6b8fa8, ink #0b1220
+- Plumbing: Ink + Copper — primary #1e3a5f, accent #c45c26, ink #0a1420
+- Electrical: Charcoal Gold — primary #9a6b1f, accent #d4a017, ink #0c0a09
+- Roofing: Umber Copper — primary #9a4520, accent #c46a35, ink #140c08
+- Painting: Gallery Ochre — primary #8b6914, accent #a67c2a, surface #f7f4ef
+- Landscaping: Moss + Clay — primary #3d5c3d, accent #a67c52, ink #0f1a12
+
+Execution tier: T1 editorial. Brand-first hero (business name hero-scale).
+Proof (stars, trust bar, credentials) BELOW the fold. Numbered asymmetric
+services — never three equal grid-cols-3 cards.
 
 ## 4. Dynamic Input
 Generate content for THIS specific company. All copy must reference their:
@@ -111,9 +115,11 @@ or credentials.
 - Do NOT fabricate owner names, phone numbers, addresses, license numbers
 - Do NOT invent reviews with phrases like "absolutely amazing"
 - Do NOT use Inter, Geist, or system-ui as display font
-- Do NOT use indigo-500 or generic blue-500 as brand color
-- Do NOT use min-h-screen hero — use min-h-[85vh] with asymmetric layout
-- Do NOT use three equal feature cards in a symmetric grid
+- Do NOT use indigo-500 (#6366f1) or Tailwind blue-500 (#3b82f6) as brand color
+- Do NOT use min-h-screen hero — use min-h-[85svh] with brand-first composition
+- Do NOT put cards, stars, or trust chips in the first viewport
+- Do NOT use three equal feature cards in a symmetric grid-cols-3
+- Do NOT use buzzwords (seamless, elevate, unlock, transformative) or "It's not just X — it's Y"
 - Do NOT use generic FAQ questions that apply to any business
 
 ## 10. Output Format
@@ -368,7 +374,12 @@ def _build_minimal_shell(
         "site_config": {
             "template_id": template,
             "trade": trade,
-            "theme": {"primary": "#1e3a5f", "accent": "#3b82f6", "font_display": "Instrument Serif", "font_body": "DM Sans"},
+            "theme": {
+                "primary": TRADE_PALETTES.get(trade, TRADE_PALETTES["hvac"])["primary"],
+                "accent": TRADE_PALETTES.get(trade, TRADE_PALETTES["hvac"])["accent"],
+                "font_display": "Instrument Serif",
+                "font_body": "DM Sans",
+            },
         },
         "status": "draft",
         "slug": slug,

@@ -24,7 +24,7 @@ export default function Footer({ content }: FooterProps) {
               <div className="space-y-2.5 text-sm text-slate-400">
                 <a
                   href={`tel:${business.phone}`}
-                  className="flex items-center gap-2 hover:text-blue-300 transition-colors"
+                  className="flex items-center gap-2 hover:text-[var(--trade-accent)] transition-colors"
                 >
                   <Phone className="h-4 w-4 flex-shrink-0" />
                   {business.phone}
@@ -40,14 +40,14 @@ export default function Footer({ content }: FooterProps) {
                     href={websiteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 hover:text-blue-300 transition-colors"
+                    className="flex items-center gap-2 hover:text-[var(--trade-accent)] transition-colors"
                   >
                     <Globe className="h-4 w-4 flex-shrink-0" />
                     {websiteUrl.replace(/^https?:\/\//, "")}
                   </a>
                 )}
               </div>
-              <p className="mt-3 text-xs text-blue-400 font-medium">
+              <p className="mt-3 text-xs text-[var(--trade-accent)] font-medium">
                 Licensed, Bonded & Insured
               </p>
             </div>
@@ -58,22 +58,22 @@ export default function Footer({ content }: FooterProps) {
               </h4>
               <ul className="space-y-1.5 text-sm text-slate-400">
                 <li>
-                  <a href="#services" className="hover:text-blue-300 transition-colors">
+                  <a href="#services" className="hover:text-[var(--trade-accent)] transition-colors">
                     Services
                   </a>
                 </li>
                 <li>
-                  <a href="#about" className="hover:text-blue-300 transition-colors">
+                  <a href="#about" className="hover:text-[var(--trade-accent)] transition-colors">
                     About Us
                   </a>
                 </li>
                 <li>
-                  <a href="#reviews" className="hover:text-blue-300 transition-colors">
+                  <a href="#reviews" className="hover:text-[var(--trade-accent)] transition-colors">
                     Reviews
                   </a>
                 </li>
                 <li>
-                  <a href="#faq" className="hover:text-blue-300 transition-colors">
+                  <a href="#faq" className="hover:text-[var(--trade-accent)] transition-colors">
                     FAQ
                   </a>
                 </li>
@@ -103,7 +103,7 @@ export default function Footer({ content }: FooterProps) {
                   href={websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-4 inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  className="mt-4 inline-flex items-center gap-2 text-sm text-[var(--trade-accent)] hover:text-[color-mix(in_oklab,var(--trade-accent)_80%,white)] transition-colors"
                 >
                   <Globe className="h-4 w-4" />
                   Visit Website
@@ -116,7 +116,7 @@ export default function Footer({ content }: FooterProps) {
             © {currentYear} {business.business_name}. All rights reserved. Built by{" "}
             <a
               href="https://reliantai.org"
-              className="text-slate-500 hover:text-blue-400 transition-colors"
+              className="text-slate-500 hover:text-[var(--trade-accent)] transition-colors"
             >
               ReliantAI
             </a>

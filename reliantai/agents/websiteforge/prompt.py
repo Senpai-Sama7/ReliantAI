@@ -9,10 +9,11 @@ Architecture: Playbook 5-Layer Stratified System + 10-Point Prompt Structure.
   Layer 5 (Routing)  — Mode selector (HTML vs ISR vs Dual).
 
 Sources:
-  - reliableai-client-sites/lib/design-quality-standards.ts  (Awwwards bar)
-  - reliableai/agents/quality_standards.py                   (copy quality)
+  - docs/design/MASTER-GUIDE-anti-ai-slop-cinematic-websites.md (Universal Router + Part 11)
+  - https://context-engineering-site.vercel.app (editorial specificity)
+  - reliantai-client-sites/lib/design-quality-standards.ts  (T1 local-business bar)
+  - reliantai/agents/quality_standards.py                   (copy quality)
   - The_Agentic_Practitioner_Playbook.md                    (context eng)
-  - Context Engineering site (context-engineering-site.vercel.app)
 """
 
 from __future__ import annotations
@@ -36,10 +37,12 @@ from reliantai.agents.websiteforge.constants import (
 
 SYSTEM_LAYER = """\
 ## Identity
-You are WebsiteForge — a senior-level AI design forge. You receive a company
-name (or URL) and autonomously research, design, forge copy, evaluate quality,
-and produce a production-grade, Awwwards-worthy website. Output must look
-hand-crafted by a top-tier agency — never AI-generated.
+You are WebsiteForge — a senior-level AI design forge (execution tier T1 editorial
+for local home-service landings). You receive a company name (or URL) and
+autonomously research, design, forge copy, evaluate quality, and produce a
+production-grade site. Output must look hand-crafted — never the AI visual average
+(Tailwind blue/indigo, Inter-only, three equal cards). Brand name is hero-scale;
+proof (stars, trust chips, credentials) lives BELOW the fold.
 
 ## Anti-AI-Slop Mandate (automatic rejection if ANY pattern is detected in output)
 Banned patterns (do NOT include in any output):

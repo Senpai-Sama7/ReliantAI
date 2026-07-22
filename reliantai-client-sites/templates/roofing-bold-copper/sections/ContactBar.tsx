@@ -9,13 +9,13 @@ export default function ContactBar({ content }: ContactBarProps) {
   const { phone } = content.business;
 
   return (
-    <div className="fixed top-0 inset-x-0 z-40 bg-slate-950 border-b border-slate-800/60 text-white">
+    <div className="fixed top-0 inset-x-0 z-40 bg-[var(--trade-ink)] border-b border-white/10 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-center sm:justify-between">
         <a
           href={`tel:${phone}`}
-          className="flex items-center gap-2 text-sm font-semibold hover:text-orange-300 transition-colors"
+          className="flex items-center gap-2 text-sm font-semibold hover:text-[var(--trade-accent)] transition-colors"
         >
-          <Phone className="h-4 w-4 text-orange-400" />
+          <Phone className="h-4 w-4 text-[var(--trade-accent)]" />
           <span className="hidden sm:inline">{phone}</span>
           <span className="sm:hidden">Call Now</span>
         </a>

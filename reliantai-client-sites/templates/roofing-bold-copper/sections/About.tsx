@@ -1,6 +1,7 @@
 import { Award } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
 import type { TradeCopy } from "@/lib/trade-copy";
+import ScrollReveal from "@/components/shared/ScrollReveal";
 
 interface AboutProps {
   content: SiteContent;
@@ -11,56 +12,66 @@ export default function About({ content, copy }: AboutProps) {
   const { business, about } = content;
 
   return (
-    <section className="py-24 bg-slate-950">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Editorial narrative — story first */}
-        <div className="max-w-3xl">
-          <p className="text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
-            {business.business_name}
+    <section className="relative py-28 bg-[var(--trade-ink)] overflow-hidden">
+      <div className="absolute top-0 inset-x-0 border-t border-white/5" />
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
+        <ScrollReveal>
+          <p className="text-[0.65rem] uppercase tracking-[0.28em] text-[var(--trade-accent)] mb-4">
+            About
           </p>
-          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight leading-tight">
+          <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl text-white tracking-tight leading-[1.1]">
             {copy.about_title}
           </h2>
-          <p className="mt-6 text-slate-300 text-lg leading-relaxed">
-            {about.story}
-          </p>
           {business.years_in_business && (
-            <p className="mt-4 text-orange-400 font-semibold text-lg">
+            <p className="mt-6 text-[var(--trade-accent)] font-medium">
               Serving {business.city} for {business.years_in_business}+ years
             </p>
           )}
-        </div>
+          <div className="mt-8 space-y-5 text-slate-300 text-base sm:text-lg leading-relaxed">
+            {about.story.split(/\.\s*/).filter(Boolean).length > 1 ? (
+              about.story
+                .split(/\.\s*/)
+                .filter(Boolean)
+                .map((sentence, i, arr) => (
+                  <p key={i}>
+                    {sentence}
+                    {i < arr.length - 1 ? "." : ""}
+                  </p>
+                ))
+            ) : (
+              <p>{about.story}</p>
+            )}
+          </div>
+        </ScrollReveal>
 
-        {/* Trust points — horizontal bar */}
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <ScrollReveal delayMs={80} as="ol" className="mt-14 space-y-5 border-l-2 border-[var(--trade-accent)]/50 pl-8 sm:pl-10">
           {about.trust_points.map((point, i) => (
-            <div
+            <li
               key={i}
-              className="flex items-start gap-3 bg-slate-900/50 border border-slate-800/70 rounded-xl px-5 py-4"
+              className="flex items-start gap-4 border-t border-white/10 pt-5 first:border-t-0 first:pt-0"
             >
-              <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/15 text-orange-400">
+              <span className="mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-[var(--trade-accent)]/50 text-[var(--trade-accent)]">
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </span>
               <span className="text-slate-300 text-sm leading-relaxed">{point}</span>
-            </div>
+            </li>
           ))}
-        </div>
+        </ScrollReveal>
 
-        {/* Certifications */}
         {about.certifications.length > 0 && (
-          <div className="mt-12 flex flex-wrap items-center gap-3">
+          <ScrollReveal delayMs={120} className="mt-12 flex flex-wrap items-center gap-3">
             {about.certifications.map((cert, i) => (
               <span
                 key={i}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-orange-500/10 border border-orange-500/20 text-orange-300 text-xs font-medium rounded-full"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 border border-[color-mix(in_oklab,var(--trade-accent)_35%,transparent)] text-[var(--trade-accent)] text-xs font-medium rounded-md"
               >
                 <Award className="h-3 w-3" />
                 {cert}
               </span>
             ))}
-          </div>
+          </ScrollReveal>
         )}
       </div>
     </section>

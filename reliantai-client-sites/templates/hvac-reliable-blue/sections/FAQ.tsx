@@ -15,9 +15,9 @@ export default function FAQ({ content, copy }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="relative py-24 bg-slate-950">
+    <section className="relative py-24 bg-[var(--trade-ink)]">
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
-        <h2 className="text-3xl sm:text-4xl font-bold text-white text-center mb-14 font-display">
+        <h2 className="text-3xl sm:text-4xl text-white mb-14 font-display tracking-tight">
           {copy.faq_title}
         </h2>
 
@@ -27,14 +27,16 @@ export default function FAQ({ content, copy }: FAQProps) {
             return (
               <div
                 key={i}
-                className={`bg-slate-900/50 border rounded-xl overflow-hidden transition-colors duration-150 ${
-                  isOpen ? "border-blue-500/30" : "border-slate-800 hover:border-slate-700"
+                className={`bg-[var(--trade-surface)] border rounded-lg overflow-hidden ${
+                  isOpen
+                    ? "border-[color-mix(in_oklab,var(--trade-accent)_40%,transparent)]"
+                    : "border-white/10 hover:border-white/20"
                 }`}
               >
                 <dt>
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between px-6 py-4 text-left text-white font-medium hover:text-blue-300 transition-colors"
+                    className="w-full flex items-center justify-between px-6 py-4 text-left text-white font-medium hover:text-[var(--trade-accent)]"
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
@@ -51,7 +53,7 @@ export default function FAQ({ content, copy }: FAQProps) {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
                       <p className="px-6 pb-4 text-slate-400 text-sm leading-relaxed">

@@ -18,7 +18,7 @@ export default function FAQ({ content }: FAQProps) {
     <section id="faq" className="py-24 bg-slate-950">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-16">
-          <HelpCircle className="h-8 w-8 text-blue-400 mx-auto mb-4" />
+          <HelpCircle className="h-8 w-8 text-[var(--trade-accent)] mx-auto mb-4" />
           <h2 className="text-3xl sm:text-4xl font-bold text-white font-display">
             {copy.faq_title}
           </h2>
@@ -33,19 +33,19 @@ export default function FAQ({ content }: FAQProps) {
                 key={i}
                 className={`rounded-xl overflow-hidden transition-colors duration-150 ${
                   isOpen
-                    ? "bg-slate-800/70 border border-blue-500/20"
+                    ? "bg-slate-800/70 border border-[color-mix(in_oklab,var(--trade-accent)_24%,transparent)]"
                     : "bg-slate-900/50 border border-slate-800 hover:bg-slate-800/40 hover:border-slate-700/80"
                 }`}
               >
                 <dt>
                   <button
                     onClick={() => setOpenIndex(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between px-6 py-5 text-left text-white font-medium hover:text-blue-200 transition-colors"
+                    className="w-full flex items-center justify-between px-6 py-5 text-left text-white font-medium hover:text-[color-mix(in_oklab,var(--trade-accent)_80%,white)] transition-colors"
                   >
                     <span className="pr-4">{item.question}</span>
                     <ChevronDown
                       className={`h-5 w-5 flex-shrink-0 transition-transform duration-150 ${
-                        isOpen ? "rotate-180 text-blue-400" : "text-slate-500"
+                        isOpen ? "rotate-180 text-[var(--trade-accent)]" : "text-slate-500"
                       }`}
                     />
                   </button>

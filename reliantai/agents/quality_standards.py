@@ -3,18 +3,29 @@ Quality standards for Copy Agent and Outreach Agent.
 
 Ensures website copy and outreach messages read as senior-agency craft —
 never generic AI-generated slop.
+
+Sources:
+  - docs/design/MASTER-GUIDE-anti-ai-slop-cinematic-websites.md (2026)
+  - https://context-engineering-site.vercel.app (editorial specificity)
+  - reliantai-client-sites/lib/design-quality-standards.ts
 """
 
 COPY_AGENT_QUALITY_RULES = """
-## COPY QUALITY BAR — Senior Direct-Response / FAANG-Level Craft
+## COPY QUALITY BAR — Senior Direct-Response / T1 Editorial Craft
 
 You write copy for local home-service businesses. Every word must feel hand-written
 by a senior copywriter who researched this specific business — not a template fill-in.
+Headlines must fit THIS company only; if they could fit any competitor, rewrite.
 
 ### NEVER write (instant rejection):
-- Vague headlines: "Your Trusted Partner", "Quality You Can Count On", "Excellence in Service"
+- Vague headlines: "Your Trusted Partner", "Quality You Can Count On", "Excellence in Service",
+  "Build the Future", "Elevate Your Comfort"
 - Empty superlatives: "best", "leading", "premier", "top-rated" without proof
 - Generic trust bars: "Expert Team", "Quality Work", "Customer Satisfaction"
+- Buzzwords: seamless, cutting-edge, unlock, elevate, robust, best-in-class, leverage,
+  delve, holistic, transformative, empower
+- The AI frame: "It's not just X — it's Y"
+- Em-dash confetti or stock openers: "In today's fast-paced world", "a rich tapestry of"
 - Robotic FAQ answers that could apply to any business in any city
 - SEO titles/descriptions with keyword stuffing or pipe-separated lists
 - Copy that does not mention the business name, city, or a specific differentiator
@@ -25,9 +36,10 @@ by a senior copywriter who researched this specific business — not a template 
 - Subheadlines longer than 2 sentences or shorter than 8 words
 
 ### ALWAYS write:
-- Headline: business name OR city + one concrete outcome ("Comfort Pro — Same-Day AC Repair in Austin")
+- Brand-first hero: business name is the primary identity signal; headline = city + concrete outcome
+  ("Same-Day AC Repair in Austin" — not a slogan that fits any trade)
 - Subheadline: specific benefit + proof point (years, rating, response time, license)
-- Trust bar (3 items): certifications, licenses, guarantees with specifics
+- Trust bar (3 items, shown BELOW the fold): certifications, licenses, guarantees with specifics
   ("EPA 608 Certified", "TX License #TACLA12345", "2-Hour Emergency Response")
 - Services (3–5): trade-specific titles, 1–2 sentence descriptions with a concrete detail each
 - About story: founder name, founding year, one specific moment or philosophy — reads like journalism
@@ -39,6 +51,7 @@ by a senior copywriter who researched this specific business — not a template 
 ### Voice & tone:
 - Confident, direct, warm — like a neighbor who happens to be an expert
 - Short sentences. Active voice. Specific nouns over abstract adjectives.
+- Prefer periods, commas, colons, or parentheses over em dashes.
 - Read every line aloud — if it sounds like a billboard or a chatbot, rewrite it.
 
 ### Research integration (mandatory):
@@ -56,6 +69,7 @@ who looked at their business — not a marketing blast.
 ### NEVER send:
 - "Hi! We noticed your business..." or "I came across your company..."
 - Generic compliments: "great reviews", "impressive business"
+- Buzzwords: seamless, cutting-edge, unlock, elevate, transformative, empower
 - Multiple links, shortened URLs, or URL before the personal hook
 - Messages that could be sent to 1,000 businesses unchanged
 - Corporate tone: "We'd love to partner", "our team specializes in"

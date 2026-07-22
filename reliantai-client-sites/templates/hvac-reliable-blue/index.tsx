@@ -16,16 +16,16 @@ export default function HvacTemplate({ content }: { content: SiteContent }) {
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.hvac;
 
   return (
-    <>
+    <div data-trade="hvac" className="bg-[var(--trade-ink)] text-white">
       <ContactBar content={content} />
-      <TrustBanner trade={content.site_config.trade} />
       <Hero content={content} />
-      <StatsBar content={content} accent="blue-400" />
+      <TrustBanner trade={content.site_config.trade} />
+      <StatsBar content={content} accent="steel" />
       <SectionDivider variant="dots" />
       <div id="services">
         <Services content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="blue" variant="urgency" />
+      <CTASection content={content} color="steel" variant="urgency" />
       <div id="about">
         <About content={content} copy={copy} />
       </div>
@@ -33,12 +33,12 @@ export default function HvacTemplate({ content }: { content: SiteContent }) {
       <div id="reviews">
         <Reviews content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="blue" variant="estimate" />
+      <CTASection content={content} color="steel" variant="estimate" />
       <SectionDivider variant="wave" />
       <div id="faq">
         <FAQ content={content} copy={copy} />
       </div>
       <Footer content={content} />
-    </>
+    </div>
   );
 }

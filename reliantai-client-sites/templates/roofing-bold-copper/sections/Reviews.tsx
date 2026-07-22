@@ -55,7 +55,7 @@ export default function Reviews({ content, copy }: ReviewsProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
           {reviews.reviews.map((review, i) => (
             <motion.div
               key={i}
@@ -65,7 +65,9 @@ export default function Reviews({ content, copy }: ReviewsProps) {
               viewport={{ once: true, amount: 0.1 }}
               variants={cardVariants}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="relative bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 hover:border-orange-500/30 transition-colors duration-300"
+              className={`relative bg-slate-800/60 border border-slate-700/60 rounded-xl p-6 hover:border-orange-500/30 transition-colors duration-300 ${
+                i < 2 ? "lg:col-span-6" : "lg:col-span-4"
+              }`}
               style={{ marginTop: STAGGER[i % STAGGER.length] }}
             >
               {/* Quote mark */}

@@ -45,6 +45,19 @@ _TEXT_PATTERNS = {
     "vague_trust": re.compile(
         r"\b(?:Expert Team|Quality Work|Customer Satisfaction|Best in Town)\b", re.I
     ),
+    "buzzwords": re.compile(
+        r"\b(?:seamless|cutting-edge|unlock|elevate|robust|best-in-class|leverage|"
+        r"delve|holistic|transformative|empower)\b",
+        re.I,
+    ),
+    "ai_not_just_frame": re.compile(
+        r"it'?s not just\b.{0,40}\bit'?s\b",
+        re.I,
+    ),
+    "stock_opener": re.compile(
+        r"in today'?s (?:fast-paced|digital|modern) world|a rich tapestry of",
+        re.I,
+    ),
     "all_caps": re.compile(r"\b[A-Z]{6,}\b(?!\s*(?:HVAC|LLC|INC|CORP|LTD|CO\.)\b)"),
     "ai_imagery": re.compile(
         r"(?:placeholder|placeholder\.com|via\.placeholder|unsplash\.it)", re.I
@@ -188,25 +201,6 @@ async def quality_gate_check(site_content: dict[str, Any]) -> dict[str, Any]:
         "details": details,
     }
 
-    passed = score >= 0.85 and not any(
-        v.startswith("BANNED") for v in violations
-    )
-
-    log.info(
-        "quality_gate",
-        score=round(score, 3),
-        passed=passed,
-        violations=len(violations),
-        req_hits=content_hits,
-        details=details,
-    )
-
-    return {
-        "score": round(score, 3),
-        "violations": violations,
-        "passed": passed,
-        "details": details,
-    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════
