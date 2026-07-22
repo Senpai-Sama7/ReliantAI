@@ -26,12 +26,22 @@ function resolveTimeoutMs(raw: string | undefined): number {
 
 const API_TIMEOUT_MS = resolveTimeoutMs(process.env.API_TIMEOUT_MS);
 
-export async function getSiteContent(
+/**
+ * Distinguishes permanent misses from transient upstream failures.
+ * Callers must throw on `upstream_error` so Next.js does NOT ISR-cache a 404
+ * for a temporary API outage (revalidate=3600 would pin that 404 for an hour).
+ */
+export type SiteContentResult =
+  | { status: "ok"; content: SiteContent }
+  | { status: "not_found" }
+  | { status: "upstream_error"; cause: unknown };
+
+export async function fetchSiteContent(
   slug: string
-): Promise<SiteContent | null> {
+): Promise<SiteContentResult> {
   if (!isValidSlug(slug)) {
     console.warn(`[API] Rejected invalid slug format: ${JSON.stringify(slug)}`);
-    return null;
+    return { status: "not_found" };
   }
   try {
     const res = await fetch(
@@ -42,23 +52,44 @@ export async function getSiteContent(
         signal: AbortSignal.timeout(API_TIMEOUT_MS),
       }
     );
-    if (!res.ok) {
+    if (res.status === 404 || res.status === 400) {
       console.error(
-        `[API] Failed to fetch site content: ${res.status} for slug: ${slug}`
+        `[API] Site not available: ${res.status} for slug: ${slug}`
       );
-      return null;
+      return { status: "not_found" };
+    }
+    if (!res.ok) {
+      const cause = new Error(`Upstream HTTP ${res.status} for slug: ${slug}`);
+      console.error(`[API] ${cause.message}`);
+      return { status: "upstream_error", cause };
     }
     const payload: unknown = await res.json();
     const content = parseSiteContent(payload);
     if (!content) {
       console.error(`[API] Invalid site content shape for slug: ${slug}`);
-      return null;
+      // Malformed payload is treated as a permanent miss — do not thrash retries.
+      return { status: "not_found" };
     }
-    return content;
+    return { status: "ok", content };
   } catch (error) {
     console.error(`[API] Error fetching site content for ${slug}:`, error);
-    return null;
+    return { status: "upstream_error", cause: error };
   }
+}
+
+/**
+ * Resolve site content for rendering. Throws on transient upstream failures
+ * so ISR does not cache a 404 for an hour.
+ */
+export async function getSiteContent(
+  slug: string
+): Promise<SiteContent | null> {
+  const result = await fetchSiteContent(slug);
+  if (result.status === "ok") return result.content;
+  if (result.status === "not_found") return null;
+  throw result.cause instanceof Error
+    ? result.cause
+    : new Error(`Upstream API unavailable for slug: ${slug}`);
 }
 
 export async function getTemplate(
