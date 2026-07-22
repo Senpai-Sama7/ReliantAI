@@ -17,8 +17,8 @@
       "service_area": "Greater Austin Metro Area"
     },
     "hero": {
-      "headline": "Stay Comfortable Austin",
-      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "headline": "Same-Day AC Repair Across Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling \u2014 no runarounds, no surprises.",
       "trust_bar": [
         "Licensed & Insured",
         "EPA Certified",
@@ -99,11 +99,11 @@
       },
       {
         "question": "Do you charge for estimates?",
-        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+        "answer": "Never. All estimates are free and come with a written quote \u2014 no hidden fees, no pressure."
       }
     ],
     "seo": {
-      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
       "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
       "keywords": [
         "hvac austin",
@@ -141,15 +141,15 @@
       "template_id": "hvac-reliable-blue",
       "trade": "hvac",
       "theme": {
-        "primary": "#1e40af",
-        "accent": "#60a5fa",
+        "primary": "#3d5a73",
+        "accent": "#6b8fa8",
         "font_display": "Outfit",
         "font_body": "Inter"
       }
     },
     "status": "live",
     "slug": "test-hvac-austin",
-    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
     "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
     "lighthouse_score": 97
   },
@@ -171,8 +171,8 @@
       "service_area": "Greater Austin Metro Area"
     },
     "hero": {
-      "headline": "Stay Comfortable Austin",
-      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "headline": "Same-Day AC Repair Across Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling \u2014 no runarounds, no surprises.",
       "trust_bar": [
         "Licensed & Insured",
         "EPA Certified",
@@ -253,11 +253,11 @@
       },
       {
         "question": "Do you charge for estimates?",
-        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+        "answer": "Never. All estimates are free and come with a written quote \u2014 no hidden fees, no pressure."
       }
     ],
     "seo": {
-      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
       "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
       "keywords": [
         "hvac austin",
@@ -295,15 +295,15 @@
       "template_id": "hvac-reliable-blue",
       "trade": "hvac",
       "theme": {
-        "primary": "#1e40af",
-        "accent": "#60a5fa",
+        "primary": "#3d5a73",
+        "accent": "#6b8fa8",
         "font_display": "Outfit",
         "font_body": "Inter"
       }
     },
     "status": "preview_live",
     "slug": "preview-hvac-austin",
-    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
     "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
     "lighthouse_score": 97
   },
@@ -325,8 +325,8 @@
       "service_area": "Greater Austin Metro Area"
     },
     "hero": {
-      "headline": "Stay Comfortable Austin",
-      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling — no runarounds, no surprises.",
+      "headline": "Same-Day AC Repair Across Austin",
+      "subheadline": "Same-day HVAC service for homes that need reliable heating and cooling \u2014 no runarounds, no surprises.",
       "trust_bar": [
         "Licensed & Insured",
         "EPA Certified",
@@ -407,11 +407,11 @@
       },
       {
         "question": "Do you charge for estimates?",
-        "answer": "Never. All estimates are free and come with a written quote — no hidden fees, no pressure."
+        "answer": "Never. All estimates are free and come with a written quote \u2014 no hidden fees, no pressure."
       }
     ],
     "seo": {
-      "title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+      "title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
       "description": "Same-day HVAC repair and installation in Austin. 4.9-star rated. Licensed, insured, EPA certified. Call (512) 555-0199.",
       "keywords": [
         "hvac austin",
@@ -449,15 +449,15 @@
       "template_id": "nonexistent-template",
       "trade": "hvac",
       "theme": {
-        "primary": "#1e40af",
-        "accent": "#60a5fa",
+        "primary": "#3d5a73",
+        "accent": "#6b8fa8",
         "font_display": "Outfit",
         "font_body": "Inter"
       }
     },
     "status": "live",
     "slug": "bad-template-austin",
-    "meta_title": "Comfort Pro HVAC — Austin's Most Trusted HVAC Company",
+    "meta_title": "Comfort Pro HVAC \u2014 Austin's Most Trusted HVAC Company",
     "meta_description": "Same-day HVAC repair and installation in Austin. Call (512) 555-0199.",
     "lighthouse_score": 97
   }

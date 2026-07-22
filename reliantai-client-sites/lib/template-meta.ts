@@ -444,7 +444,7 @@ export const TEMPLATE_DEFINITIONS: TemplateMeta[] = [
 - Centered header with emerald label
 - Left-side vertical accent bar: bg-[color-mix(in_oklab,var(--trade-accent)_20%,transparent)] rounded-full (inside max-w-4xl)
 - Trust point cards: bg-slate-900/50 border-slate-800 rounded-lg in sm:grid-cols-2 — vary padding/height on one card
-- Divider line: solid border-t border-emerald-500/20 (not multi-stop gradient line)
+- Divider line: solid border-t border-[color-mix(in_oklab,var(--trade-accent)_20%,transparent)] (not multi-stop gradient line)
 
 ## Typography
 - Display: Instrument Serif, font-bold, tracking-tight
