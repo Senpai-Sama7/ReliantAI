@@ -11,8 +11,8 @@ export default function Footer({ content }: FooterProps) {
 
   return (
     <footer className="bg-[var(--trade-ink)] border-t border-white/10">
-      <div className="pb-24 sm:pb-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div className="pb-8 sm:pb-12">
+        <div className="craft-container py-10 sm:py-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div>
               <h3 className="text-white font-display text-xl mb-3">

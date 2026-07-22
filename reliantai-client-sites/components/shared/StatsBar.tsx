@@ -17,7 +17,6 @@ type AccentColor =
   | "violet-600"
   | "emerald-400";
 
-/** Prefer token-driven accents; legacy Tailwind names map to trade CSS vars */
 const ACCENT_CLASSES: Record<AccentColor, string> = {
   steel: "text-[var(--trade-accent)]",
   copper: "text-[var(--trade-accent)]",
@@ -28,7 +27,7 @@ const ACCENT_CLASSES: Record<AccentColor, string> = {
   "amber-400": "text-[var(--trade-accent)]",
   "orange-400": "text-[var(--trade-accent)]",
   "amber-700": "text-[var(--trade-primary)]",
-  "violet-600": "text-[var(--trade-accent)]", // never ship violet identity
+  "violet-600": "text-[var(--trade-accent)]",
   "emerald-400": "text-[var(--trade-accent)]",
 };
 
@@ -52,16 +51,14 @@ function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: stri
     if (!inView || isText || numericValue === null) return;
 
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const final = Number.isInteger(numericValue) ? numericValue.toString() : numericValue.toFixed(1);
     if (prefersReduced) {
-      const frame = window.requestAnimationFrame(() => {
-        setDisplay(
-          Number.isInteger(numericValue) ? numericValue.toString() : numericValue.toFixed(1),
-        );
-      });
-      return () => window.cancelAnimationFrame(frame);
+      // Defer to next frame to avoid sync setState-in-effect lint noise
+      const id = requestAnimationFrame(() => setDisplay(final));
+      return () => cancelAnimationFrame(id);
     }
 
-    const steps = 30;
+    const steps = 28;
     const increment = numericValue / steps;
     let current = 0;
     const timer = setInterval(() => {
@@ -72,7 +69,7 @@ function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: stri
       } else {
         setDisplay(Number.isInteger(numericValue) ? Math.floor(current).toString() : current.toFixed(1));
       }
-    }, 30);
+    }, 28);
     return () => clearInterval(timer);
   }, [inView, isText, numericValue, value]);
 
@@ -111,7 +108,7 @@ export default function StatsBar({ content, accent = "steel", light = false }: S
       ([entry]) => {
         if (entry.isIntersecting) setInView(true);
       },
-      { threshold: 0.3 },
+      { threshold: 0.25 },
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -128,29 +125,34 @@ export default function StatsBar({ content, accent = "steel", light = false }: S
   return (
     <div
       ref={ref}
-      className={`relative py-20 overflow-hidden ${
+      className={`relative border-b overflow-hidden ${
         light
-          ? "border-b border-stone-200 bg-[var(--trade-elevated)]"
-          : "border-b border-white/5 bg-[var(--trade-ink)]"
+          ? "border-stone-200 bg-[var(--trade-elevated)]"
+          : "border-white/5 bg-[var(--trade-ink)]"
       }`}
     >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+      <div className="craft-container py-10 sm:py-14 lg:py-16">
+        {/* Mobile: 2×2 with breathing room. Desktop: 4-up. */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-10 lg:gap-12">
           {tradeStats.map((stat, i) => (
-            <div key={stat.label} className="text-left md:text-center">
+            <div key={stat.label} className="min-w-0">
               <div
-                className={`text-4xl sm:text-5xl font-display tracking-tight ${ACCENT_CLASSES[accent] || ACCENT_CLASSES.steel}`}
+                className={`font-display tracking-tight truncate ${
+                  ACCENT_CLASSES[accent] || ACCENT_CLASSES.steel
+                } ${
+                  stat.value_key === "_always"
+                    ? "text-sm sm:text-base font-sans font-semibold uppercase tracking-[0.14em]"
+                    : "text-3xl sm:text-4xl lg:text-5xl"
+                }`}
               >
                 {stat.value_key === "_always" ? (
-                  <span className="text-lg font-sans font-semibold uppercase tracking-wider">
-                    {stat.fallback}
-                  </span>
+                  <span>{stat.fallback}</span>
                 ) : (
                   <AnimatedNumber value={values[i]} suffix={stat.suffix} inView={inView} />
                 )}
               </div>
               <p
-                className={`mt-3 text-xs font-medium tracking-[0.18em] uppercase ${
+                className={`mt-2 text-[0.6875rem] sm:text-xs font-medium tracking-[0.14em] uppercase leading-snug ${
                   light ? "text-stone-500" : "text-slate-500"
                 }`}
               >

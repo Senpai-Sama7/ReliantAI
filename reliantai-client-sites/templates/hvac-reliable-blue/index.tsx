@@ -1,29 +1,30 @@
 import type { SiteContent } from "@/types/SiteContent";
 import { TRADE_COPY } from "@/lib/trade-copy";
-import ContactBar from "./sections/ContactBar";
+import ContactBar from "@/components/shared/ContactBar";
 import TrustBanner from "@/components/shared/TrustBanner";
-import Hero from "./sections/Hero";
+import BrandHero from "@/components/shared/BrandHero";
 import StatsBar from "@/components/shared/StatsBar";
-import Services from "./sections/Services";
+import EditorialServices from "@/components/shared/EditorialServices";
 import CTASection from "@/components/shared/CTASection";
 import About from "./sections/About";
 import Reviews from "./sections/Reviews";
 import FAQ from "./sections/FAQ";
 import Footer from "./sections/Footer";
 import SectionDivider from "@/components/shared/SectionDivider";
+import MobileCallBar from "@/components/shared/MobileCallBar";
 
 export default function HvacTemplate({ content }: { content: SiteContent }) {
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.hvac;
 
   return (
-    <div data-trade="hvac" className="bg-[var(--trade-ink)] text-white">
-      <ContactBar content={content} />
-      <Hero content={content} />
+    <div data-trade="hvac" className="template-shell bg-[var(--trade-ink)] text-white">
+      <ContactBar content={content} tagline="24/7 emergency HVAC" />
+      <BrandHero content={content} signature="steel-grid" />
       <TrustBanner trade={content.site_config.trade} />
       <StatsBar content={content} accent="steel" />
       <SectionDivider variant="dots" />
       <div id="services">
-        <Services content={content} copy={copy} />
+        <EditorialServices content={content} copy={copy} />
       </div>
       <CTASection content={content} color="steel" variant="urgency" />
       <div id="about">
@@ -39,6 +40,7 @@ export default function HvacTemplate({ content }: { content: SiteContent }) {
         <FAQ content={content} copy={copy} />
       </div>
       <Footer content={content} />
+      <MobileCallBar content={content} />
     </div>
   );
 }
