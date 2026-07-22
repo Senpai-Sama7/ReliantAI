@@ -1,104 +1,82 @@
 "use client";
 
-import { Paintbrush, Palette, Brush, Home, ShieldCheck, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
 import type { SiteContent } from "@/types/SiteContent";
+import type { TradeCopy } from "@/lib/trade-copy";
+import ScrollReveal from "@/components/shared/ScrollReveal";
 
 interface ServicesProps {
   content: SiteContent;
-  copy: {
-    services_title: string;
-    services_subtitle: string;
-  };
+  copy: TradeCopy;
 }
-
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  paintbrush: Paintbrush,
-  palette: Palette,
-  brush: Brush,
-  home: Home,
-  shield: ShieldCheck,
-  sparkles: Sparkles,
-};
-
-function getIcon(name: string) {
-  const Icon = ICON_MAP[name] || Paintbrush;
-  return <Icon className="h-8 w-8" />;
-}
-
-const gridStagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.1 } },
-};
-
-const cardFade = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
 
 export default function Services({ content, copy }: ServicesProps) {
   const { services } = content;
 
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 font-display tracking-tight">
+    <section className="relative py-28 bg-[var(--trade-elevated)]">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
+        <ScrollReveal className="mb-20 max-w-2xl">
+          <p className="mb-4 text-[0.65rem] uppercase tracking-[0.28em] text-[var(--trade-accent)]">
+            Finish schedule
+          </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-[var(--trade-ink)] tracking-tight leading-[1.1]">
             {copy.services_title}
           </h2>
-          <p className="mt-3 text-slate-500 max-w-2xl mx-auto">
+          <p className="mt-4 text-stone-600 max-w-2xl leading-relaxed">
             {copy.services_subtitle} {content.business.city}, {content.business.state}
           </p>
-        </div>
+        </ScrollReveal>
 
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          variants={gridStagger}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-        >
+        <ol className="grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-12">
           {services.map((service, i) => {
-            const isFeatured = i === 0 && services.length >= 3;
+            const featured = i === 0;
             return (
-              <motion.div
+              <ScrollReveal
                 key={i}
-                variants={cardFade}
-                className={`rounded-lg p-6 transition-[transform,border-color,box-shadow] duration-300 group ${
-                  isFeatured
-                    ? "md:col-span-2 bg-amber-50 border-2 border-amber-200 hover:border-amber-600/40 shadow-md"
-                    : "bg-white border border-stone-200 hover:-translate-y-1 hover:border-amber-600/40"
-                }`}
+                as="li"
+                delayMs={i * 65}
+                className={
+                  featured
+                    ? "lg:col-span-12 border-t border-[color-mix(in_oklab,var(--trade-accent)_36%,transparent)] pt-10"
+                    : "lg:col-span-6 border-t border-stone-200 pt-8"
+                }
               >
-                <div className={`inline-flex items-center justify-center w-12 h-12 rounded-md mb-4 ${
-                  isFeatured ? "bg-amber-700 text-white" : "bg-amber-50 text-amber-700"
-                }`}>
-                  {getIcon(service.icon)}
+                <div className={`flex gap-6 ${featured ? "lg:gap-12" : ""}`}>
+                  <span
+                    className={`font-display tabular-nums leading-none text-[var(--trade-accent)] ${
+                      featured ? "text-5xl lg:text-6xl" : "text-3xl"
+                    }`}
+                    aria-hidden
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <div className={featured ? "max-w-3xl" : "max-w-md"}>
+                    <h3
+                      className={`font-display text-[var(--trade-ink)] tracking-tight ${
+                        featured ? "text-2xl sm:text-3xl" : "text-xl"
+                      }`}
+                    >
+                      {service.title}
+                    </h3>
+                    <p
+                      className={`mt-3 text-stone-600 leading-relaxed ${
+                        featured ? "text-base sm:text-lg" : "text-sm"
+                      }`}
+                    >
+                      {service.description}
+                    </p>
+                    <a
+                      href={`tel:${content.business.phone}`}
+                      className="inline-flex mt-5 text-sm font-medium text-[var(--trade-primary)] hover:text-[var(--trade-ink)]"
+                    >
+                      {service.cta_text} →
+                    </a>
+                  </div>
                 </div>
-                <h3 className={`text-lg font-semibold mb-2 ${
-                  isFeatured ? "text-stone-900" : "text-slate-900"
-                }`}>
-                  {service.title}
-                </h3>
-                <p className={`text-sm leading-relaxed mb-4 ${
-                  isFeatured ? "text-amber-700/80" : "text-slate-600"
-                }`}>
-                  {service.description}
-                </p>
-                <a
-                  href={`tel:${content.business.phone}`}
-                  className={`inline-flex items-center text-sm font-medium transition-colors ${
-                    isFeatured
-                      ? "text-amber-700 group-hover:text-amber-900"
-                      : "text-amber-700 group-hover:text-amber-700"
-                  }`}
-                >
-                  {service.cta_text} →
-                </a>
-              </motion.div>
+              </ScrollReveal>
             );
           })}
-        </motion.div>
+        </ol>
       </div>
     </section>
   );

@@ -1,9 +1,7 @@
 "use client";
 
-import { Star, Phone, Shield } from "lucide-react";
-import { motion } from "framer-motion";
+import { Phone } from "lucide-react";
 import type { SiteContent } from "@/types/SiteContent";
-import { fadeUp, premiumTransition } from "@/lib/motion";
 
 interface HeroProps {
   content: SiteContent;
@@ -11,117 +9,58 @@ interface HeroProps {
 
 export default function Hero({ content }: HeroProps) {
   const { business, hero } = content;
-  const stars = Array.from({ length: Math.round(business.google_rating) });
 
   return (
-    <section className="relative min-h-[85vh] flex items-center pt-12 overflow-hidden bg-slate-950">
+    <section className="relative min-h-[85svh] flex items-end overflow-hidden bg-[var(--trade-ink)] atmosphere-grain pt-14">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse 50% 45% at 75% 40%, rgba(16,185,129,0.06) 0%, transparent 70%)",
+            "radial-gradient(ellipse 78% 60% at 80% 18%, color-mix(in oklab, var(--trade-primary) 19%, transparent) 0%, transparent 68%), radial-gradient(ellipse 44% 40% at 16% 76%, color-mix(in oklab, var(--trade-accent) 12%, transparent) 0%, transparent 72%)",
+        }}
+        aria-hidden
+      />
+      <div
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
+          backgroundSize: "34px 34px",
+          color: "var(--trade-accent)",
         }}
         aria-hidden
       />
 
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-12 items-center">
-          <div className="max-w-xl">
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              transition={premiumTransition(0, 0.4)}
-              className="flex items-center gap-1 mb-6"
-            >
-              {stars.map((_, i) => (
-                <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-              ))}
-              <span className="ml-2 text-slate-400 text-sm">
-                {business.google_rating} · {business.review_count} reviews
-              </span>
-            </motion.div>
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-28 lg:pb-28 lg:pt-36">
+        <div className="max-w-3xl">
+          <p className="font-display text-[clamp(2.8rem,7vw,5.65rem)] leading-[0.96] tracking-[-0.035em] text-white">
+            {business.business_name}
+          </p>
+          <div className="mt-6 h-px w-28 bg-[var(--trade-accent)]" aria-hidden />
 
-            <motion.h1
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              transition={premiumTransition(0.08)}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-[1.08] font-display tracking-tight"
-            >
-              {hero.headline}
-            </motion.h1>
+          <h1 className="mt-10 text-xl sm:text-2xl lg:text-3xl font-medium text-[color-mix(in_oklab,var(--trade-accent)_86%,white)] leading-snug max-w-2xl">
+            {hero.headline}
+          </h1>
 
-            <motion.p
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              transition={premiumTransition(0.16)}
-              className="mt-5 text-lg sm:text-xl text-slate-300 max-w-lg leading-relaxed"
-            >
-              {hero.subheadline}
-            </motion.p>
+          <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-xl leading-relaxed">
+            {hero.subheadline}
+          </p>
 
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              transition={premiumTransition(0.24)}
-              className="mt-8 flex flex-col sm:flex-row items-start gap-3"
+          <div className="mt-12 flex flex-col sm:flex-row items-start gap-3">
+            <a
+              href={`tel:${business.phone}`}
+              className="btn-trade inline-flex items-center gap-2.5 px-7 py-3.5 font-semibold rounded-md text-sm tracking-wide"
             >
-              <a
-                href={`tel:${business.phone}`}
-                className="inline-flex items-center gap-2.5 px-7 py-3 bg-emerald-700 text-white font-semibold rounded-md hover:bg-emerald-600"
-              >
-                <Phone className="h-4 w-4" />
-                {hero.cta_primary}
-              </a>
-              <a
-                href="#services"
-                className="px-7 py-3 border border-slate-600 text-slate-200 font-medium rounded-md hover:border-emerald-500/40 hover:text-white"
-              >
-                {hero.cta_secondary}
-              </a>
-            </motion.div>
-
-            {hero.trust_bar.length > 0 && (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={fadeUp}
-                transition={premiumTransition(0.32)}
-                className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2"
-              >
-                {hero.trust_bar.map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 text-slate-500 text-xs uppercase tracking-wider font-medium">
-                    <Shield className="h-3.5 w-3.5 text-emerald-500/80" />
-                    {item}
-                  </div>
-                ))}
-              </motion.div>
-            )}
+              <Phone className="h-4 w-4" />
+              {hero.cta_primary}
+            </a>
+            <a
+              href="#services"
+              className="btn-trade-outline px-7 py-3.5 font-medium rounded-md text-sm text-slate-200"
+            >
+              {hero.cta_secondary}
+            </a>
           </div>
-
-          <motion.aside
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            transition={premiumTransition(0.2, 0.5)}
-            className="hidden lg:flex justify-end"
-          >
-            <div className="border border-slate-800 bg-slate-900 rounded-lg p-8 max-w-md w-full">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-400 mb-4">
-                Free estimate
-              </p>
-              <p className="font-display text-4xl text-white">Same-week start</p>
-              <p className="text-slate-400 text-sm mt-3 leading-relaxed">
-                Design, install, and maintenance for residential and commercial properties across {business.city}.
-              </p>
-              <p className="mt-6 pt-6 border-t border-slate-800 text-emerald-300/80 text-sm">
-                {business.years_in_business || 10}+ years · locally owned
-              </p>
-            </div>
-          </motion.aside>
         </div>
       </div>
     </section>

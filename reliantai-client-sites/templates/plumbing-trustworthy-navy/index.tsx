@@ -1,4 +1,5 @@
 import type { SiteContent } from "@/types/SiteContent";
+import { TRADE_COPY } from "@/lib/trade-copy";
 import ContactBar from "./sections/ContactBar";
 import TrustBanner from "@/components/shared/TrustBanner";
 import Hero from "./sections/Hero";
@@ -12,25 +13,33 @@ import FAQ from "./sections/FAQ";
 import Footer from "./sections/Footer";
 
 export default function PlumbingTemplate({ content }: { content: SiteContent }) {
-  const trade = content.site_config?.trade || "plumbing";
+  const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.plumbing;
 
   return (
-    <>
+    <div data-trade="plumbing" className="bg-[var(--trade-ink)] text-white">
       <ContactBar content={content} />
-      <TrustBanner trade={trade} />
       <Hero content={content} />
-      <StatsBar content={content} accent="blue-400" />
+      <TrustBanner trade={content.site_config.trade} />
+      <StatsBar content={content} accent="copper" />
       <SectionDivider variant="dots" />
-      <Services content={content} />
-      <CTASection content={content} color="blue" variant="urgency" />
+      <div id="services">
+        <Services content={content} copy={copy} />
+      </div>
+      <CTASection content={content} color="copper" variant="urgency" />
       <SectionDivider variant="line" />
-      <About content={content} />
+      <div id="about">
+        <About content={content} copy={copy} />
+      </div>
       <SectionDivider />
-      <Reviews content={content} />
-      <CTASection content={content} color="blue" variant="estimate" />
+      <div id="reviews">
+        <Reviews content={content} />
+      </div>
+      <CTASection content={content} color="copper" variant="estimate" />
       <SectionDivider variant="wave" />
-      <FAQ content={content} />
+      <div id="faq">
+        <FAQ content={content} />
+      </div>
       <Footer content={content} />
-    </>
+    </div>
   );
 }

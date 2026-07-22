@@ -4,15 +4,32 @@ import { useEffect, useRef, useState } from "react";
 import type { SiteContent } from "@/types/SiteContent";
 import { TRADE_COPY } from "@/lib/trade-copy";
 
-type AccentColor = "blue-400" | "amber-400" | "orange-400" | "amber-700" | "violet-600" | "emerald-400";
+type AccentColor =
+  | "steel"
+  | "copper"
+  | "gold"
+  | "ochre"
+  | "moss"
+  | "blue-400"
+  | "amber-400"
+  | "orange-400"
+  | "amber-700"
+  | "violet-600"
+  | "emerald-400";
 
+/** Prefer token-driven accents; legacy Tailwind names map to trade CSS vars */
 const ACCENT_CLASSES: Record<AccentColor, string> = {
-  "blue-400": "text-blue-400",
-  "amber-400": "text-amber-400",
-  "orange-400": "text-orange-400",
-  "amber-700": "text-amber-700",
-  "violet-600": "text-violet-600",
-  "emerald-400": "text-emerald-400",
+  steel: "text-[var(--trade-accent)]",
+  copper: "text-[var(--trade-accent)]",
+  gold: "text-[var(--trade-accent)]",
+  ochre: "text-[var(--trade-accent)]",
+  moss: "text-[var(--trade-accent)]",
+  "blue-400": "text-[var(--trade-accent)]",
+  "amber-400": "text-[var(--trade-accent)]",
+  "orange-400": "text-[var(--trade-accent)]",
+  "amber-700": "text-[var(--trade-primary)]",
+  "violet-600": "text-[var(--trade-accent)]", // never ship violet identity
+  "emerald-400": "text-[var(--trade-accent)]",
 };
 
 interface StatsBarProps {
@@ -33,6 +50,16 @@ function AnimatedNumber({ value, suffix, inView }: { value: string; suffix: stri
 
   useEffect(() => {
     if (!inView || isText || numericValue === null) return;
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      const frame = window.requestAnimationFrame(() => {
+        setDisplay(
+          Number.isInteger(numericValue) ? numericValue.toString() : numericValue.toFixed(1),
+        );
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
 
     const steps = 30;
     const increment = numericValue / steps;
@@ -75,7 +102,7 @@ function resolveStatValue(
   return fallback;
 }
 
-export default function StatsBar({ content, accent = "blue-400", light = false }: StatsBarProps) {
+export default function StatsBar({ content, accent = "steel", light = false }: StatsBarProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -103,49 +130,32 @@ export default function StatsBar({ content, accent = "blue-400", light = false }
       ref={ref}
       className={`relative py-20 overflow-hidden ${
         light
-          ? "border-b border-stone-200 bg-white"
-          : "border-b border-slate-800/50 bg-transparent"
+          ? "border-b border-stone-200 bg-[var(--trade-elevated)]"
+          : "border-b border-white/5 bg-[var(--trade-ink)]"
       }`}
     >
-      {!light && (
-        <div
-          className="absolute inset-0 pointer-events-none opacity-25"
-          style={{
-            background:
-              "radial-gradient(ellipse 120% 120% at 50% 50%, var(--stat-glow, rgba(96,165,250,0.10)) 0%, transparent 70%)",
-          }}
-        />
-      )}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
           {tradeStats.map((stat, i) => (
-            <div key={stat.label} className="text-center">
+            <div key={stat.label} className="text-left md:text-center">
               <div
-                className={`text-4xl sm:text-5xl font-bold tracking-tight ${ACCENT_CLASSES[accent] || ACCENT_CLASSES["blue-400"]}`}
+                className={`text-4xl sm:text-5xl font-display tracking-tight ${ACCENT_CLASSES[accent] || ACCENT_CLASSES.steel}`}
               >
                 {stat.value_key === "_always" ? (
-                  <span className="text-lg">{stat.fallback}</span>
+                  <span className="text-lg font-sans font-semibold uppercase tracking-wider">
+                    {stat.fallback}
+                  </span>
                 ) : (
                   <AnimatedNumber value={values[i]} suffix={stat.suffix} inView={inView} />
                 )}
               </div>
-              {stat.value_key === "_always" ? (
-                <p
-                  className={`mt-3 text-sm font-medium tracking-wide uppercase ${
-                    light ? "text-stone-500" : "text-slate-500"
-                  }`}
-                >
-                  {stat.label}
-                </p>
-              ) : (
-                <p
-                  className={`mt-3 text-sm font-medium tracking-wide uppercase ${
-                    light ? "text-stone-500" : "text-slate-500"
-                  }`}
-                >
-                  {stat.label}
-                </p>
-              )}
+              <p
+                className={`mt-3 text-xs font-medium tracking-[0.18em] uppercase ${
+                  light ? "text-stone-500" : "text-slate-500"
+                }`}
+              >
+                {stat.label}
+              </p>
             </div>
           ))}
         </div>

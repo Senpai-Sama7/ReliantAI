@@ -42,13 +42,13 @@ export default function Reviews({ content }: ReviewsProps) {
         </div>
 
         {featured && (
-          <div className="bg-blue-950/40 border border-blue-500/20 rounded-2xl p-8 md:p-10 relative hover:border-blue-500/40 transition-colors duration-300">
-            <span className="absolute top-3 left-6 text-6xl text-blue-400/10 font-serif leading-none select-none pointer-events-none">
+          <div className="bg-[var(--trade-surface)] border border-[color-mix(in_oklab,var(--trade-accent)_24%,transparent)] rounded-2xl p-8 md:p-10 relative hover:border-[color-mix(in_oklab,var(--trade-accent)_42%,transparent)] transition-colors duration-300">
+            <span className="absolute top-3 left-6 text-6xl text-[color-mix(in_oklab,var(--trade-accent)_18%,transparent)] font-serif leading-none select-none pointer-events-none">
               &ldquo;
             </span>
             <div className="relative flex flex-col md:flex-row md:items-start gap-6">
               <div className="flex items-center gap-3 md:flex-col md:items-start md:w-40 flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-300 font-semibold text-base">
+                <div className="w-12 h-12 rounded-full bg-[color-mix(in_oklab,var(--trade-accent)_14%,transparent)] flex items-center justify-center text-[var(--trade-accent)] font-semibold text-base">
                   {featured.author.charAt(0)}
                 </div>
                 <div>
@@ -71,14 +71,14 @@ export default function Reviews({ content }: ReviewsProps) {
             {rest.map((review, i) => (
               <div
                 key={i}
-                className="relative bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 hover:-translate-y-1.5 hover:border-blue-500/40 transition-[transform,border-color] duration-300"
+                className="relative bg-slate-800/40 border border-slate-700/60 rounded-2xl p-6 hover:-translate-y-1.5 hover:border-[color-mix(in_oklab,var(--trade-accent)_42%,transparent)] transition-[transform,border-color] duration-300"
               >
-                <span className="absolute top-2 left-4 text-5xl text-blue-400/10 font-serif leading-none select-none pointer-events-none">
+                <span className="absolute top-2 left-4 text-5xl text-[color-mix(in_oklab,var(--trade-accent)_18%,transparent)] font-serif leading-none select-none pointer-events-none">
                   &ldquo;
                 </span>
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-300 font-semibold text-sm flex-shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[color-mix(in_oklab,var(--trade-accent)_14%,transparent)] flex items-center justify-center text-[var(--trade-accent)] font-semibold text-sm flex-shrink-0">
                       {review.author.charAt(0)}
                     </div>
                     <div>

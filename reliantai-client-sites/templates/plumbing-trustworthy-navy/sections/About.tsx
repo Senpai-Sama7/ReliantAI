@@ -1,9 +1,11 @@
 import { CheckCircle, ShieldCheck, Award, FileCheck } from "lucide-react";
-import { TRADE_COPY } from "@/lib/trade-copy";
 import type { SiteContent } from "@/types/SiteContent";
+import type { TradeCopy } from "@/lib/trade-copy";
+import ScrollReveal from "@/components/shared/ScrollReveal";
 
 interface AboutProps {
   content: SiteContent;
+  copy: TradeCopy;
 }
 
 const CERT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -25,47 +27,58 @@ function getCertIcon(cert: string) {
   return <Award className="h-4 w-4" />;
 }
 
-export default function About({ content }: AboutProps) {
+export default function About({ content, copy }: AboutProps) {
   const { business, about } = content;
-  const copy = TRADE_COPY[content.site_config.trade as keyof typeof TRADE_COPY] ?? TRADE_COPY.plumbing;
 
   return (
-    <section id="about" className="py-28 bg-slate-950 relative">
-      <div className="absolute top-0 inset-x-0 border-t border-slate-800" />
+    <section className="relative py-28 bg-[var(--trade-ink)] overflow-hidden">
+      <div className="absolute top-0 inset-x-0 border-t border-white/5" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <span className="inline-block text-blue-400 text-xs font-semibold tracking-[0.2em] uppercase mb-4">
-          About Us
-        </span>
-        <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6 font-display max-w-xl">
-          {copy.about_title}
-        </h2>
-
-        <div className="max-w-2xl">
-          <p className="text-slate-300 leading-relaxed text-lg">
-            {about.story}
+      <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
+        <ScrollReveal>
+          <p className="text-[0.65rem] uppercase tracking-[0.28em] text-[var(--trade-accent)] mb-4">
+            About
           </p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl text-white mb-4 font-display tracking-tight leading-[1.1]">
+            {copy.about_title}
+          </h2>
           {business.years_in_business && (
-            <p className="mt-6 text-blue-400 font-semibold">
+            <p className="text-[var(--trade-accent)] font-medium mb-8">
               Serving {business.city} for {business.years_in_business}+ years
             </p>
           )}
-        </div>
 
-        <div className="mt-14 lg:ml-16 max-w-xl bg-slate-900/80 border-l-2 border-blue-500/40 rounded-r-2xl p-8">
+          <div className="space-y-5 text-slate-300 leading-relaxed text-base sm:text-lg">
+            {about.story.split(/\.\s*/).filter(Boolean).length > 1 ? (
+              about.story
+                .split(/\.\s*/)
+                .filter(Boolean)
+                .map((sentence, i, arr) => (
+                  <p key={i}>
+                    {sentence}
+                    {i < arr.length - 1 ? "." : ""}
+                  </p>
+                ))
+            ) : (
+              <p>{about.story}</p>
+            )}
+          </div>
+        </ScrollReveal>
+
+        <ScrollReveal delayMs={80} className="mt-14 border-l-2 border-[var(--trade-accent)]/50 pl-8 sm:pl-10">
           <h3 className="text-xl font-semibold text-white mb-5 font-display">
             {copy.about_trust_title}
           </h3>
           <ul className="space-y-3">
             {about.trust_points.map((point, i) => (
               <li key={i} className="flex items-start gap-3">
-                <CheckCircle className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="h-5 w-5 text-[var(--trade-accent)] flex-shrink-0 mt-0.5" />
                 <span className="text-slate-300 text-sm">{point}</span>
               </li>
             ))}
           </ul>
           {about.certifications.length > 0 && (
-            <div className="mt-7 pt-6 border-t border-slate-800">
+            <div className="mt-7 pt-6 border-t border-white/10">
               <h4 className="text-sm font-semibold text-slate-400 mb-3">
                 Certifications
               </h4>
@@ -73,7 +86,7 @@ export default function About({ content }: AboutProps) {
                 {about.certifications.map((cert, i) => (
                   <span
                     key={i}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 border border-slate-700 text-blue-300 text-xs font-medium rounded-full"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[color-mix(in_oklab,var(--trade-accent)_35%,transparent)] text-[var(--trade-accent)] text-xs font-medium rounded-md"
                   >
                     {getCertIcon(cert)}
                     {cert}
@@ -82,7 +95,7 @@ export default function About({ content }: AboutProps) {
               </div>
             </div>
           )}
-        </div>
+        </ScrollReveal>
       </div>
     </section>
   );

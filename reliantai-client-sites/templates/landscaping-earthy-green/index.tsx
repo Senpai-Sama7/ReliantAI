@@ -16,16 +16,16 @@ export default function LandscapingTemplate({ content }: { content: SiteContent 
   const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.landscaping;
 
   return (
-    <>
+    <div data-trade="landscaping" className="bg-[var(--trade-ink)] text-white">
       <ContactBar content={content} />
-      <TrustBanner trade="landscaping" />
       <Hero content={content} />
-      <StatsBar content={content} accent="emerald-400" />
+      <TrustBanner trade="landscaping" />
+      <StatsBar content={content} accent="moss" />
       <SectionDivider variant="dots" />
       <div id="services">
         <Services content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="emerald" variant="urgency" />
+      <CTASection content={content} color="moss" variant="urgency" />
       <SectionDivider variant="line" />
       <div id="about">
         <About content={content} copy={copy} />
@@ -34,12 +34,12 @@ export default function LandscapingTemplate({ content }: { content: SiteContent 
       <div id="reviews">
         <Reviews content={content} copy={copy} />
       </div>
-      <CTASection content={content} color="emerald" variant="estimate" />
+      <CTASection content={content} color="moss" variant="estimate" />
       <SectionDivider variant="wave" />
       <div id="faq">
         <FAQ content={content} copy={copy} />
       </div>
       <Footer content={content} />
-    </>
+    </div>
   );
 }
