@@ -14,6 +14,8 @@ type TemplateId = (typeof TEMPLATES)[number]["id"];
 type View = "preview" | "grid" | "prompt" | "compare";
 type Device = "desktop" | "tablet" | "mobile";
 
+const DESKTOP_MQ = "(min-width: 1024px)";
+
 // ─── Dynamic template loader ─────────────────────────────────────────
 const Loader = () => (
   <div className="flex items-center justify-center h-[60vh] bg-zinc-950">
@@ -116,7 +118,7 @@ function ViewTab({ icon, label, active, onClick, ariaLabel }: { icon: React.Reac
       aria-label={ariaLabel || label}
       role="tab"
       aria-selected={active}
-      className={`relative flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all duration-150 ${
+      className={`relative flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-[11px] font-medium rounded-lg transition-all duration-150 ${
         active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
       }`}
     >
@@ -124,7 +126,7 @@ function ViewTab({ icon, label, active, onClick, ariaLabel }: { icon: React.Reac
         <div className="absolute inset-0 bg-zinc-700/80 rounded-lg ring-1 ring-white/5" />
       )}
       <span className="relative z-10">{icon}</span>
-      <span className="relative z-10">{label}</span>
+      <span className="relative z-10 hidden sm:inline">{label}</span>
     </button>
   );
 }
@@ -134,16 +136,33 @@ export default function ShowcasePage() {
   const [active, setActive] = useState<TemplateId>("hvac-reliable-blue");
   const [view, setView] = useState<View>("preview");
   const [device, setDevice] = useState<Device>("desktop");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Closed by default so phones get a full-width preview; opened on desktop via matchMedia.
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [screenKey, setScreenKey] = useState(0);
   const [compareIds, setCompareIds] = useState<[TemplateId, TemplateId]>(["hvac-reliable-blue", "plumbing-trustworthy-navy"]);
   const [overrides, setOverrides] = useState<Partial<{ business_name: string; phone: string; city: string; state: string; headline: string }>>({});
 
-  const selectTemplate = (id: TemplateId, options?: { bumpScreen?: boolean }) => {
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const sync = () => {
+      const desktop = mq.matches;
+      setIsDesktop(desktop);
+      setSidebarOpen(desktop);
+    };
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  const selectTemplate = (id: TemplateId, options?: { bumpScreen?: boolean; closeSidebarOnMobile?: boolean }) => {
     setActive(id);
     setOverrides({});
     if (options?.bumpScreen) {
       setScreenKey((k) => k + 1);
+    }
+    if (options?.closeSidebarOnMobile && !isDesktop) {
+      setSidebarOpen(false);
     }
   };
 
@@ -170,48 +189,167 @@ export default function ShowcasePage() {
       } else if (e.key === "\\" && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         setSidebarOpen((s) => !s);
+      } else if (e.key === "Escape" && sidebarOpen && !isDesktop) {
+        e.preventDefault();
+        setSidebarOpen(false);
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [active]);
+  }, [active, sidebarOpen, isDesktop]);
 
   const Template = DynamicTemplates[active];
 
+  const sidebarInner = (
+    <div className="w-72 max-w-[85vw] h-full flex flex-col bg-zinc-950">
+      <div className="flex-1 overflow-y-auto pb-4">
+        <div className="p-3 space-y-1">
+          <div className="flex items-center justify-between px-1 mb-1">
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Templates</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[9px] text-zinc-700 tabular-nums">{TEMPLATES.length}</span>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800"
+                aria-label="Close templates"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          {TEMPLATES.map((t) => (
+            <TemplateCard
+              key={t.id}
+              meta={t}
+              isActive={active === t.id}
+              onClick={() => selectTemplate(t.id, { bumpScreen: true, closeSidebarOnMobile: true })}
+            />
+          ))}
+        </div>
+
+        <div className="mx-3 border-t border-white/[0.04]" />
+
+        <div className="p-3 space-y-4">
+          <div>
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Overview</span>
+            <p className="text-[11px] text-zinc-400 mt-2 leading-relaxed">{meta.description}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5">
+            <DetailCell label="Personality" value={meta.personality} />
+            <DetailCell label="Theme" value={meta.theme === "light" ? "Light" : "Dark"} />
+            <DetailCell label="Hero" value={meta.heroLayout === "single" ? "Single" : "Dual"} />
+            <DetailCell label="Accent" value={meta.colorName}>
+              <div className="w-3 h-3 rounded-full mt-1" style={{ backgroundColor: meta.primaryColor }} />
+            </DetailCell>
+          </div>
+
+          <div>
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Best For</span>
+            <p className="text-[11px] text-zinc-400 mt-1">{meta.bestFor}</p>
+          </div>
+
+          <div>
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Differentiators</span>
+            <div className="mt-1.5 space-y-1">
+              {meta.uniqueFeatures.slice(0, 4).map((f, i) => (
+                <div key={i} className="flex items-start gap-1.5 text-[11px] text-zinc-500">
+                  <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${meta.accentBg}`} />
+                  {f.length > 55 ? f.slice(0, 55) + "…" : f}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-white/[0.04]">
+            <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Live Data</span>
+            <div className="mt-2 space-y-2">
+              <DataInput label="Business" value={content.business.business_name} onChange={(v) => setOverrides((o) => ({ ...o, business_name: v }))} />
+              <DataInput label="Phone" value={content.business.phone} onChange={(v) => setOverrides((o) => ({ ...o, phone: v }))} />
+              <DataInput label="Location" value={`${content.business.city}, ${content.business.state}`} onChange={(v) => {
+                const p = v.split(", ");
+                if (p.length === 2) setOverrides((o) => ({ ...o, city: p[0], state: p[1] }));
+              }} />
+              <DataInput label="Headline" value={content.hero.headline} onChange={(v) => setOverrides((o) => ({ ...o, headline: v }))} />
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-white/[0.04]">
+            <button
+              onClick={() => {
+                setView("prompt");
+                if (!isDesktop) setSidebarOpen(false);
+              }}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-medium rounded-lg bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white ring-1 ring-white/[0.06] hover:ring-white/10 transition-all"
+            >
+              <IconCode className="w-3.5 h-3.5" />
+              View Generation Prompt
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-shrink-0 border-t border-white/[0.04] px-3 py-2.5 hidden lg:block">
+        <div className="flex items-center gap-2 text-[9px] text-zinc-600">
+          <kbd className="px-1 py-0.5 rounded bg-zinc-800 ring-1 ring-zinc-700 font-mono text-[9px]">↑↓</kbd>
+          <span>Navigate</span>
+          <kbd className="px-1 py-0.5 rounded bg-zinc-800 ring-1 ring-zinc-700 font-mono text-[9px] ml-2">\</kbd>
+          <span>Toggle sidebar</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="h-screen bg-zinc-950 text-white flex flex-col overflow-hidden">
+    <div className="h-dvh bg-zinc-950 text-white flex flex-col overflow-hidden">
       {/* ─── Header ──────────────────────────────────────────── */}
       <header className="flex-shrink-0 border-b border-white/[0.06] bg-zinc-950 z-50">
-        <div className="flex items-center justify-between px-4 h-11">
-          {/* Left: Brand */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-md bg-[var(--trade-primary,#3d5a73)] flex items-center justify-center">
+        <div className="flex items-center gap-2 px-2 sm:px-4 h-11">
+          {/* Left: menu + brand */}
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className={`p-1.5 rounded-lg transition-all flex-shrink-0 ${sidebarOpen ? "bg-zinc-800 text-zinc-300 ring-1 ring-white/[0.06]" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"}`}
+              title={sidebarOpen ? "Hide sidebar (\\)" : "Show sidebar (\\)"}
+              aria-label={sidebarOpen ? "Hide templates" : "Show templates"}
+              aria-expanded={sidebarOpen}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+              </svg>
+            </button>
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-5 h-5 rounded-md bg-[var(--trade-primary,#3d5a73)] flex items-center justify-center flex-shrink-0">
                 <span className="text-[8px] font-bold text-white">R</span>
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col min-w-0">
                 <span className="text-[11px] font-semibold text-zinc-200 leading-none tracking-wide">Showcase</span>
-                <span className="text-[9px] text-zinc-600 leading-none mt-0.5">Template Studio</span>
+                <span className="text-[9px] text-zinc-600 leading-none mt-0.5 hidden sm:block">Template Studio</span>
               </div>
             </div>
-            <div className="w-px h-5 bg-white/[0.06]" />
-            <span className="text-[10px] text-zinc-600 font-mono tabular-nums">
-              {meta.tradeLabel} · {meta.theme === "light" ? "Light" : "Dark"} · {meta.heroLayout === "single" ? "1-Column" : "2-Column"}
-            </span>
+            <div className="hidden md:flex items-center gap-3 min-w-0">
+              <div className="w-px h-5 bg-white/[0.06]" />
+              <span className="text-[10px] text-zinc-600 font-mono tabular-nums truncate">
+                {meta.tradeLabel} · {meta.theme === "light" ? "Light" : "Dark"} · {meta.heroLayout === "single" ? "1-Column" : "2-Column"}
+              </span>
+            </div>
           </div>
 
           {/* Center: View tabs */}
-          <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06]">
-<ViewTab icon={<IconSparkles className="w-3.5 h-3.5" />} label="Preview" active={view === "preview"} onClick={() => setView("preview")} aria-label="Preview view" />
-              <ViewTab icon={<IconGrid className="w-3.5 h-3.5" />} label="Grid" active={view === "grid"} onClick={() => setView("grid")} aria-label="Grid view" />
-              <ViewTab icon={<IconCode className="w-3.5 h-3.5" />} label="Prompt" active={view === "prompt"} onClick={() => setView("prompt")} aria-label="Prompt view" />
-              <ViewTab icon={<IconColumns className="w-3.5 h-3.5" />} label="Compare" active={view === "compare"} onClick={() => setView("compare")} aria-label="Compare view" />
+          <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06] flex-shrink-0" role="tablist">
+            <ViewTab icon={<IconSparkles className="w-3.5 h-3.5" />} label="Preview" active={view === "preview"} onClick={() => setView("preview")} ariaLabel="Preview view" />
+            <ViewTab icon={<IconGrid className="w-3.5 h-3.5" />} label="Grid" active={view === "grid"} onClick={() => setView("grid")} ariaLabel="Grid view" />
+            <ViewTab icon={<IconCode className="w-3.5 h-3.5" />} label="Prompt" active={view === "prompt"} onClick={() => setView("prompt")} ariaLabel="Prompt view" />
+            <ViewTab icon={<IconColumns className="w-3.5 h-3.5" />} label="Compare" active={view === "compare"} onClick={() => setView("compare")} ariaLabel="Compare view" />
           </div>
 
-          {/* Right: Device & sidebar toggle */}
-          <div className="flex items-center gap-2">
+          {/* Right: Device switcher (hidden on very small screens — preview already uses mobile device) */}
+          <div className="flex items-center justify-end gap-2 flex-1 min-w-0">
             {view === "preview" && (
-              <div className="flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06]">
+              <div className="hidden sm:flex items-center bg-zinc-900/80 rounded-lg p-0.5 ring-1 ring-white/[0.06]">
                 {DEVICE_OPTIONS.map(({ id, Icon }) => (
                   <button
                     key={id}
@@ -227,121 +365,36 @@ export default function ShowcasePage() {
                 ))}
               </div>
             )}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className={`p-1.5 rounded-lg transition-all ${sidebarOpen ? "bg-zinc-800 text-zinc-300 ring-1 ring-white/[0.06]" : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50"}`}
-              title={sidebarOpen ? "Hide sidebar (\\)" : "Show sidebar (\\)"}
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
-              </svg>
-            </button>
           </div>
         </div>
       </header>
 
-      <div className="flex flex-1 min-h-0">
-        {/* ─── Sidebar ─────────────────────────────────────────── */}
-        <aside className={`flex-shrink-0 border-r border-white/[0.06] bg-zinc-950 overflow-hidden transition-all duration-300 ease-out ${sidebarOpen ? "w-72" : "w-0"}`}>
-          <div className="w-72 h-full flex flex-col">
-            {/* Template selector */}
-            <div className="flex-1 overflow-y-auto pb-4">
-              <div className="p-3 space-y-1">
-                <div className="flex items-center justify-between px-1 mb-1">
-                  <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Templates</span>
-                  <span className="text-[9px] text-zinc-700 tabular-nums">{TEMPLATES.length}</span>
-                </div>
-                {TEMPLATES.map((t) => (
-                  <TemplateCard
-                    key={t.id}
-                    meta={t}
-                    isActive={active === t.id}
-                    onClick={() => selectTemplate(t.id, { bumpScreen: true })}
-                  />
-                ))}
-              </div>
+      <div className="flex flex-1 min-h-0 relative">
+        {/* Mobile drawer backdrop */}
+        {sidebarOpen && (
+          <button
+            type="button"
+            className="lg:hidden absolute inset-0 z-40 bg-black/60"
+            aria-label="Close templates overlay"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
 
-              {/* Divider */}
-              <div className="mx-3 border-t border-white/[0.04]" />
-
-              {/* Template details panel */}
-              <div className="p-3 space-y-4">
-                <div>
-                  <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Overview</span>
-                  <p className="text-[11px] text-zinc-400 mt-2 leading-relaxed">{meta.description}</p>
-                </div>
-
-                {/* Metadata grid */}
-                <div className="grid grid-cols-2 gap-1.5">
-                  <DetailCell label="Personality" value={meta.personality} />
-                  <DetailCell label="Theme" value={meta.theme === "light" ? "Light" : "Dark"} />
-                  <DetailCell label="Hero" value={meta.heroLayout === "single" ? "Single" : "Dual"} />
-                  <DetailCell label="Accent" value={meta.colorName}>
-                    <div className="w-3 h-3 rounded-full mt-1" style={{ backgroundColor: meta.primaryColor }} />
-                  </DetailCell>
-                </div>
-
-                {/* Best for */}
-                <div>
-                  <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Best For</span>
-                  <p className="text-[11px] text-zinc-400 mt-1">{meta.bestFor}</p>
-                </div>
-
-                {/* Unique features */}
-                <div>
-                  <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Differentiators</span>
-                  <div className="mt-1.5 space-y-1">
-                    {meta.uniqueFeatures.slice(0, 4).map((f, i) => (
-                      <div key={i} className="flex items-start gap-1.5 text-[11px] text-zinc-500">
-                        <span className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${meta.accentBg}`} />
-                        {f.length > 55 ? f.slice(0, 55) + "…" : f}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Live data override */}
-                <div className="pt-3 border-t border-white/[0.04]">
-                  <span className="text-[9px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Live Data</span>
-                  <div className="mt-2 space-y-2">
-                    <DataInput label="Business" value={content.business.business_name} onChange={(v) => setOverrides((o) => ({ ...o, business_name: v }))} />
-                    <DataInput label="Phone" value={content.business.phone} onChange={(v) => setOverrides((o) => ({ ...o, phone: v }))} />
-                    <DataInput label="Location" value={`${content.business.city}, ${content.business.state}`} onChange={(v) => {
-                      const p = v.split(", ");
-                      if (p.length === 2) setOverrides((o) => ({ ...o, city: p[0], state: p[1] }));
-                    }} />
-                    <DataInput label="Headline" value={content.hero.headline} onChange={(v) => setOverrides((o) => ({ ...o, headline: v }))} />
-                  </div>
-                </div>
-
-                {/* Prompt shortcut */}
-                <div className="pt-3 border-t border-white/[0.04]">
-                  <button
-                    onClick={() => setView("prompt")}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-[11px] font-medium rounded-lg bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700 hover:text-white ring-1 ring-white/[0.06] hover:ring-white/10 transition-all"
-                  >
-                    <IconCode className="w-3.5 h-3.5" />
-                    View Generation Prompt
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Bottom keyboard hint */}
-            <div className="flex-shrink-0 border-t border-white/[0.04] px-3 py-2.5">
-              <div className="flex items-center gap-2 text-[9px] text-zinc-600">
-                <kbd className="px-1 py-0.5 rounded bg-zinc-800 ring-1 ring-zinc-700 font-mono text-[9px]">↑↓</kbd>
-                <span>Navigate</span>
-                <kbd className="px-1 py-0.5 rounded bg-zinc-800 ring-1 ring-zinc-700 font-mono text-[9px] ml-2">\</kbd>
-                <span>Toggle sidebar</span>
-              </div>
-            </div>
-          </div>
+        {/* Mobile: overlay drawer · Desktop: inline sidebar */}
+        <aside
+          className={`
+            z-50 border-r border-white/[0.06] bg-zinc-950 overflow-hidden
+            absolute inset-y-0 left-0 transition-transform duration-300 ease-out
+            lg:static lg:translate-x-0 lg:transition-[width] lg:duration-300
+            ${sidebarOpen ? "translate-x-0 lg:w-72" : "-translate-x-full lg:w-0"}
+          `}
+          aria-hidden={!sidebarOpen}
+        >
+          {sidebarInner}
         </aside>
 
         {/* ─── Main content ────────────────────────────────────── */}
         <main className="flex-1 min-w-0 relative">
-          {/* Preview */}
           {view === "preview" && (
             <div key={screenKey} className="h-full">
               <DeviceFrame device={device} url={`${slugify(content.business.business_name)}.reliantai.org`}>
@@ -350,7 +403,6 @@ export default function ShowcasePage() {
             </div>
           )}
 
-          {/* Grid */}
           {view === "grid" && (
             <div className="h-full overflow-y-auto">
               <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
@@ -358,8 +410,7 @@ export default function ShowcasePage() {
                   const T = DynamicTemplates[t.id];
                   return (
                     <div key={t.id} className="group relative border-b border-r border-white/[0.04]">
-                      {/* Overlay on hover */}
-                      <div className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3">
+                      <div className="absolute inset-0 z-10 bg-black/60 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-3">
                         <button
                           onClick={() => { selectTemplate(t.id, { bumpScreen: true }); setView("preview"); }}
                           className="px-5 py-2.5 text-sm font-medium bg-white text-zinc-950 rounded-xl hover:bg-zinc-100 transition-colors shadow-lg"
@@ -373,7 +424,6 @@ export default function ShowcasePage() {
                           <span className="flex items-center gap-1.5"><IconCode className="w-3 h-3" /> View Prompt</span>
                         </button>
                       </div>
-                      {/* Template label */}
                       <div className="absolute top-3 left-3 z-5 flex items-center gap-1.5">
                         <div className={`w-2 h-2 rounded-full ${t.accentBg}`} />
                         <span className="text-[11px] font-semibold text-white drop-shadow-lg">{t.tradeLabel}</span>
@@ -388,20 +438,17 @@ export default function ShowcasePage() {
             </div>
           )}
 
-          {/* Prompt */}
           {view === "prompt" && (
             <div className="h-full overflow-y-auto">
-              <div className="max-w-5xl mx-auto px-8 py-10 space-y-8">
-                {/* Header */}
+              <div className="max-w-5xl mx-auto px-4 sm:px-8 py-6 sm:py-10 space-y-8">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`w-3 h-3 rounded-full ${meta.accentBg}`} />
-                    <h2 className="text-xl font-semibold text-white">{meta.tradeLabel} — {meta.label}</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold text-white">{meta.tradeLabel} — {meta.label}</h2>
                   </div>
                   <p className="text-sm text-zinc-500">Production-ready generation prompt. Copy and paste to recreate this template with any business.</p>
                 </div>
 
-                {/* Metadata cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <MetaCard label="Theme" value={meta.theme === "light" ? "Light" : "Dark"} accent={meta.primaryColor} />
                   <MetaCard label="Accent Color" value={meta.colorName} accent={meta.primaryColor} />
@@ -409,10 +456,8 @@ export default function ShowcasePage() {
                   <MetaCard label="Sections" value="8 — Contact, Trust, Hero, Stats, Services, About, Reviews, FAQ" />
                 </div>
 
-                {/* The code block */}
                 <CodeBlock code={meta.prompt} language="prompt" maxHeight="40vh" />
 
-                {/* Unique features */}
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-300 mt-6 mb-3">Key Differentiators</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -428,41 +473,43 @@ export default function ShowcasePage() {
             </div>
           )}
 
-          {/* Compare */}
           {view === "compare" && (
             <div className="h-full flex flex-col">
-              {/* Compare selector bar */}
-              <div className="flex-shrink-0 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-md px-4 py-2 flex items-center gap-4">
-                <span className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Left</span>
-                <select
-                  value={compareIds[0]}
-                  onChange={(e) => setCompareIds([e.target.value as TemplateId, compareIds[1]])}
-                  className="text-[11px] bg-zinc-800 ring-1 ring-white/[0.06] rounded-md px-2 py-1 text-zinc-300 border-0 focus:ring-white/10"
-                >
-                  {TEMPLATES.map((t) => <option key={t.id} value={t.id}>{t.tradeLabel} — {t.label}</option>)}
-                </select>
-                <span className="text-[10px] text-zinc-700">vs</span>
-                <span className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold">Right</span>
-                <select
-                  value={compareIds[1]}
-                  onChange={(e) => setCompareIds([compareIds[0], e.target.value as TemplateId])}
-                  className="text-[11px] bg-zinc-800 ring-1 ring-white/[0.06] rounded-md px-2 py-1 text-zinc-300 border-0 focus:ring-white/10"
-                >
-                  {TEMPLATES.map((t) => <option key={t.id} value={t.id}>{t.tradeLabel} — {t.label}</option>)}
-                </select>
+              <div className="flex-shrink-0 border-b border-white/[0.06] bg-zinc-950/80 backdrop-blur-md px-3 sm:px-4 py-2 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold flex-shrink-0">Left</span>
+                  <select
+                    value={compareIds[0]}
+                    onChange={(e) => setCompareIds([e.target.value as TemplateId, compareIds[1]])}
+                    className="text-[11px] bg-zinc-800 ring-1 ring-white/[0.06] rounded-md px-2 py-1 text-zinc-300 border-0 focus:ring-white/10 min-w-0 flex-1"
+                  >
+                    {TEMPLATES.map((t) => <option key={t.id} value={t.id}>{t.tradeLabel} — {t.label}</option>)}
+                  </select>
+                </div>
+                <span className="text-[10px] text-zinc-700 hidden sm:inline">vs</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-wider font-semibold flex-shrink-0">Right</span>
+                  <select
+                    value={compareIds[1]}
+                    onChange={(e) => setCompareIds([compareIds[0], e.target.value as TemplateId])}
+                    className="text-[11px] bg-zinc-800 ring-1 ring-white/[0.06] rounded-md px-2 py-1 text-zinc-300 border-0 focus:ring-white/10 min-w-0 flex-1"
+                  >
+                    {TEMPLATES.map((t) => <option key={t.id} value={t.id}>{t.tradeLabel} — {t.label}</option>)}
+                  </select>
+                </div>
               </div>
 
-              <div className="flex-1 flex min-h-0">
+              <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-y-auto md:overflow-hidden">
                 {compareIds.map((id) => {
                   const T = DynamicTemplates[id];
                   const m = TEMPLATES.find((t) => t.id === id)!;
                   return (
-                    <div key={id} className="flex-1 min-w-0 flex flex-col border-r border-white/[0.04] last:border-r-0">
+                    <div key={id} className="flex-1 min-w-0 min-h-[50vh] md:min-h-0 flex flex-col border-b md:border-b-0 md:border-r border-white/[0.04] last:border-0">
                       <div className="flex-shrink-0 flex items-center gap-2 px-3 py-2 bg-zinc-900/80 border-b border-white/[0.04]">
                         <div className={`w-2 h-2 rounded-full ${m.accentBg}`} />
                         <span className="text-[11px] font-semibold text-zinc-200">{m.tradeLabel}</span>
-                        <span className="text-[10px] text-zinc-600">{m.label}</span>
-                        <span className={`text-[9px] px-1.5 py-px rounded-full ${
+                        <span className="text-[10px] text-zinc-600 truncate">{m.label}</span>
+                        <span className={`text-[9px] px-1.5 py-px rounded-full flex-shrink-0 ${
                           m.theme === "light" ? "bg-violet-500/15 text-violet-400" : "bg-zinc-800 text-zinc-500"
                         }`}>
                           {m.theme === "light" ? "LIGHT" : "DARK"}
