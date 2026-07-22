@@ -9,7 +9,7 @@ test.describe("Live site rendering from API content", () => {
     const res = await page.goto("/test-hvac-austin");
     expect(res?.status()).toBe(200);
     // Brand-first hero: business name is the dominant signal; h1 is the local outcome.
-    await expect(page.getByText("Comfort Pro HVAC").first()).toBeVisible();
+    await expect(page.locator(".craft-brand")).toContainText(/Comfort Pro HVAC/i);
     await expect(page.locator("h1")).toBeVisible();
     await expect(page.locator("h1")).toContainText(/Austin/i);
     // Live sites must NOT show the preview banner

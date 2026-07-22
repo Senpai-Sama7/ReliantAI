@@ -20,8 +20,8 @@ export default function Footer({ content }: FooterProps) {
 
   return (
     <footer id="contact" className="border-t border-slate-800 bg-slate-950">
-      <div className="pb-24 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <div className="pb-8 sm:pb-12">
+        <div className="mx-auto max-w-7xl px-4 py-10 sm:py-12 sm:px-6">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <h3 className="mb-3 text-lg font-semibold text-white">{business.business_name}</h3>
