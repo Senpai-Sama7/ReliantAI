@@ -1,44 +1,18 @@
 import type { SiteContent } from "@/types/SiteContent";
-import { TRADE_COPY } from "@/lib/trade-copy";
-import ContactBar from "@/components/shared/ContactBar";
-import TrustBanner from "@/components/shared/TrustBanner";
-import BrandHero from "@/components/shared/BrandHero";
-import StatsBar from "@/components/shared/StatsBar";
-import EditorialServices from "@/components/shared/EditorialServices";
-import CTASection from "@/components/shared/CTASection";
-import About from "./sections/About";
-import Reviews from "./sections/Reviews";
-import FAQ from "./sections/FAQ";
+import ImmersiveTemplate from "@/components/immersive/ImmersiveTemplate";
 import Footer from "./sections/Footer";
-import SectionDivider from "@/components/shared/SectionDivider";
-import MobileCallBar from "@/components/shared/MobileCallBar";
 
 export default function PlumbingTemplate({ content }: { content: SiteContent }) {
-  const copy = TRADE_COPY[content.site_config.trade] || TRADE_COPY.plumbing;
-
   return (
-    <div data-trade="plumbing" className="template-shell bg-[var(--trade-ink)] text-white">
-      <ContactBar content={content} tagline="24/7 emergency plumbing" />
-      <BrandHero content={content} signature="copper-rule" badge="24/7 Emergency" />
-      <TrustBanner trade={content.site_config.trade} />
-      <StatsBar content={content} accent="copper" />
-      <SectionDivider variant="dots" />
-      <div id="services">
-        <EditorialServices content={content} copy={copy} />
-      </div>
-      <CTASection content={content} color="copper" variant="urgency" />
-      <div id="about">
-        <About content={content} copy={copy} />
-      </div>
-      <div id="reviews">
-        <Reviews content={content} copy={copy} />
-      </div>
-      <CTASection content={content} color="copper" variant="estimate" />
-      <div id="faq">
-        <FAQ content={content} copy={copy} />
-      </div>
+    <ImmersiveTemplate
+      content={content}
+      scene="pressure-flow"
+      tradeAttr="plumbing"
+      badge="24/7 Emergency"
+      contactTagline="24/7 emergency plumbing"
+      ctaColor="copper"
+    >
       <Footer content={content} />
-      <MobileCallBar content={content} />
-    </div>
+    </ImmersiveTemplate>
   );
 }
