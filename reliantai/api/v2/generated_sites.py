@@ -1,6 +1,7 @@
 """API v2 generated sites router."""
 
-from typing import Any
+from typing import Any, FrozenSet
+
 from fastapi import APIRouter, HTTPException
 
 from reliantai.db import get_db_session
@@ -10,6 +11,17 @@ from reliantai.services.cache import get_cached_site, set_cached_site
 
 router = APIRouter(prefix="/api/v2/generated-sites", tags=["generated-sites"])
 
+# Only these statuses are served on the public ISR endpoint.
+# Expired / draft / archived rows must 404 so previews cannot leak after expiry.
+PUBLIC_SITE_STATUSES: FrozenSet[str] = frozenset(
+    {"preview_live", "live", "published"}
+)
+
+
+def _is_public_payload(payload: dict[str, Any]) -> bool:
+    status = payload.get("status")
+    return isinstance(status, str) and status in PUBLIC_SITE_STATUSES
+
 
 @router.get("/{slug}")
 def get_generated_site(slug: str) -> dict[str, Any]:
@@ -18,12 +30,12 @@ def get_generated_site(slug: str) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="Invalid slug")
 
     cached = get_cached_site(slug)
-    if cached:
+    if cached and _is_public_payload(cached):
         return cached
 
     with get_db_session() as db:
         site = db.query(GeneratedSite).filter_by(slug=slug).first()
-        if not site:
+        if not site or site.status not in PUBLIC_SITE_STATUSES:
             raise HTTPException(status_code=404, detail="Site not found")
 
         content = dict(site.site_content or {})

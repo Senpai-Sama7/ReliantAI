@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { serializeJsonLd } from "@/lib/serialize-json-ld";
 import { isValidSlug, MAX_SLUG_LENGTH } from "@/lib/slug";
-import { sanitizeHttpUrl } from "@/lib/safe-url";
+import { sanitizeHttpUrl, resolveCheckoutBaseUrl } from "@/lib/safe-url";
 import { parseSiteContent } from "@/lib/validate-site-content";
+import { CSP_HEADER_VALUE } from "@/lib/csp";
 
 describe("isValidSlug", () => {
   it("accepts lowercase hyphenated slugs", () => {
@@ -48,10 +51,45 @@ describe("sanitizeHttpUrl", () => {
   });
 });
 
+describe("resolveCheckoutBaseUrl", () => {
+  it("returns origin for valid https bases", () => {
+    expect(resolveCheckoutBaseUrl("https://reliantai.org/checkout")).toBe(
+      "https://reliantai.org",
+    );
+  });
+
+  it("falls back when misconfigured to javascript:", () => {
+    expect(resolveCheckoutBaseUrl("javascript:alert(1)")).toBe(
+      "https://reliantai.org",
+    );
+  });
+});
+
+describe("CSP parity", () => {
+  it("keeps vercel.json CSP aligned with lib/csp.ts", () => {
+    const vercel = JSON.parse(
+      readFileSync(resolve(process.cwd(), "vercel.json"), "utf8"),
+    ) as {
+      headers: Array<{ headers: Array<{ key: string; value: string }> }>;
+    };
+    const csp = vercel.headers
+      .flatMap((block) => block.headers)
+      .find((h) => h.key === "Content-Security-Policy");
+    expect(csp?.value).toBe(CSP_HEADER_VALUE);
+  });
+});
+
 describe("parseSiteContent", () => {
   const validPayload = {
     slug: "apex-hvac-houston-ab12",
-    business: { business_name: "Apex HVAC" },
+    status: "preview_live",
+    business: {
+      business_name: "Apex HVAC",
+      trade: "HVAC",
+      city: "Houston",
+      state: "TX",
+      phone: "(713) 555-0100",
+    },
     hero: { headline: "Apex HVAC" },
     site_config: { template_id: "hvac-reliable-blue" },
     services: [],
@@ -74,11 +112,24 @@ describe("parseSiteContent", () => {
     expect(parseSiteContent({ ...validPayload, slug: "bad slug" })).toBeNull();
   });
 
+  it("rejects missing required business fields and non-public status", () => {
+    expect(
+      parseSiteContent({
+        ...validPayload,
+        business: { business_name: "Apex HVAC" },
+      }),
+    ).toBeNull();
+    expect(parseSiteContent({ ...validPayload, status: "expired" })).toBeNull();
+    expect(parseSiteContent({ ...validPayload, status: "live" })?.status).toBe(
+      "live",
+    );
+  });
+
   it("strips unsafe business website URLs", () => {
     const parsed = parseSiteContent({
       ...validPayload,
       business: {
-        business_name: "Apex HVAC",
+        ...validPayload.business,
         website_url: "javascript:alert(1)",
       },
     });

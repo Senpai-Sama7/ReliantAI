@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { resolveCheckoutBaseUrl } from "@/lib/safe-url";
 
 interface PreviewBannerProps {
   slug: string;
@@ -6,8 +7,9 @@ interface PreviewBannerProps {
   city: string;
 }
 
-const CHECKOUT_BASE_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_BASE_URL || "https://reliantai.org";
+const CHECKOUT_BASE_URL = resolveCheckoutBaseUrl(
+  process.env.NEXT_PUBLIC_CHECKOUT_BASE_URL,
+);
 
 export default function PreviewBanner({
   slug,
